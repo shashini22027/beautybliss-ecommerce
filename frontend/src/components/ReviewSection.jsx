@@ -11,7 +11,7 @@ const ReviewSection = ({ product }) => {
   };
 
   return (
-    <div className="border-t border-pink-100 pt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="border-t border-pink-100/60 pt-10 grid grid-cols-1 md:grid-cols-2 gap-10">
       <div className="space-y-4">
         <h3 className="text-xl font-serif text-stone-900 font-bold">Reviews</h3>
         {product.reviews && product.reviews.length === 0 ? (
