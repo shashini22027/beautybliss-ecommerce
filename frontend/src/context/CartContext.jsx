@@ -8,9 +8,9 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, qty) => {
     const existItem = cartItems.find((x) => x.product._id === product._id);
     if (existItem) {
-      setCartItems(cartItems.map((x) => x.product._id === product._id ? { ...x, qty } : x));
+      setCartItems(cartItems.map((x) => x.product._id === product._id ? { ...x, qty: Number(qty) } : x));
     } else {
-      setCartItems([...cartItems, { product, qty }]);
+      setCartItems([...cartItems, { product, qty: Number(qty) }]);
     }
   };
 
