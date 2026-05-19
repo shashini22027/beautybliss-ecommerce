@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const apiLimiter = require('./middleware/rateLimiter');
 
 const userRoutes = require('./routes/userRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -21,6 +22,7 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use('/api/', apiLimiter);
 
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
