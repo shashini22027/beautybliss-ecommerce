@@ -4,10 +4,14 @@
 
 @layer base {
   body {
-    @apply bg-nude-50 text-stone-900 font-sans;
+    @apply bg-[#faf7f5] text-stone-900 font-sans antialiased;
   }
 }
 
 .luxury-gradient {
-  background: linear-gradient(135deg, #faf7f5 0%, #fbebeb 100%);
+  background: linear-gradient(135deg, #fdf6f6 0%, #f4ece7 100%);
+}
+
+.card-shadow {
+  box-shadow: 0 4px 20px -2px rgba(219, 120, 118, 0.08);
 }
