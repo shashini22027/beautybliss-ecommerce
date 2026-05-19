@@ -18,7 +18,7 @@ const CheckoutPage = () => {
   const total = cartItems.reduce((acc, x) => acc + x.product.price * x.qty, 0);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 px-4 sm:px-0">
       <h2 className="text-3xl font-serif text-stone-900 font-bold text-center">Checkout</h2>
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white p-6 border border-pink-100 rounded-2xl space-y-4">
