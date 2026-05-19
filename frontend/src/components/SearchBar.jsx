@@ -6,8 +6,9 @@ const SearchBar = ({ onSearchSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (keyword.trim()) {
-      onSearchSubmit(keyword);
+    const trimmed = keyword.trim();
+    if (trimmed) {
+      onSearchSubmit(trimmed);
     }
   };
 
