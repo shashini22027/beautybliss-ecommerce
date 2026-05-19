@@ -39,7 +39,9 @@ const ProductDetailsPage = () => {
             </div>
           </div>
           <p className="text-2xl font-bold text-stone-900">${product.price.toFixed(2)}</p>
-          <p className="text-sm text-stone-600 leading-relaxed">{product.description}</p>
+          <div className="max-h-32 overflow-y-auto text-sm text-stone-600 leading-relaxed pr-2">
+            {product.description}
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-stone-500">Qty</span>
             <select value={qty} onChange={(e) => setQty(Number(e.target.value))} className="border border-stone-200 rounded p-1 text-sm focus:outline-none">
