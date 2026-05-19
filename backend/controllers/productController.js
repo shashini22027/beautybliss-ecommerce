@@ -3,18 +3,29 @@ const Product = require('../models/Product');
 const getProducts = async (req, res) => {
   const category = req.query.category;
   const keyword = req.query.keyword ? {
-    name: { $regex: req.query.keyword, $options: 'i' }
+    $or: [
+      { name: { $regex: req.query.keyword, $options: 'i' } },
+      { description: { $regex: req.query.keyword, $options: 'i' } },
+      { brand: { $regex: req.query.keyword, $options: 'i' } }
+    ]
   } : {};
+
   const query = { ...keyword };
-  if (category) query.category = category;
+  if (category) {
+    query.category = category;
+  }
+
   const products = await Product.find(query).populate('category');
   res.json(products);
 };
 
 const getProductById = async (req, res) => {
   const product = await Product.findById(req.params.id).populate('category');
-  if (product) res.json(product);
-  else res.status(404).json({ message: 'Product not found' });
+  if (product) {
+    res.json(product);
+  } else {
+    res.status(404).json({ message: 'Product not found' });
+  }
 };
 
 const createProduct = async (req, res) => {
