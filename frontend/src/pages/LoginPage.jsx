@@ -5,6 +5,7 @@ import API from '../services/api';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
@@ -28,7 +29,10 @@ const LoginPage = () => {
         </div>
         <div>
           <label className="block text-sm font-medium text-stone-600 mb-1">Password</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400" required />
+          <div className="relative">
+            <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400" required />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-xs text-stone-400 hover:text-stone-600">Toggle</button>
+          </div>
         </div>
         <button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 rounded text-sm uppercase tracking-wider transition">Sign In</button>
       </form>
