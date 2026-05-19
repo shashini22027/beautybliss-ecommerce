@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
@@ -17,6 +18,7 @@ connectDB();
 
 const app = express();
 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
