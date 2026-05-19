@@ -31,8 +31,8 @@ const OrdersPage = () => {
                   <p className="font-mono text-sm text-stone-850 font-bold">{order._id}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-stone-400 uppercase font-semibold">Total Price</span>
-                  <p className="text-lg font-bold text-stone-900">${order.totalPrice.toFixed(2)}</p>
+                  <span className="text-xs text-stone-400 uppercase font-semibold">Date</span>
+                  <p className="text-xs text-stone-800 font-bold">{new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-4 items-center justify-between text-xs">
