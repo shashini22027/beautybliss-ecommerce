@@ -11,7 +11,8 @@ const ProductsPage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await API.get(`/products${selectedCat ? `?category=${selectedCat}` : ''}`);
+        const url = selectedCat ? `/products?category=${selectedCat}` : '/products';
+        const { data } = await API.get(url);
         setProducts(data);
       } catch (err) {
         console.error(err);
