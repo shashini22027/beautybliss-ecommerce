@@ -21,8 +21,8 @@ const CheckoutPage = () => {
     <div className="space-y-8 px-4 sm:px-0">
       <h2 className="text-3xl font-serif text-stone-900 font-bold text-center">Checkout</h2>
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 border border-pink-100 rounded-2xl space-y-4">
-          <h3 className="text-xl font-serif text-stone-900 font-bold mb-4">Shipping Information</h3>
+        <div className="lg:col-span-2 bg-white p-8 border border-pink-100 rounded-2xl space-y-6">
+          <h3 className="text-xl font-serif text-stone-900 font-bold">Shipping Information</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-stone-500 uppercase mb-1">Street Address</label>
@@ -42,7 +42,7 @@ const CheckoutPage = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 border border-pink-100 rounded-2xl h-fit space-y-4">
+        <div className="bg-white p-8 border border-pink-100 rounded-2xl h-fit space-y-4">
           <h3 className="text-lg font-serif text-stone-900 font-bold">Your Order</h3>
           <div className="space-y-2">
             {cartItems.map((item) => (
