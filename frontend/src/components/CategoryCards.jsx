@@ -10,7 +10,7 @@ const CategoryCards = ({ categories }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {categories.map((cat) => (
           <a key={cat._id} href={`/products?category=${cat._id}`} className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300 aspect-video block">
-            <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
             <div className="absolute inset-0 bg-stone-950/30 group-hover:bg-stone-950/40 transition duration-300" />
             <div className="absolute inset-0 p-6 flex flex-col justify-end">
               <h3 className="text-white text-xl font-serif font-semibold">{cat.name}</h3>
