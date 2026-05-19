@@ -13,11 +13,12 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (product, qty) => {
+    const finalQty = Math.max(1, Number(qty));
     const existItem = cartItems.find((x) => x.product._id === product._id);
     if (existItem) {
-      setCartItems(cartItems.map((x) => x.product._id === product._id ? { ...x, qty: Number(qty) } : x));
+      setCartItems(cartItems.map((x) => x.product._id === product._id ? { ...x, qty: finalQty } : x));
     } else {
-      setCartItems([...cartItems, { product, qty: Number(qty) }]);
+      setCartItems([...cartItems, { product, qty: finalQty }]);
     }
   };
 
