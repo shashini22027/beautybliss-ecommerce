@@ -1,7 +1,16 @@
-# BeautyBliss E-Commerce Platform
-A professional full-stack cosmetics and skincare shopping platform inspired by Cosmetics.lk, built using the MERN stack.
+# BeautyBliss eCommerce Platform
 
-## Tech Stack
-- **Frontend:** React, Vite, Tailwind CSS, React Router DOM, Axios, Context API
-- **Backend:** Node.js, Express, MongoDB, Mongoose, JWT Authentication
-- **Database:** MongoDB
+BeautyBliss is a modern MERN stack beauty and cosmetics e-commerce platform inspired by cosmetics.lk.
+
+## Features
+- Complete Authentication with user session management
+- Category, Product and Review APIs
+- Shopping Cart & Wishlist integration
+- Checkout with order management & processing pipelines
+- Fully Responsive Luxury UI Design with soft pastel colors
+
+## Quick Start
+1. Clone the repository
+2. Install dependencies for backend and frontend
+3. Set environment variables
+4. Run `npm run dev`
