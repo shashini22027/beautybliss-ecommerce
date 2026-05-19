@@ -27,4 +27,16 @@ const getMyOrders = async (req, res) => {
   res.json(orders);
 };
 
-module.exports = { addOrderItems, getOrderById, getMyOrders };
+const updateOrderToDelivered = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (order) {
+    order.isDelivered = true;
+    order.deliveredAt = Date.now();
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } else {
+    res.status(404).json({ message: 'Order not found' });
+  }
+};
+
+module.exports = { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered };
