@@ -6,6 +6,17 @@
   body {
     @apply bg-[#faf7f5] text-stone-900 font-sans antialiased;
   }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #faf7f5;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #db7876;
+    border-radius: 3px;
+  }
 }
 
 .luxury-gradient {
