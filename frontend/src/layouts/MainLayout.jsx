@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const MainLayout = ({ children }) => {
   return (
@@ -8,11 +9,7 @@ const MainLayout = ({ children }) => {
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
-      <footer className="bg-stone-900 text-stone-400 py-8 border-t border-stone-800">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm">
-          &copy; {new Date().getFullYear()} BeautyBliss. All Rights Reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
