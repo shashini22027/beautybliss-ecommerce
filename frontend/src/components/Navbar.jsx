@@ -3,7 +3,7 @@ import { ShoppingBag, Heart, User, Search, Menu } from 'lucide-react';
 
 const Navbar = ({ onSearch }) => {
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-primary-100 transition-all duration-300">
+    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-primary-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center">
