@@ -30,6 +30,10 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB Connected'))
+  .catch((err) => console.log(err));
+
 app.use('/api/', apiLimiter);
 
 app.use('/api/users', userRoutes);
