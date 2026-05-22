@@ -1,6 +1,7 @@
+import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
 
-const getProducts = async (req, res) => {
+const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category;
   const keyword = req.query.keyword ? {
     $or: [
@@ -17,25 +18,25 @@ const getProducts = async (req, res) => {
 
   const products = await Product.find(query).populate('category');
   res.json(products);
-};
+});
 
-const getProductById = async (req, res) => {
+const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id).populate('category');
   if (product) {
     res.json(product);
   } else {
     res.status(404).json({ message: 'Product not found' });
   }
-};
+});
 
-const createProduct = async (req, res) => {
+const createProduct = asyncHandler(async (req, res) => {
   const { name, price, image, brand, category, countInStock, description } = req.body;
   const product = new Product({ name, price, image, brand, category, countInStock, description });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
-};
+});
 
-const createProductReview = async (req, res) => {
+const createProductReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
   const product = await Product.findById(req.params.id);
 
@@ -64,6 +65,6 @@ const createProductReview = async (req, res) => {
   } else {
     res.status(404).json({ message: 'Product not found' });
   }
-};
+});
 
 export { getProducts, getProductById, createProduct, createProductReview };

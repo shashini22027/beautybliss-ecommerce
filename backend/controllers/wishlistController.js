@@ -1,14 +1,15 @@
+import asyncHandler from '../utils/asyncHandler.js';
 import Wishlist from '../models/Wishlist.js';
 
-const getWishlist = async (req, res) => {
+const getWishlist = asyncHandler(async (req, res) => {
   let wishlist = await Wishlist.findOne({ user: req.user._id }).populate('products');
   if (!wishlist) {
     wishlist = await Wishlist.create({ user: req.user._id, products: [] });
   }
   res.json(wishlist);
-};
+});
 
-const toggleWishlist = async (req, res) => {
+const toggleWishlist = asyncHandler(async (req, res) => {
   const { productId } = req.body;
   let wishlist = await Wishlist.findOne({ user: req.user._id });
   if (!wishlist) {
@@ -25,6 +26,6 @@ const toggleWishlist = async (req, res) => {
   await wishlist.save();
   const updatedWishlist = await Wishlist.findById(wishlist._id).populate('products');
   res.json(updatedWishlist);
-};
+});
 
 export { getWishlist, toggleWishlist };
