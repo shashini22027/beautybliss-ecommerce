@@ -1,4 +1,4 @@
-const Coupon = require('../models/Coupon');
+import Coupon from '../models/Coupon.js';
 
 // @desc    Create a new coupon
 // @route   POST /api/coupon
@@ -85,7 +85,7 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   createCoupon,
   getCoupons,
   validateCoupon,

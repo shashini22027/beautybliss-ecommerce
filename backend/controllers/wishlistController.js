@@ -1,4 +1,4 @@
-const Wishlist = require('../models/Wishlist');
+import Wishlist from '../models/Wishlist.js';
 
 const getWishlist = async (req, res) => {
   let wishlist = await Wishlist.findOne({ user: req.user._id }).populate('products');
@@ -27,4 +27,4 @@ const toggleWishlist = async (req, res) => {
   res.json(updatedWishlist);
 };
 
-module.exports = { getWishlist, toggleWishlist };
+export { getWishlist, toggleWishlist };

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const couponSchema = new mongoose.Schema({
   code: {
@@ -37,4 +37,4 @@ couponSchema.methods.isExpired = function() {
   return Date.now() > this.expiryDate;
 };
 
-module.exports = mongoose.model('Coupon', couponSchema);
+export default mongoose.model('Coupon', couponSchema);

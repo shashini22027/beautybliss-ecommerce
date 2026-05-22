@@ -1,6 +1,6 @@
-const Order = require('../models/Order');
-const Product = require('../models/Product');
-const User = require('../models/User');
+import Order from '../models/Order.js';
+import Product from '../models/Product.js';
+import User from '../models/User.js';
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -22,4 +22,4 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardStats };
+export { getDashboardStats };

@@ -1,4 +1,4 @@
-const Order = require('../models/Order');
+import Order from '../models/Order.js';
 
 const addOrderItems = async (req, res) => {
   const { orderItems, shippingAddress, totalPrice } = req.body;
@@ -39,4 +39,4 @@ const updateOrderToDelivered = async (req, res) => {
   }
 };
 
-module.exports = { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered };
+export { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered };

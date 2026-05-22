@@ -1,4 +1,4 @@
-const Cart = require('../models/Cart');
+import Cart from '../models/Cart.js';
 
 const getCart = async (req, res) => {
   let cart = await Cart.findOne({ user: req.user._id }).populate('cartItems.product');
@@ -35,4 +35,4 @@ const removeFromCart = async (req, res) => {
   res.json(cart);
 };
 
-module.exports = { getCart, addToCart, removeFromCart };
+export { getCart, addToCart, removeFromCart };
