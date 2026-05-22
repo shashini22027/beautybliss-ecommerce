@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const User = require('../models/User');
-const Product = require('../models/Product');
-const Category = require('../models/Category');
-const connectDB = require('../config/db');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import User from '../models/User.js';
+import Product from '../models/Product.js';
+import Category from '../models/Category.js';
+import connectDB from '../config/db.js';
 
 dotenv.config();
 connectDB();

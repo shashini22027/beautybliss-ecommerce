@@ -1,6 +1,6 @@
-const express = require('express');
-const { createCoupon, getCoupons, validateCoupon, deleteCoupon } = require('../controllers/couponController');
-const { protect, admin } = require('../middleware/authMiddleware');
+import express from 'express';
+import { createCoupon, getCoupons, validateCoupon, deleteCoupon } from '../controllers/couponController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.route('/')
@@ -13,4 +13,4 @@ router.route('/validate')
 router.route('/:id')
   .delete(protect, admin, deleteCoupon);
 
-module.exports = router;
+export default router;
