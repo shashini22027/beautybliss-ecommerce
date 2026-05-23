@@ -67,4 +67,34 @@ const createProductReview = asyncHandler(async (req, res) => {
   }
 });
 
-export { getProducts, getProductById, createProduct, createProductReview };
+const updateProduct = asyncHandler(async (req, res) => {
+  const { name, price, image, brand, category, countInStock, description } = req.body;
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    product.name = name || product.name;
+    product.price = price === undefined ? product.price : price;
+    product.image = image || product.image;
+    product.brand = brand || product.brand;
+    product.category = category || product.category;
+    product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
+    product.description = description || product.description;
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } else {
+    res.status(404).json({ message: 'Product not found' });
+  }
+});
+
+const deleteProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (product) {
+    await Product.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Product removed successfully' });
+  } else {
+    res.status(404).json({ message: 'Product not found' });
+  }
+});
+
+export { getProducts, getProductById, createProduct, createProductReview, updateProduct, deleteProduct };

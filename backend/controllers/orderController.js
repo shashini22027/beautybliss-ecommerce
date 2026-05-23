@@ -25,7 +25,12 @@ const getOrderById = asyncHandler(async (req, res) => {
 });
 
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id });
+  let orders;
+  if (req.user && req.user.isAdmin) {
+    orders = await Order.find({}).populate('user', 'name email');
+  } else {
+    orders = await Order.find({ user: req.user._id });
+  }
   res.json(orders);
 });
 
