@@ -5,3 +5,4 @@ build
 .DS_Store
 generate_120_commits.js
 REQUIREMENTS.md
+backend/uploads
