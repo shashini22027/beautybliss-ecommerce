@@ -1,13 +1,27 @@
 import React, { useState } from 'react';
 import RatingStars from './RatingStars';
+import API from '../services/api';
 
-const ReviewSection = ({ product }) => {
+const ReviewSection = ({ product, onReviewAdded }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Submitted review with rating ${rating}`);
+    setSubmitting(true);
+    try {
+      await API.post(`/products/${product._id}/reviews`, { rating, comment });
+      alert('Review submitted successfully!');
+      setComment('');
+      setRating(5);
+      if (onReviewAdded) onReviewAdded();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to submit review. Make sure you are logged in!');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -47,7 +61,9 @@ const ReviewSection = ({ product }) => {
             <label className="block text-xs font-semibold text-stone-500 uppercase mb-1">Comment</label>
             <textarea rows="3" value={comment} onChange={(e) => setComment(e.target.value)} className="w-full border border-stone-200 rounded p-2 text-sm focus:outline-none focus:border-primary-400" placeholder="Describe your experience with this beauty item..." required></textarea>
           </div>
-          <button type="submit" className="w-full bg-stone-900 hover:bg-stone-950 text-white font-semibold py-2 rounded text-xs uppercase tracking-wider transition">Submit Review</button>
+          <button type="submit" disabled={submitting} className="w-full bg-stone-900 hover:bg-stone-950 text-white font-semibold py-2 rounded text-xs uppercase tracking-wider transition disabled:opacity-50">
+            {submitting ? 'Submitting...' : 'Submit Review'}
+          </button>
         </form>
       </div>
     </div>

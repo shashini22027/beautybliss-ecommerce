@@ -3,6 +3,10 @@ import Product from '../models/Product.js';
 
 const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category;
+  const subcategory = req.query.subcategory;
+  const color = req.query.color;
+  const country = req.query.country;
+
   const keyword = req.query.keyword ? {
     $or: [
       { name: { $regex: req.query.keyword, $options: 'i' } },
@@ -12,9 +16,10 @@ const getProducts = asyncHandler(async (req, res) => {
   } : {};
 
   const query = { ...keyword };
-  if (category) {
-    query.category = category;
-  }
+  if (category) query.category = category;
+  if (subcategory) query.subcategory = subcategory;
+  if (color) query.color = color;
+  if (country) query.country = country;
 
   const products = await Product.find(query).populate('category');
   res.json(products);
@@ -30,8 +35,8 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, brand, category, countInStock, description } = req.body;
-  const product = new Product({ name, price, image, brand, category, countInStock, description });
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description } = req.body;
+  const product = new Product({ name, price, image, images, brand, category, subcategory, color, country, countInStock, description });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
 });
@@ -68,15 +73,19 @@ const createProductReview = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, brand, category, countInStock, description } = req.body;
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description } = req.body;
   const product = await Product.findById(req.params.id);
 
   if (product) {
     product.name = name || product.name;
     product.price = price === undefined ? product.price : price;
     product.image = image || product.image;
+    product.images = images || product.images;
     product.brand = brand || product.brand;
     product.category = category || product.category;
+    product.subcategory = subcategory || product.subcategory;
+    product.color = color || product.color;
+    product.country = country || product.country;
     product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
     product.description = description || product.description;
 

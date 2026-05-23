@@ -76,129 +76,203 @@ const seedData = async () => {
       {
         name: 'Glow Boosting Serum',
         image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80',
+        images: [
+          'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
+          'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80'
+        ],
         description: 'Enriched with Vitamin C and Hyaluronic Acid for a radiant, youthful finish.',
         brand: 'Aura Glow',
         category: catSkincare._id,
+        subcategory: 'Serum',
+        country: 'Korean',
         price: 45.0,
         countInStock: 25,
-        rating: 4.8,
-        numReviews: 12
+        rating: 5.0,
+        numReviews: 1,
+        reviews: [
+          {
+            name: 'Aria Song',
+            rating: 5,
+            comment: 'My skin has never glowed like this before. Pure magic!',
+            user: adminUser._id
+          }
+        ]
       },
       {
         name: 'Hyaluronic Hydration Cream',
         image: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
+        images: [
+          'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80'
+        ],
         description: 'Intense 24-hour hydration barrier boost cream with ceramides and marine extracts.',
         brand: 'HydroPure',
         category: catSkincare._id,
+        subcategory: 'Cream',
+        country: 'USA',
         price: 38.0,
         countInStock: 15,
         rating: 4.7,
-        numReviews: 9
+        numReviews: 0,
+        reviews: []
       },
       {
         name: 'Retinol Renew Night Serum',
         image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80',
+        images: [],
         description: 'Advanced 0.5% pure clinical retinol serum that targets fine lines and hyperpigmentation.',
         brand: 'Dermalift',
         category: catSkincare._id,
+        subcategory: 'Serum',
+        country: 'Korean',
         price: 52.0,
         countInStock: 10,
         rating: 4.9,
-        numReviews: 14
+        numReviews: 0,
+        reviews: []
       },
       {
         name: 'Mineral Shield SPF 50+',
         image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=80',
+        images: [],
         description: 'Ultra-lightweight zinc oxide mineral sunscreen with no white cast and a dewy glow.',
         brand: 'Solis',
         category: catSkincare._id,
+        subcategory: 'Sunscreen',
+        country: 'Japan',
         price: 29.5,
         countInStock: 30,
         rating: 4.6,
-        numReviews: 18
+        numReviews: 0,
+        reviews: []
       },
 
       // Cosmetics Products
       {
         name: 'Velvet Lip Stain',
         image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&q=80',
+        images: [
+          'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?w=500&q=80',
+          'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80'
+        ],
         description: 'Long-lasting luxury matte tint that stays all day without drying the lips.',
         brand: 'Luxe Color',
         category: catCosmetics._id,
+        subcategory: 'Lipstick',
+        color: 'Red',
+        country: 'Korean',
         price: 22.5,
         countInStock: 50,
         rating: 4.5,
-        numReviews: 8
+        numReviews: 2,
+        reviews: [
+          {
+            name: 'Chloe Kim',
+            rating: 5,
+            comment: 'Gorgeous velvet texture! The red shade is extremely pigmented and lasts all day.',
+            user: adminUser._id
+          },
+          {
+            name: 'Sarah Miller',
+            rating: 4,
+            comment: 'Very moisturizing but still matte. Highly recommend the shade.',
+            user: adminUser._id
+          }
+        ]
       },
       {
         name: 'Perfect Canvas Foundation',
         image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80',
+        images: [],
         description: 'Medium to full coverage buildable foundation with soft matte oil-control technology.',
         brand: 'BaseGlow',
         category: catCosmetics._id,
+        subcategory: 'Foundation',
+        country: 'USA',
         price: 34.0,
         countInStock: 20,
         rating: 4.4,
-        numReviews: 11
+        numReviews: 0,
+        reviews: []
       },
       {
         name: 'Infinity Length Mascara',
         image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=80',
+        images: [],
         description: 'Clump-free, volumizing, waterproof silk fiber mascara for extreme lash length.',
         brand: 'LashLift',
         category: catCosmetics._id,
+        subcategory: 'Mascara',
+        country: 'Korean',
         price: 19.9,
         countInStock: 40,
         rating: 4.7,
-        numReviews: 15
+        numReviews: 0,
+        reviews: []
       },
       {
         name: 'Sunset Glow Blush Palette',
         image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80',
+        images: [],
         description: 'Four highly pigmented, blendable powder blushes spanning coral, peach, and soft rose.',
         brand: 'Luxe Color',
         category: catCosmetics._id,
+        subcategory: 'Blush',
+        color: 'Peach',
+        country: 'French',
         price: 28.0,
         countInStock: 12,
         rating: 4.6,
-        numReviews: 6
+        numReviews: 0,
+        reviews: []
       },
 
       // Haircare Products
       {
         name: 'Argan Oil Restoring Shampoo',
         image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500&q=80',
+        images: [],
         description: 'Deeply nourishing Moroccan argan oil shampoo that restores shine and strengthens roots.',
         brand: 'SilkySleek',
         category: catHaircare._id,
+        subcategory: 'Shampoo',
+        country: 'USA',
         price: 26.5,
         countInStock: 35,
         rating: 4.8,
-        numReviews: 22
+        numReviews: 0,
+        reviews: []
       },
       {
         name: 'Keratin Deep Repair Mask',
         image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=500&q=80',
+        images: [],
         description: 'Intense damage-reversing conditioning treatment mask for frizzy or color-treated hair.',
         brand: 'SilkySleek',
         category: catHaircare._id,
+        subcategory: 'Conditioner',
+        country: 'Japan',
         price: 32.0,
         countInStock: 18,
         rating: 4.9,
-        numReviews: 19
+        numReviews: 0,
+        reviews: []
       },
 
       // Fragrance Products
       {
         name: 'Jasmine Nectar Eau De Parfum',
         image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80',
+        images: [],
         description: 'Luxury scent blending fresh white jasmine petals, sandalwood, and sweet citrus nectar.',
         brand: 'Aroma Bliss',
         category: catFragrance._id,
+        subcategory: 'Perfume',
+        country: 'French',
         price: 75.0,
         countInStock: 8,
         rating: 5.0,
-        numReviews: 5
+        numReviews: 0,
+        reviews: []
       }
     ]);
 
