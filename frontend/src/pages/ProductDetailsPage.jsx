@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
+import { CartContext } from '../context/CartContext';
 import API from '../services/api';
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
+  const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -45,11 +47,16 @@ const ProductDetailsPage = () => {
           <div className="flex items-center gap-4">
             <span className="text-sm text-stone-500">Qty</span>
             <select value={qty} onChange={(e) => setQty(Number(e.target.value))} className="border border-stone-200 rounded p-1 text-sm focus:outline-none">
-              {[...Array(product.countInStock).keys()].map(x => (
+              {[...Array(product.countInStock || 10).keys()].map(x => (
                 <option key={x + 1} value={x + 1}>{x + 1}</option>
               ))}
             </select>
-            <button className="flex-grow bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-full uppercase tracking-wider text-xs transition">Add to Cart</button>
+            <button
+              onClick={() => addToCart(product, qty)}
+              className="flex-grow bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-full uppercase tracking-wider text-xs transition"
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { Trash2 } from 'lucide-react';
 
@@ -9,7 +10,12 @@ const CartPage = () => {
     <div className="space-y-8">
       <h2 className="text-3xl font-serif text-stone-900 font-bold text-center">My Shopping Cart</h2>
       {cartItems.length === 0 ? (
-        <div className="text-center py-20">Your cart is empty. <a href="/products" className="text-primary-700 underline font-semibold">Start Shopping</a></div>
+        <div className="text-center py-20">
+          Your cart is empty.{' '}
+          <Link to="/products" className="text-primary-700 underline font-semibold">
+            Start Shopping
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
@@ -23,7 +29,9 @@ const CartPage = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-stone-950">${(item.product.price * item.qty).toFixed(2)}</p>
-                  <button onClick={() => removeFromCart(item.product._id)} className="text-stone-400 hover:text-red-500 mt-2"><Trash2 size={16} /></button>
+                  <button onClick={() => removeFromCart(item.product._id)} className="text-stone-400 hover:text-red-500 mt-2">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -38,7 +46,12 @@ const CartPage = () => {
               <span>Subtotal</span>
               <span>${cartItems.reduce((acc, x) => acc + x.product.price * x.qty, 0).toFixed(2)}</span>
             </div>
-            <a href="/checkout" className="block text-center bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-full uppercase tracking-wider text-xs transition">Proceed to Checkout</a>
+            <Link
+              to="/checkout"
+              className="block text-center bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-full uppercase tracking-wider text-xs transition"
+            >
+              Proceed to Checkout
+            </Link>
           </div>
         </div>
       )}
