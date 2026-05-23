@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { CartContext } from '../context/CartContext';
+import API from '../services/api';
 
 const CheckoutPage = () => {
   const { cartItems, clearCart } = useContext(CartContext);
@@ -8,11 +9,38 @@ const CheckoutPage = () => {
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
 
-  const handlePlaceOrder = (e) => {
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    alert('Order placed successfully!');
-    clearCart();
-    window.location.href = '/orders';
+    if (cartItems.length === 0) {
+      alert('Your cart is empty');
+      return;
+    }
+
+    try {
+      const orderItems = cartItems.map(item => ({
+        product: item.product._id,
+        name: item.product.name,
+        image: item.product.image,
+        price: item.product.price,
+        qty: item.qty
+      }));
+
+      const shippingAddress = { address, city, postalCode, country };
+      const totalPrice = total;
+
+      await API.post('/orders', {
+        orderItems,
+        shippingAddress,
+        totalPrice
+      });
+
+      alert('Order placed successfully!');
+      clearCart();
+      window.location.href = '/orders';
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to place order. Make sure you are logged in!');
+    }
   };
 
   const total = cartItems.reduce((acc, x) => acc + x.product.price * x.qty, 0);

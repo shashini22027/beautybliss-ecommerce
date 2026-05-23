@@ -2,7 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import Order from '../models/Order.js';
 
 const addOrderItems = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, totalPrice } = req.body;
+  const { orderItems, shippingAddress, totalPrice, paymentMethod } = req.body;
   if (orderItems && orderItems.length === 0) {
     res.status(400).json({ message: 'No order items' });
     return;
@@ -11,7 +11,8 @@ const addOrderItems = asyncHandler(async (req, res) => {
     user: req.user._id,
     orderItems,
     shippingAddress,
-    totalPrice
+    totalPrice,
+    paymentMethod: paymentMethod || 'Cash On Delivery'
   });
   const createdOrder = await order.save();
   res.status(201).json(createdOrder);
