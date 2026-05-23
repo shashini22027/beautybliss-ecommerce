@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
+import Coupon from '../models/Coupon.js';
 import connectDB from '../config/db.js';
 
 dotenv.config();
@@ -13,6 +14,31 @@ const seedData = async () => {
     await User.deleteMany();
     await Product.deleteMany();
     await Category.deleteMany();
+    await Coupon.deleteMany();
+
+    await Coupon.create([
+      {
+        code: 'BEAUTY10',
+        discountType: 'percentage',
+        discountAmount: 10,
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isActive: true
+      },
+      {
+        code: 'BLISS20',
+        discountType: 'percentage',
+        discountAmount: 20,
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isActive: true
+      },
+      {
+        code: 'SAVE5',
+        discountType: 'fixed',
+        discountAmount: 5,
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isActive: true
+      }
+    ]);
 
     const adminUser = await User.create({
       name: 'Admin User',

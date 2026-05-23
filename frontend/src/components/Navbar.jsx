@@ -1,11 +1,14 @@
-import React, { useState, useContext } from 'react';
-import { ShoppingBag, Heart, User, Search, Menu } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { ShoppingBag, Heart, User, Search, Menu, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
+import API from '../services/api';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [showCatDropdown, setShowCatDropdown] = useState(false);
   const navigate = useNavigate();
 
   const { cartItems } = useContext(CartContext);
@@ -13,6 +16,18 @@ const Navbar = () => {
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
   const wishlistCount = wishlistItems.length;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await API.get('/categories');
+        setCategories(data);
+      } catch (err) {
+        console.error('Failed to load navbar categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -35,10 +50,38 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden sm:flex space-x-8 text-sm font-medium text-stone-600">
+          <div className="hidden sm:flex space-x-8 text-sm font-medium text-stone-600 items-center">
             <Link to="/" className="hover:text-primary-600 transition">Home</Link>
             <Link to="/products" className="hover:text-primary-600 transition">Shop</Link>
-            <Link to="/products" className="hover:text-primary-600 transition">Categories</Link>
+            
+            {/* Dynamic Categories Dropdown */}
+            <div 
+              className="relative py-4"
+              onMouseEnter={() => setShowCatDropdown(true)}
+              onMouseLeave={() => setShowCatDropdown(false)}
+            >
+              <button className="flex items-center gap-1 hover:text-primary-600 transition focus:outline-none">
+                Categories
+                <ChevronDown size={14} className={`transform transition-transform duration-200 ${showCatDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              {showCatDropdown && (
+                <div className="absolute left-0 top-full bg-white border border-pink-100 rounded-xl shadow-lg py-2 w-48 transition-all duration-200 z-50">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat._id}
+                      to={`/category/${cat._id}`}
+                      onClick={() => setShowCatDropdown(false)}
+                      className="block px-4 py-2 text-xs text-stone-700 hover:bg-pink-50 hover:text-primary-700 transition"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                  {categories.length === 0 && (
+                    <span className="block px-4 py-2 text-xs text-stone-400 italic">No categories</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
