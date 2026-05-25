@@ -18,7 +18,12 @@ import ErrorPage from '../pages/ErrorPage';
 
 const AppRoutes = () => {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <MainLayout>
         <Routes>
           <Route path="/" element={<HomePage />} />
