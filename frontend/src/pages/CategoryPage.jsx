@@ -54,19 +54,53 @@ const CategoryPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const categoryKey = id || "";
-  const categoryTitle = categoryKey ? formatCategoryTitle(categoryKey) : "Category";
 
-  const heroImages = {
+  const categoryImages = {
     skincare:
-      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1600&q=80",
     makeup:
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1631214174585-fe5582DF1a5c?auto=format&fit=crop&w=1600&q=80",
     "body-care":
-      "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600857062241-98e5dba7f214?auto=format&fit=crop&w=1600&q=80",
+    fragrance:
+      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1600&q=80",
+    haircare:
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1600&q=80",
   };
+
+  const categoryDescriptions = {
+    skincare: "Nourish your skin with our premium skincare collection",
+    makeup: "Express yourself with our curated makeup essentials",
+    "body-care": "Pamper yourself with luxurious body care products",
+    fragrance: "Discover captivating scents that define your style",
+    haircare: "Transform your hair with our professional haircare range",
+  };
+
+  const categoryTitle = useMemo(() => {
+    if (!categoryKey) return "Category";
+
+    const normalizedKey = slugify(categoryKey);
+    const matchingProduct = products.find((product) => {
+      const productCategory = product.category;
+      const productCategoryName = getTextValue(productCategory);
+      const productCategoryId = getCategoryId(productCategory);
+
+      return (
+        categoryKey === productCategoryId ||
+        normalizedKey === slugify(productCategoryName) ||
+        normalizedKey === slugify(productCategoryId)
+      );
+    });
+
+    if (matchingProduct) {
+      return getTextValue(matchingProduct.category, formatCategoryTitle(categoryKey));
+    }
+
+    return formatCategoryTitle(categoryKey);
+  }, [categoryKey, products]);
+  const searchTerm = "";
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -108,162 +142,196 @@ const CategoryPage = () => {
     });
   }, [categoryKey, products, searchTerm]);
 
-  return (
-    <main className="min-h-screen bg-[#faf7f4] px-4 py-8 text-gray-950 sm:px-6 lg:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_24px_80px_rgba(28,25,23,0.08)] lg:grid-cols-[0.92fr_1fr]">
-        <section className="relative hidden bg-[#1f1a17] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute inset-0 opacity-80">
-            <img
-              src={heroImages[categoryKey] || heroImages.skincare}
-              alt={categoryTitle}
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1f1a17] via-[#1f1a17]/70 to-[#1f1a17]/20" />
-          </div>
+  const heroImage = categoryImages[categoryKey] || categoryImages.skincare;
+  const categoryDesc =
+    categoryDescriptions[categoryKey] ||
+    "Discover premium beauty products curated for you";
 
-          <div className="relative z-10">
+  return (
+    <main className="min-h-screen bg-white">
+      {/* Hero Banner */}
+      <section className="relative h-[450px] w-full overflow-hidden lg:h-[500px]">
+        <img
+          src={heroImage}
+          alt={categoryTitle}
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+
+        <div className="absolute inset-0 flex flex-col items-start justify-end px-6 py-12 sm:px-10 sm:py-16 lg:py-20">
+          <div className="max-w-2xl">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.15em] text-pink-300">
+              Collection
+            </p>
+            <h1 className="mb-4 text-5xl font-serif font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
+              {categoryTitle}
+            </h1>
+            <p className="text-lg leading-relaxed text-pink-50/90">
+              {categoryDesc}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Content Section */}
+      <section className="bg-gradient-to-b from-white via-[#fff9f8] to-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-7xl">
+          {/* Header Stats */}
+          <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
+                BeautyBliss Curated
+              </p>
+              <h2 className="text-3xl font-serif font-bold text-gray-950 sm:text-4xl">
+                Featured Products
+              </h2>
+              <p className="mt-2 text-base text-gray-600">
+                {filteredProducts.length} products available in this collection
+              </p>
+            </div>
+
             <Link
-              to="/"
-              className="inline-flex items-center text-2xl font-serif font-bold tracking-[0.18em]"
+              to="/products"
+              className="inline-flex items-center gap-2 rounded-lg bg-pink-600 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:bg-pink-700 hover:shadow-lg"
             >
-              BEAUTYBLISS
+              Browse All
+              <Icon name="arrow" className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="relative z-10 max-w-md">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.32em] text-pink-200">
-              Category Collection
-            </p>
-            <h1 className="text-5xl font-serif font-bold leading-tight tracking-tight">
-              {categoryTitle}
-            </h1>
-            <p className="mt-5 text-sm leading-6 text-pink-50/80">
-              Curated products for the {categoryTitle} routine, designed to help you refresh, replenish, and glow.
-            </p>
-          </div>
-        </section>
-
-        <section className="relative flex items-start justify-center p-6 sm:p-10">
-          <div className="w-full max-w-4xl">
-            <div className="mb-8">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
-                Category View
+          {/* Loading State */}
+          {loading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+                <div
+                  key={item}
+                  className="space-y-4 rounded-xl border border-pink-100 bg-white p-4"
+                >
+                  <div className="aspect-[4/5] animate-pulse rounded-lg bg-gradient-to-br from-pink-100 to-pink-50" />
+                  <div className="space-y-2">
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
+                    <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                    <div className="h-3 w-2/3 animate-pulse rounded bg-gray-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4">
+              <p className="font-medium text-red-800">{error}</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="rounded-xl border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-25 px-8 py-20 text-center">
+              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-pink-200/50" />
+              <p className="mb-2 text-lg font-semibold text-gray-950">
+                No products found
               </p>
-              <h2 className="text-4xl font-serif font-bold tracking-tight text-gray-950">
-                {categoryTitle}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-gray-500">
-                Browse products selected for this category or search to refine your results.
+              <p className="text-gray-600">
+                This collection is currently empty. Check back soon!
               </p>
             </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredProducts.map((product) => {
+                const productId = product._id || product.id;
 
-            <div className="mb-8 grid gap-4 sm:grid-cols-[1fr_auto]">
-              <label className="relative block w-full">
-                <Icon
-                  name="search"
-                  className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search within this category"
-                  className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                />
-              </label>
-              <Link
-                to="/products"
-                className="inline-flex h-12 items-center justify-center rounded-lg border border-gray-200 bg-white px-5 text-sm font-bold uppercase tracking-[0.18em] text-gray-950 transition hover:border-pink-300 hover:bg-pink-50"
-              >
-                View all products
-              </Link>
-            </div>
-
-            {loading ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-                  <div
-                    key={item}
-                    className="h-96 animate-pulse rounded-lg border border-pink-200 bg-[#fff4f6]/80"
-                  />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="rounded-lg border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-                {error}
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="rounded-lg border border-pink-200 bg-[#fff4f6]/80 px-5 py-12 text-center">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-gray-400">
-                  No products found
-                </p>
-                <p className="mt-3 text-sm text-gray-500">
-                  Try a different search or visit the full store.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredProducts.map((product) => {
-                  const productId = product._id || product.id;
-
-                  return (
-                    <article
-                      key={productId || product.name}
-                      className="group overflow-hidden rounded-lg border border-pink-200 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(190,24,93,0.12)]"
-                      style={{ backgroundColor: "#fff4f6" }}
+                return (
+                  <article
+                    key={productId || product.name}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-pink-100 bg-white shadow-sm transition duration-300 hover:border-pink-300 hover:shadow-[0_20px_50px_rgba(190,24,93,0.15)]"
+                  >
+                    {/* Product Image */}
+                    <Link
+                      to={productId ? `/product/${productId}` : "#"}
+                      className="relative block overflow-hidden bg-gradient-to-br from-pink-50 to-pink-25"
                     >
-                      <Link to={productId ? `/product/${productId}` : "#"} className="block">
-                        <div className="relative aspect-[4/5] overflow-hidden bg-[#f3dfe6]">
-                          <img
-                            src={
-                              product.image ||
-                              product.images?.[0] ||
-                              "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
-                            }
-                            alt={product.name || "Beauty product"}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          />
+                      <div className="relative aspect-[4/5]">
+                        <img
+                          src={
+                            product.image ||
+                            product.images?.[0] ||
+                            "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
+                          }
+                          alt={product.name || "Beauty product"}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
+                      </div>
+
+                      {/* Badge */}
+                      {product.rating && product.rating > 4.5 && (
+                        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold text-amber-950 shadow-md">
+                          <span>★</span>
+                          <span>{Number(product.rating).toFixed(1)}</span>
                         </div>
+                      )}
+                    </Link>
+
+                    {/* Product Info */}
+                    <div className="flex flex-1 flex-col p-4">
+                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-pink-600">
+                        {getTextValue(
+                          product.brand,
+                          getTextValue(product.category, "BeautyBliss")
+                        )}
+                      </p>
+
+                      <Link to={productId ? `/product/${productId}` : "#"}>
+                        <h3 className="mb-3 line-clamp-2 text-base font-bold leading-snug text-gray-950 transition group-hover:text-pink-600">
+                          {product.name || "Beauty Essential"}
+                        </h3>
                       </Link>
 
-                      <div className="p-5">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="truncate text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
-                            {getTextValue(product.brand, getTextValue(product.category, "BeautyBliss"))}
-                          </p>
-                          <div className="flex items-center gap-1 text-xs font-bold text-gray-500">
-                            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                            {product.rating || "4.8"}
-                          </div>
-                        </div>
+                      {product.description && (
+                        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-gray-600">
+                          {product.description}
+                        </p>
+                      )}
 
-                        <Link to={productId ? `/product/${productId}` : "#"}>
-                          <h3 className="line-clamp-2 min-h-[3rem] text-base font-bold leading-6 text-gray-950 transition group-hover:text-pink-600">
-                            {product.name || "Beauty Essential"}
-                          </h3>
-                        </Link>
-
-                        <div className="mt-5 flex items-center justify-between gap-4">
-                          <p className="text-lg font-bold text-gray-950">
+                      {/* Price & Action */}
+                      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                        <div>
+                          <p className="text-2xl font-bold text-gray-950">
                             ${Number(product.price || 0).toFixed(2)}
                           </p>
-                          <button
-                            type="button"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gray-950 text-white transition hover:bg-pink-600"
-                            aria-label="Add to cart"
-                          >
-                            <Icon name="arrow" className="h-5 w-5" />
-                          </button>
                         </div>
+                        <button
+                          type="button"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-pink-600 to-pink-700 text-white transition hover:shadow-lg active:scale-95"
+                          aria-label="Add to cart"
+                        >
+                          <Icon name="arrow" className="h-5 w-5" />
+                        </button>
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      {filteredProducts.length > 0 && (
+        <section className="border-t border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-600 px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="mb-4 text-3xl font-serif font-bold text-white sm:text-4xl">
+              Complete Your Beauty Routine
+            </h2>
+            <p className="mb-8 text-lg text-pink-50">
+              Discover more premium products to elevate your beauty collection
+            </p>
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 text-sm font-bold uppercase tracking-[0.12em] text-pink-600 transition hover:bg-pink-50"
+            >
+              Shop Now
+              <Icon name="arrow" className="h-4 w-4" />
+            </Link>
           </div>
         </section>
-      </div>
+      )}
     </main>
   );
 };
