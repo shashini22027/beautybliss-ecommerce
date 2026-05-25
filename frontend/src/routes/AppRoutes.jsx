@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import HomePage from '../pages/HomePage';
 import ProductsPage from '../pages/ProductsPage';
@@ -16,6 +16,8 @@ import SearchResultsPage from '../pages/SearchResultsPage';
 import AdminDashboard from '../pages/AdminDashboard';
 import ErrorPage from '../pages/ErrorPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
+import OffersPage from '../pages/OffersPage';
+import AboutPage from '../pages/AboutPage';
 
 const AppRoutes = () => {
   return (
@@ -39,9 +41,12 @@ const AppRoutes = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/search" element={<SearchResultsPage />} />
+          <Route path="/offers" element={<OffersPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+          <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="*" element={<ErrorPage />} />
-          <Route path="/adminDashboard" element={<AdminDashboardPage />} />
           
         </Routes>
       </MainLayout>

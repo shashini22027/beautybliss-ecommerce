@@ -23,6 +23,7 @@ const Navbar = () => {
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
   const wishlistCount = wishlistItems.length;
+  const isAdmin = Boolean(user?.isAdmin || user?.role === 'admin');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -176,12 +177,14 @@ const Navbar = () => {
               </Link>
               <div className="relative" ref={profileRef}>
                 {user ? (
-                  <Link
-                    to="/profile"
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileMenu((prev) => !prev)}
                     className="flex h-12 w-12 items-center justify-center rounded-3xl border border-stone-200 bg-white text-stone-600 transition hover:border-pink-200 hover:text-pink-700"
+                    aria-expanded={showProfileMenu}
                   >
                     <User size={20} />
-                  </Link>
+                  </button>
                 ) : (
                   <button
                     type="button"
@@ -193,22 +196,63 @@ const Navbar = () => {
                   </button>
                 )}
 
-                {!user && showProfileMenu && (
+                {showProfileMenu && (
                   <div className="absolute right-0 top-full mt-3 w-48 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-xl">
-                    <Link
-                      to="/login"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={() => setShowProfileMenu(false)}
-                      className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
-                    >
-                      Create account
-                    </Link>
+                    {user ? (
+                      <>
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                        >
+                          Profile
+                        </Link>
+                        <Link
+                          to="/orders"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                        >
+                          Orders
+                        </Link>
+                        {isAdmin && (
+                          <Link
+                            to="/admin-dashboard"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                          >
+                            Admin dashboard
+                          </Link>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            logout();
+                            setShowProfileMenu(false);
+                            navigate('/login');
+                          }}
+                          className="block w-full px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+                        >
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          to="/login"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                        >
+                          Login
+                        </Link>
+                        <Link
+                          to="/register"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                        >
+                          Create account
+                        </Link>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -300,13 +344,42 @@ const Navbar = () => {
                   </Link>
                 </>
               ) : (
-                <Link
-                  to="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="block rounded-3xl bg-pink-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-pink-800 transition"
-                >
-                  Profile
-                </Link>
+                <div className="grid gap-3">
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-3xl bg-pink-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-pink-800 transition"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/orders"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-3xl border border-stone-200 bg-white px-4 py-3 text-center text-sm font-semibold text-stone-700 hover:border-pink-200 hover:text-pink-700 transition"
+                  >
+                    Orders
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin-dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className="block rounded-3xl border border-stone-200 bg-white px-4 py-3 text-center text-sm font-semibold text-stone-700 hover:border-pink-200 hover:text-pink-700 transition"
+                    >
+                      Admin dashboard
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setMobileOpen(false);
+                      navigate('/login');
+                    }}
+                    className="block rounded-3xl border border-red-100 bg-red-50 px-4 py-3 text-center text-sm font-semibold text-red-600 hover:bg-red-100 transition"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <Link
