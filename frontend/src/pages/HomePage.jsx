@@ -90,9 +90,6 @@ const HomePage = () => {
     'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1400&q=85',
   ];
 
-  const heroVideo =
-    'https://videos.pexels.com/video-files/3997798/3997798-uhd_2560_1440_25fps.mp4';
-
   const featuredProducts = [
     {
       name: 'Hydra Glow Serum',
@@ -196,14 +193,21 @@ const HomePage = () => {
         </div>
 
         <div className="absolute right-0 top-0 h-full w-full select-none md:w-[58%]">
-          <video
-            src={heroVideo}
-            muted
-            loop
-            playsInline
-            autoPlay
-            className="absolute inset-0 h-full w-full object-cover opacity-25"
-          />
+          <div className="absolute inset-0 h-full w-full bg-[radial-gradient(circle_at_top,right,_rgba(250,215,227,0.45),_transparent_35%)]" />
+          <div className="absolute inset-0">
+            {heroImages.map((src, index) => (
+              <img
+                key={src}
+                src={src}
+                alt="BeautyBliss skincare ritual"
+                className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${
+                  index === currentImageIndex ? 'z-0 opacity-100' : '-z-10 opacity-0'
+                }`}
+                style={{ filter: 'brightness(1.02) contrast(1.02)' }}
+              />
+            ))}
+          </div>
+
           <div
             className="absolute inset-0 z-10 pointer-events-none"
             style={{
@@ -216,17 +220,6 @@ const HomePage = () => {
               background: 'linear-gradient(to top, #fff9f4 0%, transparent 100%)',
             }}
           />
-          {heroImages.map((src, index) => (
-            <img
-              key={src}
-              src={src}
-              alt="BeautyBliss skincare ritual"
-              className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${
-                index === currentImageIndex ? 'z-0 opacity-100' : '-z-10 opacity-0'
-              }`}
-              style={{ filter: 'brightness(1.02) contrast(1.02)' }}
-            />
-          ))}
 
           <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-3">
             {heroImages.map((_, idx) => (
@@ -295,7 +288,6 @@ const HomePage = () => {
             subtitle="Cleanse, Treat, Hydrate"
             to="/category/skincare"
             image="https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=900&q=85"
-            video="https://videos.pexels.com/video-files/853919/853919-hd_1920_1080_25fps.mp4"
             accent="#d8a7b1"
           />
           <CategoryCard
@@ -303,7 +295,6 @@ const HomePage = () => {
             subtitle="Soft Glam Favorites"
             to="/category/makeup"
             image="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=85"
-            video="https://videos.pexels.com/video-files/4625103/4625103-hd_1920_1080_30fps.mp4"
             accent="#e7b8a5"
           />
           <CategoryCard
@@ -311,7 +302,6 @@ const HomePage = () => {
             subtitle="Daily Self-Care"
             to="/category/body-care"
             image="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85"
-            video="https://videos.pexels.com/video-files/6626771/6626771-hd_1920_1080_25fps.mp4"
             accent="#c9a8d8"
           />
         </div>

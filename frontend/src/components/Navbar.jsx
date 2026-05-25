@@ -1,18 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ShoppingBag, Heart, User, Search, Menu, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { ShoppingBag, Heart, User, Search, Menu, X, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
+import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState([]);
   const [showCatDropdown, setShowCatDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileCatOpen, setMobileCatOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
   const navigate = useNavigate();
 
   const { cartItems } = useContext(CartContext);
   const { wishlistItems } = useContext(WishlistContext);
+  const { user, logout } = useContext(AuthContext);
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
   const wishlistCount = wishlistItems.length;
@@ -26,7 +33,22 @@ const Navbar = () => {
         console.error('Failed to load navbar categories:', err);
       }
     };
+
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowCatDropdown(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSearchSubmit = (e) => {
@@ -34,95 +56,279 @@ const Navbar = () => {
     const query = searchQuery.trim();
     if (query) {
       navigate(`/search?q=${encodeURIComponent(query)}`);
+      setSearchQuery('');
+      setMobileOpen(false);
     }
   };
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-pink-50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center">
-            <button className="sm:hidden p-2 text-stone-600 hover:text-primary-600">
-              <Menu size={24} />
-            </button>
-            <Link to="/" className="text-2xl font-serif font-bold tracking-widest text-primary-700 ml-2 sm:ml-0 hover:text-primary-800 transition">
-              BEAUTYBLISS
-            </Link>
-          </div>
-
-          <div className="hidden sm:flex space-x-8 text-sm font-medium text-stone-600 items-center">
-            <Link to="/" className="hover:text-primary-600 transition">Home</Link>
-            <Link to="/products" className="hover:text-primary-600 transition">Shop</Link>
-            
-            {/* Dynamic Categories Dropdown */}
-            <div 
-              className="relative py-4"
-              onMouseEnter={() => setShowCatDropdown(true)}
-              onMouseLeave={() => setShowCatDropdown(false)}
-            >
-              <button className="flex items-center gap-1 hover:text-primary-600 transition focus:outline-none">
-                Categories
-                <ChevronDown size={14} className={`transform transition-transform duration-200 ${showCatDropdown ? 'rotate-180' : ''}`} />
+    <div className="sticky top-0 z-50">
+      <header className="bg-white/95 backdrop-blur-xl border-b border-stone-200 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setMobileOpen((prev) => !prev)}
+                className="lg:hidden p-2 rounded-full border border-stone-200 text-stone-600 bg-white shadow-sm hover:border-pink-200 hover:text-pink-700 transition"
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
-              {showCatDropdown && (
-                <div className="absolute left-0 top-full bg-white border border-pink-100 rounded-xl shadow-lg py-2 w-48 transition-all duration-200 z-50">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat._id}
-                      to={`/category/${cat._id}`}
-                      onClick={() => setShowCatDropdown(false)}
-                      className="block px-4 py-2 text-xs text-stone-700 hover:bg-pink-50 hover:text-primary-700 transition"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                  {categories.length === 0 && (
-                    <span className="block px-4 py-2 text-xs text-stone-400 italic">No categories</span>
+
+              <Link
+                to="/"
+                className="flex items-center gap-3 rounded-full bg-gradient-to-br from-pink-100 to-rose-100 px-4 py-3 shadow-lg shadow-pink-200/70 transition hover:scale-[1.01]"
+              >
+                <div className="hidden sm:block">
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-stone-400">BeautyBliss</p>
+                  <p className="text-sm font-semibold text-stone-900">Curated cosmetics for every glow</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-3 lg:mx-6 lg:flex-row lg:items-center lg:gap-4">
+              <form onSubmit={handleSearchSubmit} className="relative w-full lg:max-w-xl">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">
+                  <Search size={18} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search makeup, skincare, fragrance..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-full border border-stone-200 bg-stone-50 pl-12 pr-4 py-3 text-sm text-stone-700 outline-none transition focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
+                />
+              </form>
+
+              <nav className="hidden lg:flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.18em] text-stone-600">
+                <Link
+                  to="/products"
+                  className="rounded-full border border-transparent bg-stone-100 px-4 py-2 transition hover:border-pink-200 hover:bg-white hover:text-pink-700"
+                >
+                  Shop
+                </Link>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setShowCatDropdown((prev) => !prev)}
+                    className="flex items-center gap-1 rounded-full border border-stone-100 bg-white px-4 py-2 transition hover:border-pink-200 hover:text-pink-700"
+                  >
+                    COLLECTIONS
+                    <ChevronDown size={14} className={`transition-transform ${showCatDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showCatDropdown && (
+                    <div className="absolute left-0 top-full mt-3 w-56 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-xl">
+                      <div className="grid gap-1 p-3">
+                        {categories.length > 0 ? (
+                          categories.map((cat) => (
+                            <Link
+                              key={cat._id}
+                              to={`/category/${cat._id}`}
+                              onClick={() => setShowCatDropdown(false)}
+                              className="block rounded-2xl px-4 py-3 text-sm text-stone-700 hover:bg-pink-50 hover:text-pink-700"
+                            >
+                              {cat.name}
+                            </Link>
+                          ))
+                        ) : (
+                          <span className="text-sm text-stone-400">Loading categories...</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              )}
+                <Link
+                  to="/offers"
+                  className="rounded-full border border-stone-100 bg-white px-4 py-2 transition hover:border-pink-200 hover:text-pink-700"
+                >
+                  Offers
+                </Link>
+                <Link
+                  to="/about"
+                  className="rounded-full border border-stone-100 bg-white px-4 py-2 transition hover:border-pink-200 hover:text-pink-700"
+                >
+                  About
+                </Link>
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/wishlist"
+                className="relative flex h-12 w-12 items-center justify-center rounded-3xl border border-stone-200 bg-white text-stone-600 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                <Heart size={20} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+              <Link
+                to="/cart"
+                className="relative flex h-12 w-12 items-center justify-center rounded-3xl border border-stone-200 bg-white text-stone-600 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                <ShoppingBag size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-pink-700 text-[10px] font-bold text-white">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+              <div className="relative" ref={profileRef}>
+                {user ? (
+                  <Link
+                    to="/profile"
+                    className="flex h-12 w-12 items-center justify-center rounded-3xl border border-stone-200 bg-white text-stone-600 transition hover:border-pink-200 hover:text-pink-700"
+                  >
+                    <User size={20} />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileMenu((prev) => !prev)}
+                    className="flex h-12 w-12 items-center justify-center rounded-3xl border border-stone-200 bg-white text-stone-600 transition hover:border-pink-200 hover:text-pink-700"
+                    aria-expanded={showProfileMenu}
+                  >
+                    <User size={20} />
+                  </button>
+                )}
+
+                {!user && showProfileMenu && (
+                  <div className="absolute right-0 top-full mt-3 w-48 overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-xl">
+                    <Link
+                      to="/login"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setShowProfileMenu(false)}
+                      className="block px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-pink-50"
+                    >
+                      Create account
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        </div>
+      </header>
 
-          <div className="flex items-center space-x-4">
-            <form onSubmit={handleSearchSubmit} className="relative hidden md:block">
+      {mobileOpen && (
+        <div className="lg:hidden bg-white border-b border-stone-200 shadow-[0_20px_40px_rgba(15,23,42,0.08)]">
+          <div className="space-y-4 px-5 py-5">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-stone-400">
+                <Search size={18} />
+              </span>
               <input
                 type="text"
                 placeholder="Search beauty..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-48 bg-stone-50 border border-stone-200 rounded-full py-1.5 pl-8 pr-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary-300 focus:bg-white transition"
+                className="w-full rounded-full border border-stone-200 bg-stone-50 pl-12 pr-4 py-3 text-sm text-stone-700 outline-none transition focus:border-pink-300 focus:ring-2 focus:ring-pink-100"
               />
-              <button type="submit" className="absolute left-2.5 top-2 text-stone-400 hover:text-primary-600 transition">
-                <Search size={14} />
-              </button>
             </form>
-            
-            <Link to="/wishlist" className="p-2 text-stone-600 hover:text-primary-600 transition relative">
-              <Heart size={20} />
-              {wishlistCount > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center transform translate-x-1/3 -translate-y-1/3">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-            
-            <Link to="/cart" className="p-2 text-stone-600 hover:text-primary-600 transition relative">
-              <ShoppingBag size={20} />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 bg-primary-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center transform translate-x-1/3 -translate-y-1/3">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
 
-            <Link to="/profile" className="p-2 text-stone-600 hover:text-primary-600 transition">
-              <User size={20} />
-            </Link>
+            <div className="grid gap-3">
+              <Link
+                to="/products"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-stone-700 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                Shop
+              </Link>
+              <button
+                onClick={() => setMobileCatOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-stone-700 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                COLLECTIONS
+                <ChevronDown size={14} className={`transition-transform ${mobileCatOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileCatOpen && (
+                <div className="space-y-2 rounded-3xl border border-pink-100 bg-pink-50 p-3">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat._id}
+                      to={`/category/${cat._id}`}
+                      onClick={() => {
+                        setMobileOpen(false);
+                        setMobileCatOpen(false);
+                      }}
+                      className="block rounded-2xl px-4 py-3 text-sm text-stone-700 hover:bg-white"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <Link
+                to="/offers"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-stone-700 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                Offers
+              </Link>
+              <Link
+                to="/about"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-stone-700 transition hover:border-pink-200 hover:text-pink-700"
+              >
+                About
+              </Link>
+            </div>
+
+            <div className="grid gap-3">
+              {!user ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-3xl border border-stone-200 bg-white px-4 py-3 text-center text-sm font-semibold text-stone-700 hover:border-pink-200 hover:text-pink-700 transition"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-3xl bg-pink-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-pink-800 transition"
+                  >
+                    Create account
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-3xl bg-pink-700 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-pink-800 transition"
+                >
+                  Profile
+                </Link>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  to="/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-700 hover:border-pink-200 hover:text-pink-700 transition"
+                >
+                  Wishlist
+                </Link>
+                <Link
+                  to="/cart"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center rounded-3xl bg-pink-700 px-4 py-3 text-sm font-semibold text-white hover:bg-pink-800 transition"
+                >
+                  Cart
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      )}
+    </div>
   );
 };
 

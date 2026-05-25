@@ -39,14 +39,6 @@ const getStoredUser = () => {
     }
 };
 
-const normalizeList = (data) => {
-    if (Array.isArray(data)) {
-        return data;
-    }
-
-    return data?.items || data?.products || data?.orders || data?.users || [];
-};
-
 const AdminDashboardPage = () => {
     const navigate = useNavigate();
     const [userInfo] = useState(getStoredUser);
@@ -70,38 +62,18 @@ const AdminDashboardPage = () => {
                 const headers = userInfo?.token
                     ? { Authorization: `Bearer ${userInfo.token}` }
                     : {};
-                const [usersRes, productsRes, ordersRes] = await Promise.all([
-                    fetch("/api/users", { headers }),
-                    fetch("/api/products", { headers }),
-                    fetch("/api/orders", { headers }),
-                ]);
-                const [usersData, productsData, ordersData] = await Promise.all([
-                    usersRes.json(),
-                    productsRes.json(),
-                    ordersRes.json(),
-                ]);
+                const statsRes = await fetch("/api/admin/stats", { headers });
+                const statsData = await statsRes.json();
 
-                if (!usersRes.ok || !productsRes.ok || !ordersRes.ok) {
-                    throw new Error("Unable to load dashboard statistics");
+                if (!statsRes.ok) {
+                    throw new Error(statsData.message || "Unable to load dashboard statistics");
                 }
 
-                const users = normalizeList(usersData);
-                const products = normalizeList(productsData);
-                const orders = normalizeList(ordersData);
-                const sales = orders.reduce(
-                    (total, order) =>
-                        total +
-                        (order.isPaid
-                            ? Number(order.totalPrice || order.total || 0)
-                            : 0),
-                    0
-                );
-
                 setStats({
-                    users: users.length,
-                    products: products.length,
-                    orders: orders.length,
-                    sales,
+                    users: statsData.totalUsers || 0,
+                    products: statsData.totalProducts || 0,
+                    orders: statsData.totalOrders || 0,
+                    sales: statsData.totalSales || 0,
                 });
             } catch (err) {
                 setDashboardError(
