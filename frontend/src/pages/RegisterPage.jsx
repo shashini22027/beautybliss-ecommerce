@@ -1,122 +1,285 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
-import API from '../services/api';
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+const Icon = ({ name, className = "w-5 h-5" }) => {
+    const paths = {
+        user: "M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
+        mail: "M4 6h16v12H4V6zm0 0 8 7 8-7",
+        lock: "M6 10h12v10H6V10zm3 0V7a3 3 0 0 1 6 0v3",
+        eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+        eyeOff:
+            "M3 3l18 18M10.6 10.6a3 3 0 0 0 4 4M9.9 5.2A10.7 10.7 0 0 1 12 5c6 0 10 7 10 7a18.6 18.6 0 0 1-3.1 4.1M6.6 6.6C3.8 8.5 2 12 2 12s4 7 10 7c1.6 0 3-.5 4.2-1.2",
+        arrow: "M5 12h14m-6-6 6 6-6 6",
+        x: "M18 6 6 18M6 6l12 12",
+    };
+
+    return (
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <path d={paths[name]} />
+        </svg>
+    );
+};
 
 const RegisterPage = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('user');
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [registerError, setRegisterError] = useState("");
 
-  const { login } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { search } = useLocation();
+    const redirect = new URLSearchParams(search).get("redirect") || "/";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        setRegisterError("");
 
-    try {
-      const { data } = await API.post('/users', {
-        name,
-        email,
-        password,
-        role,
-      });
+        if (password !== confirmPassword) {
+            setRegisterError("Passwords do not match");
+            return;
+        }
 
-      login(data);
+        setLoading(true);
 
-      // Redirect based on role
-      if (data.role === 'admin') {
-        window.location.href = '/admin';
-      } else {
-        window.location.href = '/';
-      }
+        try {
+            const res = await fetch("/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password }),
+            });
+            const data = await res.json();
 
-    } catch (err) {
-      alert(err.response?.data?.message || 'Registration failed');
-    }
-  };
+            if (!res.ok) {
+                throw new Error(data?.message || "Registration failed");
+            }
 
-  return (
-    <div className="max-w-md mx-auto my-12 p-6 bg-white rounded-lg shadow-sm border border-pink-100">
-      
-      <h2 className="text-3xl font-serif text-center text-primary-700 font-bold mb-6">
-        Register
-      </h2>
+            localStorage.setItem("userInfo", JSON.stringify(data));
+            navigate(redirect);
+        } catch (err) {
+            setRegisterError(err.message || "Registration failed");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+    return (
+        <main className="min-h-screen bg-[#faf7f4] px-4 py-8 text-gray-950 sm:px-6 lg:px-8">
+            <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_24px_80px_rgba(28,25,23,0.08)] lg:grid-cols-[0.92fr_1fr]">
+                <section className="relative hidden bg-[#1f1a17] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+                    <div className="absolute inset-0 opacity-80">
+                        <img
+                            src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80"
+                            alt=""
+                            className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1a17] via-[#1f1a17]/70 to-[#1f1a17]/20" />
+                    </div>
 
-        {/* Full Name */}
-        <div>
-          <label className="block text-sm font-medium text-stone-600 mb-1">
-            Full Name
-          </label>
+                    <div className="relative z-10">
+                        <Link
+                            to="/"
+                            className="inline-flex items-center text-2xl font-serif font-bold tracking-[0.18em]"
+                        >
+                            BEAUTYBLISS
+                        </Link>
+                    </div>
 
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
-            required
-          />
-        </div>
+                    <div className="relative z-10 max-w-md">
+                        <p className="mb-4 text-xs font-bold uppercase tracking-[0.32em] text-pink-200">
+                            Glow starts here
+                        </p>
+                        <h1 className="text-5xl font-serif font-bold leading-tight tracking-tight">
+                            Create your beauty account.
+                        </h1>
+                        <p className="mt-5 text-sm leading-6 text-pink-50/80">
+                            Save favorites, check out faster, and keep your skincare and makeup picks in one place.
+                        </p>
+                    </div>
+                </section>
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-stone-600 mb-1">
-            Email Address
-          </label>
+                <section className="relative flex items-center justify-center p-6 sm:p-10">
+                    <Link
+                        to="/"
+                        aria-label="Close register page"
+                        className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-950"
+                    >
+                        <Icon name="x" className="h-5 w-5" />
+                    </Link>
 
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
-            required
-          />
-        </div>
+                    <div className="w-full max-w-md">
+                        <div className="mb-8 lg:hidden">
+                            <Link
+                                to="/"
+                                className="text-2xl font-serif font-bold tracking-[0.18em] text-gray-950"
+                            >
+                                BEAUTYBLISS
+                            </Link>
+                        </div>
 
-        {/* Password */}
-        <div>
-          <label className="block text-sm font-medium text-stone-600 mb-1">
-            Password
-          </label>
+                        <div className="mb-8">
+                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
+                                New Account
+                            </p>
+                            <h2 className="text-4xl font-serif font-bold tracking-tight text-gray-950">
+                                Join BeautyBliss
+                            </h2>
+                            <p className="mt-3 text-sm leading-6 text-gray-500">
+                                Build your personal beauty shelf and shop your favorites faster.
+                            </p>
+                        </div>
 
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
-            required
-          />
-        </div>
+                        {registerError && (
+                            <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                <span>{registerError}</span>
+                            </div>
+                        )}
 
-        {/* Role */}
-        <div>
-          <label className="block text-sm font-medium text-stone-600 mb-1">
-            User Role
-          </label>
+                        <form onSubmit={submitHandler} className="space-y-4">
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
+                                    Full Name
+                                </span>
+                                <span className="relative block">
+                                    <Icon
+                                        name="user"
+                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your name"
+                                        value={name}
+                                        required
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                    />
+                                </span>
+                            </label>
 
-          <select
-            value={role}
-            onChange={e => setRole(e.target.value)}
-            className="w-full border border-stone-200 rounded px-3 py-2 text-sm focus:outline-none focus:border-primary-400"
-            required
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
+                                    Email Address
+                                </span>
+                                <span className="relative block">
+                                    <Icon
+                                        name="mail"
+                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    />
+                                    <input
+                                        type="email"
+                                        placeholder="your@email.com"
+                                        value={email}
+                                        required
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                    />
+                                </span>
+                            </label>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 rounded text-sm uppercase tracking-wider transition"
-        >
-          Register
-        </button>
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
+                                    Password
+                                </span>
+                                <span className="relative block">
+                                    <Icon
+                                        name="lock"
+                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    />
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="********"
+                                        value={password}
+                                        required
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-12 text-sm font-medium tracking-widest text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                                        aria-label={
+                                            showPassword ? "Hide password" : "Show password"
+                                        }
+                                    >
+                                        <Icon
+                                            name={showPassword ? "eyeOff" : "eye"}
+                                            className="h-5 w-5"
+                                        />
+                                    </button>
+                                </span>
+                            </label>
 
-      </form>
-    </div>
-  );
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
+                                    Confirm Password
+                                </span>
+                                <span className="relative block">
+                                    <Icon
+                                        name="lock"
+                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="********"
+                                        value={confirmPassword}
+                                        required
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium tracking-widest text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                    />
+                                </span>
+                            </label>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg bg-gray-950 px-5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-gray-950/10 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {loading ? (
+                                    <span className="inline-flex items-center gap-2">
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white" />
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.2s]" />
+                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.4s]" />
+                                    </span>
+                                ) : (
+                                    <>
+                                        Create Account
+                                        <Icon name="arrow" className="h-5 w-5" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <div className="mt-8 flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-sm text-gray-500">Already have an account?</p>
+                            <Link
+                                to={
+                                    redirect !== "/"
+                                        ? `/login?redirect=${redirect}`
+                                        : "/login"
+                                }
+                                className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-pink-600 transition hover:text-gray-950"
+                            >
+                                Sign In
+                                <Icon name="arrow" className="h-4 w-4" />
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    );
 };
 
 export default RegisterPage;

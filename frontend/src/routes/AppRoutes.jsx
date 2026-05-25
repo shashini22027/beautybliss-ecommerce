@@ -15,6 +15,7 @@ import ProfilePage from '../pages/ProfilePage';
 import SearchResultsPage from '../pages/SearchResultsPage';
 import AdminDashboard from '../pages/AdminDashboard';
 import ErrorPage from '../pages/ErrorPage';
+import AdminDashboardPage from '../pages/AdminDashboardPage';
 
 const AppRoutes = () => {
   return (
@@ -40,6 +41,8 @@ const AppRoutes = () => {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<ErrorPage />} />
+          <Route path="/adminDashboard" element={<AdminDashboardPage />} />
+          
         </Routes>
       </MainLayout>
     </Router>
