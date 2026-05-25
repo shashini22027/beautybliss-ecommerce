@@ -176,12 +176,6 @@ const HomePage = () => {
             >
               Shop Products
             </Link>
-            <Link
-              to="/search"
-              className="inline-block border-2 border-[#9d5f72]/70 px-11 py-[16px] text-xs font-bold uppercase tracking-[0.2em] text-[#5b2c45] transition-all duration-300 hover:bg-white hover:text-gray-950 active:scale-95"
-            >
-              Find My Match
-            </Link>
           </div>
 
           <div className="mt-16 flex flex-wrap gap-10 border-t border-rose-300/40 pt-8">
@@ -485,20 +479,20 @@ const HomePage = () => {
       <section className="mx-auto max-w-4xl px-6 pb-28 text-center">
         <div className="mx-auto mb-12 h-[1px] w-16 bg-rose-300" />
         <p className="mb-4 text-xs font-bold uppercase tracking-[0.4em] text-rose-400">
-          Start Your Glow
+          Glow Match Ready
         </p>
         <h2 className="mb-6 font-serif text-4xl font-bold tracking-tighter text-gray-900 md:text-5xl">
-          Find the Routine That Feels Like You
+          Your Glow Match Awaits
         </h2>
         <p className="mx-auto mb-10 max-w-lg text-sm leading-relaxed text-gray-500">
-          Explore skincare, makeup, and self-care favorites created for a more
-          confident everyday beauty ritual.
+          Explore curated collections, radiant essentials, and beauty edits built
+          to bring out the best version of your skin.
         </p>
         <Link
           to="/products"
           className="inline-block rounded-full bg-gradient-to-r from-[#5b2c45] to-rose-300 px-12 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
         >
-          Browse BeautyBliss
+          Browse the Edit
         </Link>
       </section>
 
