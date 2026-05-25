@@ -7,21 +7,29 @@ import { WishlistContext } from '../context/WishlistContext';
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const { wishlistItems, toggleWishlist } = useContext(WishlistContext);
+  const productId = product._id || product.id;
 
-  const isWishlisted = wishlistItems.some((x) => x._id === product._id);
+  const isWishlisted = wishlistItems.some((x) => x._id === productId);
 
   return (
     <div className="bg-white border border-pink-100/60 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition duration-300 flex flex-col">
       <div className="relative bg-[#faf7f5] aspect-square overflow-hidden group">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-          loading="lazy"
-        />
+        <Link to={productId ? `/product/${productId}` : '#'} className="relative z-0 block h-full w-full">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+            loading="lazy"
+          />
+        </Link>
         <button
-          onClick={() => toggleWishlist(product)}
-          className="absolute top-3 right-3 p-2 bg-white rounded-full text-stone-400 hover:text-red-500 shadow-sm transition"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product);
+          }}
+          className="absolute right-3 top-3 z-20 p-2 bg-white rounded-full text-stone-400 hover:text-red-500 shadow-sm transition"
+          aria-label="Toggle wishlist"
         >
           <Heart size={16} className={isWishlisted ? 'fill-red-500 text-red-500' : ''} />
         </button>
@@ -30,7 +38,7 @@ const ProductCard = ({ product }) => {
         <div className="space-y-1">
           <span className="text-[10px] font-bold text-nude-500 uppercase tracking-widest">{product.brand}</span>
           <h3 className="text-stone-900 font-serif font-medium text-sm leading-snug hover:text-primary-700 transition">
-            <Link to={`/product/${product._id}`}>{product.name}</Link>
+            <Link to={productId ? `/product/${productId}` : '#'}>{product.name}</Link>
           </h3>
         </div>
         <div className="flex items-center justify-between mt-4">

@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { CartContext } from "../context/CartContext";
+import { WishlistContext } from "../context/WishlistContext";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -38,10 +40,11 @@ const getTextValue = (value, fallback = "") => {
 };
 
 const ProductsPage = () => {
+    const { addToCart } = useContext(CartContext);
+    const { toggleWishlist } = useContext(WishlistContext);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
 
     const location = useLocation();
@@ -94,22 +97,15 @@ const ProductsPage = () => {
     const filteredProducts = useMemo(() => {
         return products.filter((product) => {
             const category = getTextValue(product.category);
-            const brand = getTextValue(product.brand);
             const categoryId = getCategoryId(product.category);
             const matchesCategory =
                 activeCategory === "All" ||
                 category === activeCategory ||
                 categoryId === activeCategory;
-            const searchableText = `${product.name || ""} ${brand} ${
-                category
-            }`.toLowerCase();
 
-            return (
-                matchesCategory &&
-                searchableText.includes(searchTerm.trim().toLowerCase())
-            );
+            return matchesCategory;
         });
-    }, [activeCategory, products, searchTerm]);
+    }, [activeCategory, products]);
 
     return (
         <main
@@ -134,22 +130,7 @@ const ProductsPage = () => {
                             </p>
                         </div>
 
-                        <div className="w-full max-w-md">
-                            <label className="relative block">
-                                <Icon
-                                    name="search"
-                                    className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                />
-                                <input
-                                    type="search"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search products"
-                                    className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8]/90 pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                />
-                            </label>
                         </div>
-                    </div>
 
                     <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
                         {categories.map((category) => (
@@ -199,10 +180,24 @@ const ProductsPage = () => {
                             return (
                                 <article
                                     key={id || product.name}
-                                    className="group overflow-hidden rounded-lg border border-pink-200 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(190,24,93,0.12)]"
+                                    className="group relative overflow-hidden rounded-lg border border-pink-200 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(190,24,93,0.12)]"
                                     style={{ backgroundColor: "#fff4f6" }}
                                 >
-                                    <Link to={id ? `/product/${id}` : "#"} className="block">
+                                    {id ? (
+                                        <Link to={`/product/${id}`} className="relative z-0 block">
+                                            <div className="relative aspect-[4/5] overflow-hidden bg-[#f3dfe6]">
+                                                <img
+                                                    src={
+                                                        product.image ||
+                                                        product.images?.[0] ||
+                                                        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
+                                                    }
+                                                    alt={product.name || "Beauty product"}
+                                                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                                />
+                                            </div>
+                                        </Link>
+                                    ) : (
                                         <div className="relative aspect-[4/5] overflow-hidden bg-[#f3dfe6]">
                                             <img
                                                 src={
@@ -213,15 +208,20 @@ const ProductsPage = () => {
                                                 alt={product.name || "Beauty product"}
                                                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                                             />
-                                            <button
-                                                type="button"
-                                                aria-label="Add to wishlist"
-                                                className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-pink-100 bg-[#fff7f8]/90 text-gray-600 backdrop-blur transition hover:text-pink-600"
-                                            >
-                                                <Icon name="heart" className="h-5 w-5" />
-                                            </button>
                                         </div>
-                                    </Link>
+                                    )}
+                                    <button
+                                        type="button"
+                                        aria-label="Add to wishlist"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            toggleWishlist(product);
+                                        }}
+                                        className="absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-pink-100 bg-[#fff7f8]/90 text-gray-600 backdrop-blur transition hover:text-pink-600"
+                                    >
+                                        <Icon name="heart" className="h-5 w-5" />
+                                    </button>
 
                                     <div className="p-5">
                                         <div className="mb-3 flex items-center justify-between gap-3">
@@ -249,12 +249,13 @@ const ProductsPage = () => {
                                             </h3>
                                         </Link>
 
-                                        <div className="mt-5 flex items-center justify-between gap-4">
+                                        <div className="mt-5 flex items-center justify-between gap-4 relative">
                                             <p className="text-lg font-bold text-gray-950">
                                                 ${Number(product.price || 0).toFixed(2)}
                                             </p>
                                             <button
                                                 type="button"
+                                                onClick={() => addToCart(product, 1)}
                                                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gray-950 text-white transition hover:bg-pink-600"
                                                 aria-label="Add to cart"
                                             >
