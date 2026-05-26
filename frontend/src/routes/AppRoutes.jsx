@@ -24,6 +24,10 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
 import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
 import TermsConditionsScreen from '../pages/TermsConditionsScreen';
+import OrderListScreen from '../pages/admin/OrderListScreen';
+import ProductEditScreen from '../pages/admin/ProductEditScreen';
+import ProductListScreen from '../pages/admin/ProductListScreen';
+import UserListScreen from '../pages/admin/UserListScreen';
 
 const AppRoutes = () => {
   return (
@@ -52,6 +56,11 @@ const AppRoutes = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/orderlist" element={<OrderListScreen />} />
+          <Route path="/admin/productlist" element={<ProductListScreen />} />
+          <Route path="/admin/product/create" element={<ProductEditScreen />} />
+          <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
+          <Route path="/admin/userlist" element={<UserListScreen />} />
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/contact" element={<ContactScreen />} />
@@ -59,7 +68,6 @@ const AppRoutes = () => {
           <Route path='/account-support' element={<AccountSupportPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
           <Route path="/terms-conditions" element={<TermsConditionsScreen />} />
-
         </Routes>
       </MainLayout>
     </Router>
