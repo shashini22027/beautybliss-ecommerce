@@ -161,9 +161,7 @@ const AdminDashboardPage = () => {
       <aside className="border-b border-pink-200 bg-white text-gray-950 shadow-sm lg:sticky lg:top-0 lg:min-h-screen lg:w-72 lg:border-b-0 lg:border-r lg:border-pink-200">
         <div className="border-b border-pink-100 p-6">
           <Link to="/" className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9f234f] font-black text-white">
-              B
-            </span>
+      
             <span>
               <span className="block font-serif text-2xl font-bold tracking-[0.12em]">
                 BEAUTYBLISS
@@ -212,10 +210,7 @@ const AdminDashboardPage = () => {
 
         <div className="hidden p-4 lg:block">
           <div className="rounded-2xl border border-pink-100 bg-[#fff7f8] p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9f234f] font-bold text-white">
-                {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
-              </div>
+            <div>
               <div className="min-w-0">
                 <p className="truncate text-xs font-bold uppercase tracking-[0.16em]">
                   {userInfo?.name || "Admin"}
