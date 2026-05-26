@@ -22,6 +22,7 @@ import ContactScreen from "../pages/ContactScreen";
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
 import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
+import TermsConditionsScreen from '../pages/TermsConditionsScreen';
 
 const AppRoutes = () => {
   return (
@@ -55,6 +56,8 @@ const AppRoutes = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path='/account-support' element={<AccountSupportPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
+          <Route path="/terms-conditions" element={<TermsConditionsScreen />} />
+
         </Routes>
       </MainLayout>
     </Router>
