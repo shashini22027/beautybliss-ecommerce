@@ -14,7 +14,6 @@ import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import ProfilePage from '../pages/ProfilePage';
 import SearchResultsPage from '../pages/SearchResultsPage';
-import AdminDashboard from '../pages/AdminDashboard';
 import ErrorPage from '../pages/ErrorPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import OffersPage from '../pages/OffersPage';
@@ -54,7 +53,6 @@ const AppRoutes = () => {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/offers" element={<OffersPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
           <Route path="/admin/productlist" element={<ProductListScreen />} />

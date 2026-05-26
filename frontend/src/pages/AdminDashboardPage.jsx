@@ -137,7 +137,7 @@ const AdminDashboardPage = () => {
   );
 
   const sidebarItems = [
-    { name: "Dashboard", icon: "dashboard", link: "/admin/dashboard", active: true },
+    { name: "Dashboard", icon: "dashboard", link: "/admin-dashboard", active: true },
     { name: "Customers", icon: "users", link: "/admin/userlist" },
     { name: "Products", icon: "products", link: "/admin/productlist" },
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },

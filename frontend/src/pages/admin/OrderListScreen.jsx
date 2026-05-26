@@ -55,7 +55,7 @@ const OrderListScreen = () => {
     <main className="min-h-screen bg-[#fff7f8] px-4 py-10 text-gray-950 sm:px-6 lg:px-8">
       <section className="mx-auto max-w-7xl">
         <Link
-          to="/admin/dashboard"
+          to="/admin-dashboard"
           className="mb-8 inline-flex items-center gap-3 rounded-full border border-pink-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 shadow-sm transition hover:border-pink-300 hover:text-gray-950"
         >
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 text-pink-600">
