@@ -18,6 +18,7 @@ import ErrorPage from '../pages/ErrorPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import OffersPage from '../pages/OffersPage';
 import AboutPage from '../pages/AboutPage';
+import ContactScreen from "../pages/ContactScreen";
 
 const AppRoutes = () => {
   return (
@@ -47,6 +48,8 @@ const AppRoutes = () => {
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="*" element={<ErrorPage />} />
+          <Route path="/contact" element={<ContactScreen />} />
+
           
         </Routes>
       </MainLayout>
