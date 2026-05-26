@@ -368,7 +368,7 @@ const HomePage = () => {
                 Beauty Deals
               </p>
               <h2 className="mb-4 font-serif text-4xl font-bold tracking-tight text-[#2f2029] md:text-5xl">
-                Product Deals
+New Arrivals
               </h2>
               <p className="text-sm leading-relaxed text-[#785d68]">
                 Refresh your routine with seasonal savings on bestselling skincare and makeup essentials. Perfect for building effortless glow from morning to night.

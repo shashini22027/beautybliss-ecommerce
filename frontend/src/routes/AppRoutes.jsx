@@ -21,6 +21,7 @@ import AboutPage from '../pages/AboutPage';
 import ContactScreen from "../pages/ContactScreen";
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
+import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
 
 const AppRoutes = () => {
   return (
@@ -53,6 +54,7 @@ const AppRoutes = () => {
           <Route path="/contact" element={<ContactScreen />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path='/account-support' element={<AccountSupportPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
         </Routes>
       </MainLayout>
     </Router>
