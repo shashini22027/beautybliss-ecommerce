@@ -19,6 +19,8 @@ import AdminDashboardPage from '../pages/AdminDashboardPage';
 import OffersPage from '../pages/OffersPage';
 import AboutPage from '../pages/AboutPage';
 import ContactScreen from "../pages/ContactScreen";
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import AccountSupportPage from '../pages/AccountSupportPage';
 
 const AppRoutes = () => {
   return (
@@ -49,8 +51,8 @@ const AppRoutes = () => {
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/contact" element={<ContactScreen />} />
-
-          
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path='/account-support' element={<AccountSupportPage />} />
         </Routes>
       </MainLayout>
     </Router>
