@@ -1,366 +1,405 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, Package, DollarSign, Image as ImageIcon, Tag, Hash, AlignLeft, Check, Upload, X } from "lucide-react";
+import {
+  AlignLeft,
+  ArrowLeft,
+  Check,
+  DollarSign,
+  Hash,
+  Image as ImageIcon,
+  Package,
+  Sparkles,
+  Tag,
+  Upload,
+  X,
+} from "lucide-react";
 import api from "../../services/api";
 
 const ProductEditScreen = () => {
-    const { id: productId } = useParams();
-    const isCreate = !productId;
-    const navigate = useNavigate();
-    const fileInputRef = useRef(null);
+  const { id: productId } = useParams();
+  const isCreate = !productId;
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-    const [name, setName] = useState("");
-    const [price, setPrice] = useState(0);
-    const [image, setImage] = useState("");
-    const [imageError, setImageError] = useState(false);
-    const [showUrlInput, setShowUrlInput] = useState(false);
-    const [brand, setBrand] = useState("");
-    const [category, setCategory] = useState("");
-    const [countInStock, setCountInStock] = useState(0);
-    const [description, setDescription] = useState("");
-    
-    const [loading, setLoading] = useState(true);
-    const [updating, setUpdating] = useState(false);
-    const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState(null);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState(0);
+  const [image, setImage] = useState("");
+  const [imageError, setImageError] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [brand, setBrand] = useState("");
+  const [category, setCategory] = useState("");
+  const [countInStock, setCountInStock] = useState(0);
+  const [description, setDescription] = useState("");
 
-    useEffect(() => {
-        setImageError(false);
-    }, [image]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        if (!productId) {
-            setLoading(false);
-            return;
-        }
-        const fetchProduct = async () => {
-            try {
-                setLoading(true);
-                const { data } = await api.get(`/products/${productId}`);
-                setName(data.name);
-                setPrice(data.price);
-                setImage(data.image);
-                setBrand(data.brand);
-                // Handle category being either an object (populated) or a string (ID)
-                setCategory(typeof data.category === 'object' ? data.category?._id : data.category);
-                setCountInStock(data.countInStock);
-                setDescription(data.description);
-            } catch (err) {
-                setError(err?.response?.data?.message || err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProduct();
-    }, [productId]);
+  useEffect(() => {
+    setImageError(false);
+  }, [image]);
 
-    const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+  useEffect(() => {
+    if (!productId) {
+      setLoading(false);
+      return;
+    }
 
-        const formData = new FormData();
-        formData.append("image", file);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data } = await api.get(`/products/${productId}`);
+        const product = data.product || data;
 
-        try {
-            setUploading(true);
-            const { data } = await api.post("/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            setImage(data.url);
-        } catch (err) {
-            console.error("Image upload failed", err);
-        } finally {
-            setUploading(false);
-        }
+        setName(product.name || "");
+        setPrice(product.price || 0);
+        setImage(product.image || "");
+        setBrand(product.brand || "");
+        setCategory(
+          typeof product.category === "object"
+            ? product.category?._id || product.category?.name || ""
+            : product.category || ""
+        );
+        setCountInStock(product.countInStock || 0);
+        setDescription(product.description || "");
+      } catch (err) {
+        setError(err?.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const submitHandler = async (e) => {
-        e.preventDefault();
-        try {
-            setUpdating(true);
-            if (isCreate) {
-                await api.post('/products', {
-                    name,
-                    price,
-                    image,
-                    brand,
-                    category,
-                    countInStock,
-                    description,
-                });
-            } else {
-                await api.put(`/products/${productId}`, {
-                    name,
-                    price,
-                    image,
-                    brand,
-                    category,
-                    countInStock,
-                    description,
-                });
-            }
-            navigate('/admin/productlist');
-        } catch (err) {
-            setError(err?.response?.data?.message || err.message);
-        } finally {
-            setUpdating(false);
-        }
-    };
+    fetchProduct();
+  }, [productId]);
 
-    const hasValidImage = image && image !== "" && image !== "/images/sample.jpg" && !imageError;
+  const uploadFileHandler = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-    return (
-        <div className="max-w-3xl mx-auto px-6 py-16">
-            <Link 
-                to="/admin/productlist" 
-                className="inline-flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-stone-500 hover:text-black transition-colors mb-10"
-            >
-                <ChevronLeft size={16} />
-                Back to Products
-            </Link>
+    const formData = new FormData();
+    formData.append("image", file);
 
-            <div className="mb-12 text-center">
-                <h1 className="text-4xl font-serif font-bold text-stone-900 tracking-tighter">{isCreate ? 'Create Product' : 'Edit Product'}</h1>
-                <p className="text-stone-500 uppercase tracking-[0.2em] text-[10px] font-bold mt-2">Manage product details and inventory</p>
-            </div>
+    try {
+      setUploading(true);
+      const { data } = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setImage(data.url);
+    } catch (err) {
+      console.error("Image upload failed", err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
-            {loading ? (
-                <div className="py-20 text-center animate-pulse tracking-widest uppercase text-stone-400">Loading product data...</div>
-            ) : error ? (
-                <div className="py-20 text-center text-red-500 font-medium">{error}</div>
-            ) : (
-                <div className="bg-white rounded-[2.5rem] p-10 sm:p-16 shadow-2xl shadow-stone-200/50 border border-stone-200">
-                    <form onSubmit={submitHandler} className="space-y-8">
-                        {/* Name */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Product Name</label>
-                            <div className="relative group">
-                                <Package size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                <input
-                                    type="text"
-                                    value={name}
-                                    required
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-14 pr-6 py-4 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm"
-                                />
-                            </div>
-                        </div>
+  const submitHandler = async (event) => {
+    event.preventDefault();
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            {/* Price */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Price ($)</label>
-                                <div className="relative group">
-                                    <DollarSign size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                    <input
-                                        type="number"
-                                        value={price}
-                                        required
-                                        step="0.01"
-                                        onChange={(e) => setPrice(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm"
-                                    />
-                                </div>
-                            </div>
+    try {
+      setUpdating(true);
+      setError(null);
 
-                            {/* Count In Stock */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Stock Count</label>
-                                <div className="relative group">
-                                    <Hash size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                    <input
-                                        type="number"
-                                        value={countInStock}
-                                        required
-                                        onChange={(e) => setCountInStock(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+      const payload = {
+        name,
+        price,
+        image,
+        brand,
+        category,
+        countInStock,
+        description,
+      };
 
-                        {/* Image Upload */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Product Image</label>
-                            
-                            {/* Preview + Upload Area */}
-                            <div className="relative">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/png,image/jpeg,image/jpg,image/webp"
-                                    onChange={uploadFileHandler}
-                                    className="hidden"
-                                />
+      if (isCreate) {
+        await api.post("/products", payload);
+      } else {
+        await api.put(`/products/${productId}`, payload);
+      }
 
-                                {hasValidImage ? (
-                                    /* Premium Image Card with Hover-to-Replace & Top-Right Delete */
-                                    <div className="relative rounded-3xl overflow-hidden border border-stone-200 shadow-sm bg-stone-50 h-64 group">
-                                        <img 
-                                            src={image} 
-                                            alt="Product preview" 
-                                            onError={() => setImageError(true)}
-                                            className="w-full h-full object-contain bg-white transition-transform duration-700 group-hover:scale-102"
-                                        />
-                                        
-                                        {/* Glassmorphic replace overlay on hover */}
-                                        <div 
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2 text-white cursor-pointer backdrop-blur-[2px]"
-                                        >
-                                            <div className="w-12 h-12 rounded-full bg-white/20 border border-white/40 flex items-center justify-center shadow-lg backdrop-blur-md animate-pulse">
-                                                <Upload size={20} className="text-white" />
-                                            </div>
-                                            <span className="text-[10px] uppercase tracking-widest font-bold">Click to replace photo</span>
-                                        </div>
+      navigate("/admin/productlist");
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
-                                        {/* Top-Right Remove Button */}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setImage("");
-                                            }}
-                                            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-600 hover:scale-105 active:scale-95 transition-all z-10 shadow-lg hover:shadow-red-500/20"
-                                            title="Remove Image"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    /* Premium dashed Upload Drop Zone */
-                                    <div
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className={`relative cursor-pointer border-2 border-dashed rounded-3xl p-10 text-center transition-all duration-300 ${
-                                            uploading
-                                                ? "border-amber-400 bg-amber-50"
-                                                : "border-stone-200 bg-stone-50 hover:border-stone-400 hover:bg-stone-100/70"
-                                        }`}
-                                    >
-                                        {uploading ? (
-                                            <div className="flex flex-col items-center gap-4 py-4">
-                                                <div className="w-10 h-10 rounded-full border-3 border-amber-400 border-t-transparent animate-spin" />
-                                                <p className="text-xs uppercase tracking-widest font-bold text-amber-600 animate-pulse">Uploading image...</p>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-4">
-                                                <div className="w-16 h-16 rounded-2xl bg-white border border-stone-200 flex items-center justify-center shadow-sm text-stone-400 group-hover:text-black transition-colors">
-                                                    <Upload size={24} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-stone-700">
-                                                        {imageError ? "Image failed to load. Click to upload new image" : "Click to upload from device"}
-                                                    </p>
-                                                    <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1.5">
-                                                        JPG, PNG or WebP — Max 5MB
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+  const hasValidImage =
+    image && image !== "" && image !== "/images/sample.jpg" && !imageError;
 
-                                {/* Manual URL input option */}
-                                <div className="mt-4">
-                                    {!showUrlInput ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowUrlInput(true)}
-                                            className="text-[9px] uppercase tracking-widest font-bold text-stone-400 hover:text-black transition-colors ml-1"
-                                        >
-                                            Or enter image URL manually
-                                        </button>
-                                    ) : (
-                                        <div className="space-y-2 pt-2 bg-stone-50/50 p-4 rounded-2xl border border-stone-200">
-                                            <div className="flex justify-between items-center">
-                                                <label className="text-[9px] uppercase tracking-widest font-bold text-stone-400">Direct Image URL</label>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowUrlInput(false)}
-                                                    className="text-[9px] uppercase tracking-widest font-bold text-stone-400 hover:text-black transition-colors"
-                                                >
-                                                    Hide Manual Input
-                                                </button>
-                                            </div>
-                                            <div className="relative group">
-                                                <ImageIcon size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                                <input
-                                                    type="text"
-                                                    placeholder="https://example.com/image.jpg"
-                                                    value={image}
-                                                    onChange={(e) => setImage(e.target.value)}
-                                                    className="w-full pl-14 pr-6 py-3.5 bg-white border border-stone-200/60 rounded-xl focus:border-black outline-none transition-all font-medium text-xs shadow-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+  return (
+    <main className="min-h-screen bg-[#fff7f8] px-4 py-10 text-gray-950 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-6xl">
+        <Link
+          to="/admin/productlist"
+          className="mb-8 inline-flex items-center gap-3 rounded-full border border-pink-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 shadow-sm transition hover:border-pink-300 hover:text-gray-950"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+            <ArrowLeft size={12} strokeWidth={3} />
+          </span>
+          Back to Products
+        </Link>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            {/* Brand */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Brand</label>
-                                <div className="relative group">
-                                    <Tag size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                    <input
-                                        type="text"
-                                        value={brand}
-                                        required
-                                        onChange={(e) => setBrand(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Category */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Category</label>
-                                <div className="relative group">
-                                    <Tag size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-black transition-colors" />
-                                    <input
-                                        type="text"
-                                        value={category}
-                                        required
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full pl-14 pr-6 py-4 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase tracking-widest font-bold text-stone-400 ml-1">Description</label>
-                            <div className="relative group">
-                                <AlignLeft size={16} className="absolute left-5 top-6 text-stone-400 group-focus-within:text-black transition-colors" />
-                                <textarea
-                                    value={description}
-                                    required
-                                    rows="4"
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full pl-14 pr-6 py-5 bg-stone-50 border border-transparent rounded-2xl focus:bg-white focus:border-black outline-none transition-all font-medium text-sm resize-none"
-                                />
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={updating || uploading}
-                            className="w-full py-4 bg-pink-500 text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-pink-600 transition-all shadow-xl shadow-pink-500/10 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
-                        >
-                            {updating ? "Saving Changes..." : (
-                                <>
-                                    <Check size={16} /> Save Product
-                                </>
-                            )}
-                        </button>
-                    </form>
-                </div>
-            )}
+        <div className="mb-8 rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-pink-500">
+            {isCreate ? "New Catalog Item" : "Catalog Editor"}
+          </p>
+          <h1 className="flex items-center gap-3 font-serif text-4xl font-bold tracking-tight text-gray-950 sm:text-5xl">
+            <Sparkles size={34} className="text-pink-500" />
+            {isCreate ? "Create Product" : "Edit Product"}
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-gray-500">
+            Update product details, inventory, pricing, and imagery for your
+            BeautyBliss catalog.
+          </p>
         </div>
-    );
+
+        {loading ? (
+          <div className="rounded-2xl border border-pink-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-sm">
+            Loading product data...
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-100 bg-red-50 px-6 py-5 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        ) : (
+          <form onSubmit={submitHandler} className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+            <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+                Product Image
+              </h2>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={uploadFileHandler}
+                className="hidden"
+              />
+
+              {hasValidImage ? (
+                <div className="group relative h-96 overflow-hidden rounded-2xl border border-pink-100 bg-[#fff0f4]">
+                  <img
+                    src={image}
+                    alt="Product preview"
+                    onError={() => setImageError(true)}
+                    className="h-full w-full object-contain bg-white transition duration-500 group-hover:scale-[1.02]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950/45 text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/20">
+                      <Upload size={20} />
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                      Replace Photo
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImage("")}
+                    className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-950/70 text-white shadow-lg transition hover:bg-red-600"
+                    aria-label="Remove image"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex h-96 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition ${
+                    uploading
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-pink-200 bg-[#fff0f4] hover:border-pink-400 hover:bg-[#ffe9f0]"
+                  }`}
+                >
+                  {uploading ? (
+                    <>
+                      <span className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
+                      <span className="text-xs font-bold uppercase tracking-widest text-amber-700">
+                        Uploading image...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-pink-500 shadow-sm">
+                        <Upload size={24} />
+                      </span>
+                      <span className="text-sm font-bold text-gray-800">
+                        {imageError
+                          ? "Image failed to load. Upload a new image."
+                          : "Upload product image"}
+                      </span>
+                      <span className="mt-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        JPG, PNG or WebP
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              <div className="mt-5">
+                {!showUrlInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(true)}
+                    className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition hover:text-pink-600"
+                  >
+                    Or enter image URL manually
+                  </button>
+                ) : (
+                  <div className="rounded-xl border border-pink-100 bg-[#fff7f8] p-4">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                        Direct Image URL
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowUrlInput(false)}
+                        className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition hover:text-pink-600"
+                      >
+                        Hide
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <ImageIcon
+                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
+                      />
+                      <input
+                        type="text"
+                        placeholder="https://example.com/image.jpg"
+                        value={image}
+                        onChange={(event) => setImage(event.target.value)}
+                        className="w-full rounded-xl border border-pink-100 bg-white py-3.5 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
+                Product Details
+              </h2>
+
+              <div className="space-y-5">
+                <Field
+                  icon={Package}
+                  label="Product Name"
+                  value={name}
+                  onChange={setName}
+                  required
+                />
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    icon={DollarSign}
+                    label="Price ($)"
+                    type="number"
+                    step="0.01"
+                    value={price}
+                    onChange={setPrice}
+                    required
+                  />
+                  <Field
+                    icon={Hash}
+                    label="Stock Count"
+                    type="number"
+                    value={countInStock}
+                    onChange={setCountInStock}
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    icon={Tag}
+                    label="Brand"
+                    value={brand}
+                    onChange={setBrand}
+                    required
+                  />
+                  <Field
+                    icon={Tag}
+                    label="Category"
+                    value={category}
+                    onChange={setCategory}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 ml-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    Description
+                  </label>
+                  <div className="relative">
+                    <AlignLeft
+                      size={16}
+                      className="absolute left-4 top-5 text-pink-500"
+                    />
+                    <textarea
+                      value={description}
+                      required
+                      rows="5"
+                      onChange={(event) => setDescription(event.target.value)}
+                      className="w-full resize-none rounded-xl border border-pink-100 bg-[#fff7f8] py-4 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={updating || uploading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-500 py-4 text-xs font-bold uppercase tracking-widest text-white shadow-xl shadow-pink-500/20 transition hover:bg-pink-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {updating ? (
+                    "Saving Changes..."
+                  ) : (
+                    <>
+                      <Check size={16} /> Save Product
+                    </>
+                  )}
+                </button>
+              </div>
+            </section>
+          </form>
+        )}
+      </section>
+    </main>
+  );
 };
+
+const Field = ({
+  icon: Icon,
+  label,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+  step,
+}) => (
+  <div>
+    <label className="mb-2 ml-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
+      {label}
+    </label>
+    <div className="relative">
+      <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500" />
+      <input
+        type={type}
+        step={step}
+        value={value}
+        required={required}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-xl border border-pink-100 bg-[#fff7f8] py-4 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
+      />
+    </div>
+  </div>
+);
 
 export default ProductEditScreen;

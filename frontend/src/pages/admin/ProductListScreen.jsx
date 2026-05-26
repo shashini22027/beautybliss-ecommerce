@@ -1,133 +1,214 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Package, Edit, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Package, Plus, Trash2 } from "lucide-react";
 import api from "../../services/api";
 
+const getTextValue = (value, fallback = "") => {
+  if (!value) return fallback;
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  return value.name || value.title || value._id || fallback;
+};
+
 const ProductListScreen = () => {
-    const navigate = useNavigate();
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const fetchProducts = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get("/products");
-            setProducts(Array.isArray(data) ? data : data.products || []);
-        } catch (err) {
-            setError(err?.response?.data?.message || err.message);
-        } finally {
-            setLoading(false);
-        }
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await api.get("/products");
+      setProducts(Array.isArray(data) ? data : data.products || []);
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const stats = useMemo(() => {
+    const lowStock = products.filter((product) => Number(product.countInStock || 0) <= 5)
+      .length;
+    const totalValue = products.reduce(
+      (sum, product) =>
+        sum + Number(product.price || 0) * Number(product.countInStock || 0),
+      0
+    );
+
+    return {
+      total: products.length,
+      lowStock,
+      totalValue,
     };
+  }, [products]);
 
-    useEffect(() => {
+  const deleteHandler = async (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        await api.delete(`/products/${id}`);
         fetchProducts();
-    }, []);
+      } catch (err) {
+        console.error(err?.response?.data?.message || err.message);
+      }
+    }
+  };
 
-    const deleteHandler = async (id) => {
-        if (window.confirm("Are you sure you want to delete this product?")) {
-            try {
-                await api.delete(`/products/${id}`);
-                fetchProducts();
-            } catch (err) {
-                console.error(err?.response?.data?.message || err.message);
-            }
-        }
-    };
+  return (
+    <main className="min-h-screen bg-[#fff7f8] px-4 py-10 text-gray-950 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl">
+        <Link
+          to="/admin/dashboard"
+          className="mb-8 inline-flex items-center gap-3 rounded-full border border-pink-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 shadow-sm transition hover:border-pink-300 hover:text-gray-950"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+            <ArrowLeft size={12} strokeWidth={3} />
+          </span>
+          Back to Dashboard
+        </Link>
 
-    const createProductHandler = async () => {
-        if (window.confirm("Create a new product?")) {
-            navigate(`/admin/product/create`);
-        }
-    };
-
-    return (
-        <div className="max-w-7xl mx-auto px-6 py-16">
-            <Link
-                to="/admin/dashboard"
-                className="inline-flex items-center gap-3 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[10px] uppercase tracking-[0.2em] font-black text-stone-500 hover:text-stone-900 hover:bg-stone-50 hover:shadow-lg hover:shadow-stone-200/50 transition-all mb-10 group"
-            >
-                <div className="w-6 h-6 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-500 group-hover:scale-110 transition-transform">
-                    <ArrowLeft size={12} strokeWidth={3} />
-                </div>
-                <span>Back to Dashboard</span>
-            </Link>
-
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-4xl font-serif font-bold text-stone-900 flex items-center gap-3">
-                        <Package size={32} className="text-pink-500" />
-                        Products
-                    </h1>
-                    <p className="text-stone-500 uppercase tracking-widest text-[10px] font-bold mt-2">Manage inventory and product catalog</p>
-                </div>
-                <button
-                    onClick={createProductHandler}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-pink-500 text-white rounded-xl text-xs uppercase tracking-widest font-bold hover:bg-pink-600 transition-all shadow-xl shadow-pink-500/20 active:scale-95"
-                >
-                    <Plus size={16} />
-                    New Product
-                </button>
+        <div className="mb-8 rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-pink-500">
+                Admin Catalog
+              </p>
+              <h1 className="flex items-center gap-3 font-serif text-4xl font-bold tracking-tight text-gray-950 sm:text-5xl">
+                <Package size={34} className="text-pink-500" />
+                Products
+              </h1>
+              <p className="mt-3 text-sm font-medium leading-6 text-gray-500">
+                Manage BeautyBliss inventory, pricing, stock levels, and product details.
+              </p>
             </div>
 
-            {loading ? (
-                <div className="py-20 text-center animate-pulse tracking-widest uppercase text-stone-400">Loading products...</div>
-            ) : error ? (
-                <div className="py-20 text-center text-red-500 font-medium">{error}</div>
-            ) : (
-                <div className="bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="bg-stone-50 border-b border-stone-200">
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Product ID</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Product Name</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Price</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Stock</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Category</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500">Brand</th>
-                                    <th className="px-6 py-5 text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-stone-100">
-                                {products.map((product) => (
-                                    <tr key={product._id} className="hover:bg-stone-50/50 transition-colors group">
-                                        <td className="px-6 py-5 font-mono text-[10px] text-stone-400">{product._id.substring(0, 10)}...</td>
-                                        <td className="px-6 py-5 text-sm font-medium text-stone-700">{product.name}</td>
-                                        <td className="px-6 py-5 text-sm font-bold text-stone-900">${product.price}</td>
-                                        <td className="px-6 py-5 text-sm font-bold">
-                                            {product.countInStock <= 5 ? (
-                                                <span className="text-rose-600 bg-rose-50 px-2 py-1 rounded-md">{product.countInStock}</span>
-                                            ) : (
-                                                <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{product.countInStock}</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-5 text-sm text-stone-500">{typeof product.category === 'object' ? product.category?.name : product.category}</td>
-                                        <td className="px-6 py-5 text-sm text-stone-500">{product.brand}</td>
-                                        <td className="px-6 py-5 text-right space-x-3">
-                                            <Link
-                                                to={`/admin/product/${product._id}/edit`}
-                                                className="inline-flex items-center justify-center p-2 bg-stone-100 text-stone-600 rounded-lg hover:bg-stone-200 hover:text-black transition-colors"
-                                            >
-                                                <Edit size={16} />
-                                            </Link>
-                                            <button
-                                                onClick={() => deleteHandler(product._id)}
-                                                className="inline-flex items-center justify-center p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-800 transition-colors"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="rounded-xl bg-[#fff0f4] px-5 py-4">
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    Items
+                  </p>
                 </div>
-            )}
+                <div className="rounded-xl bg-[#fff0f4] px-5 py-4">
+                  <p className="text-2xl font-bold">{stats.lowStock}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    Low
+                  </p>
+                </div>
+                <div className="rounded-xl bg-[#fff0f4] px-5 py-4">
+                  <p className="text-2xl font-bold">${stats.totalValue.toFixed(0)}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    Value
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/admin/product/create")}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-pink-500 px-6 text-xs font-bold uppercase tracking-widest text-white shadow-xl shadow-pink-500/20 transition hover:bg-pink-600 active:scale-95"
+              >
+                <Plus size={16} />
+                New Product
+              </button>
+            </div>
+          </div>
         </div>
-    );
+
+        {loading ? (
+          <div className="rounded-2xl border border-pink-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-sm">
+            Loading products...
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-100 bg-red-50 px-6 py-5 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-pink-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-pink-100 bg-[#fff0f4]">
+                    {["Product", "Price", "Stock", "Category", "Brand", "Actions"].map(
+                      (head) => (
+                        <th
+                          key={head}
+                          className={`px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ${
+                            head === "Actions" ? "text-right" : ""
+                          }`}
+                        >
+                          {head}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-pink-100">
+                  {products.map((product) => {
+                    const stock = Number(product.countInStock || 0);
+
+                    return (
+                      <tr key={product._id} className="transition hover:bg-[#fff7f8]">
+                        <td className="px-6 py-5">
+                          <p className="text-sm font-bold text-gray-800">{product.name}</p>
+                          <p className="mt-1 font-mono text-[10px] text-gray-400">
+                            {product._id?.substring(0, 10)}...
+                          </p>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-bold text-gray-950">
+                          ${Number(product.price || 0).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-5 text-sm font-bold">
+                          <span
+                            className={`rounded-lg px-3 py-2 ${
+                              stock <= 5
+                                ? "bg-rose-50 text-rose-700"
+                                : "bg-emerald-50 text-emerald-700"
+                            }`}
+                          >
+                            {stock}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-sm text-gray-500">
+                          {getTextValue(product.category, "Uncategorized")}
+                        </td>
+                        <td className="px-6 py-5 text-sm text-gray-500">
+                          {getTextValue(product.brand, "BeautyBliss")}
+                        </td>
+                        <td className="space-x-3 px-6 py-5 text-right">
+                          <Link
+                            to={`/admin/product/${product._id}/edit`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition hover:bg-pink-100 hover:text-pink-700"
+                            aria-label="Edit product"
+                          >
+                            <Edit size={16} />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => deleteHandler(product._id)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 transition hover:bg-red-100 hover:text-red-800"
+                            aria-label="Delete product"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
+  );
 };
 
 export default ProductListScreen;
