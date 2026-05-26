@@ -3,7 +3,17 @@ import { useParams, Link } from 'react-router-dom';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
 import { CartContext } from '../context/CartContext';
-import API from '../services/api';
+
+const getTextValue = (value, fallback = '') => {
+  if (!value) return fallback;
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  return value.name || value.title || value._id || fallback;
+};
+
+const getNumberValue = (value, fallback = 0) => {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : fallback;
+};
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -18,11 +28,18 @@ const ProductDetailsPage = () => {
     try {
       setLoading(true);
       setError('');
-      const { data } = await API.get(`/products/${id}`);
-      setProduct(data);
-      setActiveImage(data.image || data.images?.[0] || '');
+      const res = await fetch(`/api/products/${id}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || 'Unable to load product details.');
+      }
+
+      const productData = data.product || data;
+      setProduct(productData);
+      setActiveImage(productData.image || productData.images?.[0] || '');
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to load product details.');
+      setError(err.message || 'Unable to load product details.');
     } finally {
       setLoading(false);
     }
@@ -49,7 +66,19 @@ const ProductDetailsPage = () => {
 
   if (!product) return null;
 
-  const allImages = [product.image, ...(product.images || [])].filter(Boolean);
+  const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))];
+  const price = getNumberValue(product.price);
+  const rating = getNumberValue(product.rating, 4.8);
+  const reviewCount = getNumberValue(product.numReviews);
+  const stockCount = getNumberValue(product.countInStock || product.stock);
+  const category = getTextValue(product.category);
+  const brand = getTextValue(product.brand, 'BeautyBliss');
+  const size = getTextValue(product.size, 'Standard');
+  const skinType = getTextValue(product.skinType, 'All skin types');
+  const mainImage =
+    activeImage ||
+    allImages[0] ||
+    'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
 
   const handleMainImageClick = () => {
     if (allImages.length <= 1) return;
@@ -75,7 +104,7 @@ const ProductDetailsPage = () => {
             <div className="space-y-6">
               <div className="relative overflow-hidden rounded-[2rem] border border-pink-100 bg-[#fff4f6] cursor-pointer" onClick={handleMainImageClick}>
                 <div className="flex h-[520px] items-center justify-center">
-                  <img src={activeImage} alt={product.name} className="h-full w-full object-cover transition duration-500" />
+                  <img src={mainImage} alt={product.name} className="h-full w-full object-cover transition duration-500" />
                 </div>
                 {allImages.length > 1 && (
                   <span className="absolute bottom-4 right-4 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-gray-700 shadow-sm">Tap to cycle images</span>
@@ -96,27 +125,27 @@ const ProductDetailsPage = () => {
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-pink-100 bg-[#fff4f6] p-6 shadow-sm">
                 <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-[0.24em] text-gray-500">
-                  <span>{product.brand}</span>
-                  {product.category && <span className="rounded-full bg-white px-3 py-1 text-pink-600">{product.category}</span>}
-                  {product.countInStock > 0 ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">In stock</span> : <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">Out of stock</span>}
+                  <span>{brand}</span>
+                  {category && <span className="rounded-full bg-white px-3 py-1 text-pink-600">{category}</span>}
+                  {stockCount > 0 ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">In stock</span> : <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">Out of stock</span>}
                 </div>
 
                 <div className="mt-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm uppercase tracking-[0.25em] text-gray-500">Price</p>
-                    <p className="text-4xl font-bold text-gray-950">${product.price.toFixed(2)}</p>
+                    <p className="text-4xl font-bold text-gray-950">${price.toFixed(2)}</p>
                   </div>
-                  <div className="rounded-3xl bg-white px-4 py-3 text-sm text-gray-700 shadow-sm">{product.rating?.toFixed(1) || '4.8'}<span className="ml-2 text-gray-400">/ 5</span></div>
+                  <div className="rounded-3xl bg-white px-4 py-3 text-sm text-gray-700 shadow-sm">{rating.toFixed(1)}<span className="ml-2 text-gray-400">/ 5</span></div>
                 </div>
 
                 <div className="mt-6 flex items-center gap-4 text-sm text-gray-500">
-                  <RatingStars rating={product.rating} />
-                  <span>{product.numReviews || 0} reviews</span>
+                  <RatingStars rating={rating} />
+                  <span>{reviewCount} reviews</span>
                 </div>
 
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-3xl bg-white p-4 text-sm text-gray-600 shadow-sm"><span className="block text-xs uppercase tracking-[0.3em] text-gray-400">Size</span><span className="font-semibold text-gray-900">{product.size || 'Standard'}</span></div>
-                  <div className="rounded-3xl bg-white p-4 text-sm text-gray-600 shadow-sm"><span className="block text-xs uppercase tracking-[0.3em] text-gray-400">Skin type</span><span className="font-semibold text-gray-900">{product.skinType || 'All skin types'}</span></div>
+                  <div className="rounded-3xl bg-white p-4 text-sm text-gray-600 shadow-sm"><span className="block text-xs uppercase tracking-[0.3em] text-gray-400">Size</span><span className="font-semibold text-gray-900">{size}</span></div>
+                  <div className="rounded-3xl bg-white p-4 text-sm text-gray-600 shadow-sm"><span className="block text-xs uppercase tracking-[0.3em] text-gray-400">Skin type</span><span className="font-semibold text-gray-900">{skinType}</span></div>
                 </div>
               </div>
 
@@ -134,7 +163,7 @@ const ProductDetailsPage = () => {
                   </div>
                   <div className="flex flex-1 gap-3">
                     <select value={qty} onChange={(e) => setQty(Number(e.target.value))} className="w-24 rounded-3xl border border-stone-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-100">
-                      {[...Array(Math.max(product.countInStock, 1)).keys()].map((x) => (
+                      {[...Array(Math.max(stockCount, 1)).keys()].map((x) => (
                         <option key={x + 1} value={x + 1}>{x + 1}</option>
                       ))}
                     </select>
