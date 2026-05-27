@@ -38,9 +38,9 @@ const getStoredJson = (key, fallback) => {
     }
 };
 
-const getItemId = (item) => item._id || item.id || item.product || item.productId;
+const getItemId = (item) => item.product?._id || item.product?.id || item._id || item.id || item.productId;
 const getItemQty = (item) => Number(item.qty || item.quantity || 1);
-const getItemPrice = (item) => Number(item.price || 0);
+const getItemPrice = (item) => Number(item.product?.price || item.price || 0);
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
@@ -52,6 +52,7 @@ const CheckoutPage = () => {
     const [address, setAddress] = useState("");
     const [city, setCity] = useState("");
     const [postalCode, setPostalCode] = useState("");
+    const [country, setCountry] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("Cash on Delivery");
     const [loading, setLoading] = useState(false);
     const [checkoutError, setCheckoutError] = useState("");
@@ -84,8 +85,8 @@ const CheckoutPage = () => {
             const orderPayload = {
                 orderItems: cartItems.map((item) => ({
                     product: getItemId(item),
-                    name: item.name,
-                    image: item.image || item.images?.[0],
+                    name: item.product?.name || item.name,
+                    image: item.product?.image || item.image || item.images?.[0],
                     price: getItemPrice(item),
                     qty: getItemQty(item),
                 })),
@@ -96,6 +97,7 @@ const CheckoutPage = () => {
                     address,
                     city,
                     postalCode,
+                    country,
                 },
                 paymentMethod,
                 itemsPrice: subtotal,
@@ -305,6 +307,21 @@ const CheckoutPage = () => {
                                             required
                                             onChange={(e) =>
                                                 setPostalCode(e.target.value)
+                                            }
+                                            className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] px-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                        />
+                                    </label>
+
+                                    <label className="block">
+                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
+                                            Country
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={country}
+                                            required
+                                            onChange={(e) =>
+                                                setCountry(e.target.value)
                                             }
                                             className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] px-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
                                         />
