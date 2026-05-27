@@ -72,6 +72,26 @@ const CategoryCard = ({ title, subtitle, to, image, video, accent }) => (
   </Link>
 );
 
+const HomeCategoryTile = ({ title, to, image, objectPosition = 'center' }) => (
+  <Link
+    to={to}
+    className="group relative block aspect-[4/5] overflow-hidden rounded-xl bg-gray-100"
+  >
+    <img
+      src={image}
+      alt={title}
+      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      style={{ objectPosition }}
+    />
+    <div className="absolute inset-0 bg-black/10 transition duration-300 group-hover:bg-black/25" />
+    <div className="absolute inset-0 flex items-center justify-center px-4 text-center">
+      <h3 className="text-2xl font-extrabold uppercase tracking-tight text-white drop-shadow-md md:text-[26px]">
+        {title}
+      </h3>
+    </div>
+  </Link>
+);
+
 const ServicePill = ({ text }) => (
   <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-white px-6 py-4 shadow-sm">
     <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
@@ -120,6 +140,285 @@ const HomePage = () => {
         'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
     },
   ];
+
+  const bestSellingProducts = [
+  {
+    name: 'Aliver Pumpkin Seed Oil 60ml',
+    category: 'Skin Care, Body Care, Hair Care, Nourishing Oils',
+    price: 'රු2,390.00',
+    oldPrice: '',
+    rating: 5,
+    discount: '',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Aliver Luscious Lips Shimmer Lip Oil',
+    category: 'Lips',
+    price: 'From රු1,390.00',
+    oldPrice: '',
+    rating: 4,
+    discount: '-34%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Aliver Teeth Whitening Foam Toothpaste Mint Flavour',
+    category: 'Oral Care',
+    price: 'රු1,090.00',
+    oldPrice: 'රු1,650.00',
+    rating: 3,
+    discount: '-34%',
+    soldOut: true,
+    image:
+      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set',
+    category: 'Lips, Lip glow',
+    price: 'රු1,650.00',
+    oldPrice: 'රු2,190.00',
+    rating: 4,
+    discount: '-25%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Brightening Vitamin C Serum',
+    category: 'Skin Care',
+    price: 'රු2,850.00',
+    oldPrice: 'රු3,250.00',
+    rating: 5,
+    discount: '-12%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Rose Cloud Cleanser',
+    category: 'Cleansers',
+    price: 'රු3,250.00',
+    oldPrice: '',
+    rating: 4,
+    discount: '',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Daily Silk Sunscreen',
+    category: 'Sun Care',
+    price: 'රු4,200.00',
+    oldPrice: 'රු4,900.00',
+    rating: 5,
+    discount: '-14%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Velvet Repair Cream',
+    category: 'Moisturizers',
+    price: 'රු5,750.00',
+    oldPrice: '',
+    rating: 4,
+    discount: '',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+  },
+];
+
+const [bestSellerPage, setBestSellerPage] = useState(0);
+const productsPerPage = 4;
+const bestSellerPageCount = Math.ceil(bestSellingProducts.length / productsPerPage);
+const visibleBestSellers = bestSellingProducts.slice(
+  bestSellerPage * productsPerPage,
+  bestSellerPage * productsPerPage + productsPerPage
+);
+
+const goToPrevBestSellers = () => {
+  setBestSellerPage((page) =>
+    page === 0 ? bestSellerPageCount - 1 : page - 1
+  );
+};
+
+const goToNextBestSellers = () => {
+  setBestSellerPage((page) =>
+    page === bestSellerPageCount - 1 ? 0 : page + 1
+  );
+};
+
+const newArrivalProducts = [
+  {
+    name: 'Glow Boost Vitamin C Drops',
+    category: 'Skin Care',
+    price: 'රු2,950.00',
+    oldPrice: '',
+    rating: 5,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Soft Matte Lip Tint',
+    category: 'Cosmetics',
+    price: 'රු1,750.00',
+    oldPrice: '',
+    rating: 4,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Hydra Dew Face Cream',
+    category: 'Moisturizers',
+    price: 'රු3,650.00',
+    oldPrice: '',
+    rating: 5,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Fresh Bloom Body Mist',
+    category: 'Fragrances',
+    price: 'රු2,490.00',
+    oldPrice: '',
+    rating: 4,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Rose Cloud Gentle Cleanser',
+    category: 'Cleansers',
+    price: 'රු2,850.00',
+    oldPrice: '',
+    rating: 4,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Silk Repair Hair Serum',
+    category: 'Hair Care',
+    price: 'රු3,150.00',
+    oldPrice: '',
+    rating: 5,
+    discount: 'New',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
+  },
+];
+
+const hotDealProducts = [
+  {
+    name: 'Daily Silk Sunscreen',
+    category: 'Sun Care',
+    price: 'රු4,200.00',
+    oldPrice: 'රු4,900.00',
+    rating: 5,
+    discount: '-14%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Velvet Repair Cream',
+    category: 'Moisturizers',
+    price: 'රු4,990.00',
+    oldPrice: 'රු5,750.00',
+    rating: 4,
+    discount: '-13%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Brightening Vitamin C Serum',
+    category: 'Skin Care',
+    price: 'රු2,850.00',
+    oldPrice: 'රු3,250.00',
+    rating: 5,
+    discount: '-12%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Lip Plumper Gloss Set',
+    category: 'Lips',
+    price: 'රු1,650.00',
+    oldPrice: 'රු2,190.00',
+    rating: 4,
+    discount: '-25%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Glow Routine Bundle',
+    category: 'Beauty Sets',
+    price: 'රු6,990.00',
+    oldPrice: 'රු8,200.00',
+    rating: 5,
+    discount: '-15%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+  },
+  {
+    name: 'Luscious Lip Oil',
+    category: 'Lips',
+    price: 'රු1,390.00',
+    oldPrice: 'රු1,980.00',
+    rating: 4,
+    discount: '-30%',
+    soldOut: false,
+    image:
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+  },
+];
+
+const [newArrivalPage, setNewArrivalPage] = useState(0);
+const [hotDealPage, setHotDealPage] = useState(0);
+const promoProductsPerPage = 4;
+const newArrivalPageCount = Math.ceil(newArrivalProducts.length / promoProductsPerPage);
+const hotDealPageCount = Math.ceil(hotDealProducts.length / promoProductsPerPage);
+const visibleNewArrivals = newArrivalProducts.slice(
+  newArrivalPage * promoProductsPerPage,
+  newArrivalPage * promoProductsPerPage + promoProductsPerPage
+);
+const visibleHotDeals = hotDealProducts.slice(
+  hotDealPage * promoProductsPerPage,
+  hotDealPage * promoProductsPerPage + promoProductsPerPage
+);
+
+const goToPrevNewArrivals = () => {
+  setNewArrivalPage((page) => (page === 0 ? newArrivalPageCount - 1 : page - 1));
+};
+
+const goToNextNewArrivals = () => {
+  setNewArrivalPage((page) => (page === newArrivalPageCount - 1 ? 0 : page + 1));
+};
+
+const goToPrevHotDeals = () => {
+  setHotDealPage((page) => (page === 0 ? hotDealPageCount - 1 : page - 1));
+};
+
+const goToNextHotDeals = () => {
+  setHotDealPage((page) => (page === hotDealPageCount - 1 ? 0 : page + 1));
+};
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -205,7 +504,8 @@ const HomePage = () => {
           <div
             className="absolute inset-0 z-10 pointer-events-none"
             style={{
-              background: 'linear-gradient(to right, #fff9f4 0%, rgba(255,249,244,0.72) 28%, transparent 44%)',
+              background:
+                'linear-gradient(to right, #fff9f4 0%, rgba(255,249,244,0.72) 28%, transparent 44%)',
             }}
           />
           <div
@@ -255,246 +555,338 @@ const HomePage = () => {
         </div>
       </div>
 
-      <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mb-14 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.4em] text-rose-400">
-              Shop by Routine
-            </p>
-            <h2 className="font-serif text-4xl font-bold tracking-tighter text-gray-900 md:text-5xl">
-              Build Your Beauty Ritual
-            </h2>
-          </div>
+    <section className="mx-auto max-w-[1490px] px-6 py-20">
+  <div className="mb-10 text-center">
+    <h2 className="text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
+      Shop by Categories
+    </h2>
+    <p className="mx-auto mt-6 max-w-3xl text-lg leading-7 text-gray-500">
+      Browse our curated categories to find exactly what you need, from skincare to cosmetics.
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <HomeCategoryTile
+      title="Skin Care"
+      to="/category/skincare"
+      image="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=900&q=85"
+    />
+    <HomeCategoryTile
+      title="Cosmetics"
+      to="/category/cosmetics"
+      image="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=85"
+    />
+    <HomeCategoryTile
+      title="Fragrances"
+      to="/category/fragrances"
+      image="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85"
+    />
+    <HomeCategoryTile
+      title="Hair Care"
+      to="/category/haircare"
+      image="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=900&q=85"
+    />
+  </div>
+</section>
+
+<section className="bg-white py-20">
+  <div className="mx-auto max-w-[1540px] px-6">
+    <div className="mb-14 text-center">
+      <h2 className="text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
+        Best Selling Products
+      </h2>
+      <p className="mx-auto mt-6 max-w-3xl text-lg leading-7 text-gray-500">
+        Shop our top-rated bestsellers, trusted by customers for their quality and effectiveness.
+      </p>
+    </div>
+
+    <div className="relative">
+      <button
+        type="button"
+        onClick={goToPrevBestSellers}
+        className="absolute left-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-500 transition hover:text-gray-950 lg:flex"
+        aria-label="Previous products"
+      >
+        ‹
+      </button>
+
+      <button
+        type="button"
+        onClick={goToNextBestSellers}
+        className="absolute right-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-400 transition hover:text-gray-950 lg:flex"
+        aria-label="Next products"
+      >
+        ›
+      </button>
+
+      <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
+        {visibleBestSellers.map((product) => (
           <Link
+            key={product.name}
             to="/products"
-            className="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-gray-900"
+            className="group relative block text-center"
           >
-            All Products
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
-              &rarr;
-            </span>
-          </Link>
-        </div>
+            <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+              {product.discount && (
+                <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                  {product.discount}
+                </span>
+              )}
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <CategoryCard
-            title="Skincare Essentials"
-            subtitle="Cleanse, Treat, Hydrate"
-            to="/category/skincare"
-            image="https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=900&q=85"
-            accent="#d8a7b1"
-          />
-          <CategoryCard
-            title="Makeup Must-Haves"
-            subtitle="Soft Glam Favorites"
-            to="/category/makeup"
-            image="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=85"
-            accent="#e7b8a5"
-          />
-          <CategoryCard
-            title="Body & Fragrance"
-            subtitle="Daily Self-Care"
-            to="/category/body-care"
-            image="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85"
-            accent="#c9a8d8"
-          />
-        </div>
-      </section>
+              {product.soldOut && (
+                <span className="absolute left-5 top-16 z-10 text-sm font-bold uppercase tracking-wide text-black">
+                  SOLD OUT
+                </span>
+              )}
 
-      <section className="bg-gray-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.4em] text-rose-400">
-              Customer Favorites
+              <img
+                src={product.image}
+                alt={product.name}
+                className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+              />
+            </div>
+
+            <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+              {product.name}
+            </h3>
+
+            <p className="mt-2 min-h-[24px] text-base text-gray-400">
+              {product.category}
             </p>
-            <h2 className="font-serif text-4xl font-bold tracking-tighter text-gray-900 md:text-5xl">
-              Featured Beauty Picks
+
+            <div className="mt-3 flex justify-center text-xl leading-none">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <span
+                  key={star}
+                  className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+              {product.oldPrice && (
+                <span className="text-base font-normal text-gray-400 line-through">
+                  {product.oldPrice}
+                </span>
+              )}
+              <span className="text-gray-950">{product.price}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-8 flex justify-center gap-3">
+        {Array.from({ length: bestSellerPageCount }).map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            onClick={() => setBestSellerPage(index)}
+            className={`h-3 w-3 rounded-full transition ${
+              index === bestSellerPage
+                ? 'bg-gray-700'
+                : 'border-2 border-gray-300 bg-white hover:border-gray-500'
+            }`}
+            aria-label={`Go to best seller page ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-[1540px] px-6">
+          <div className="mb-14 text-center">
+            <h2 className="text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
+              New Arrival
             </h2>
-            <div className="mx-auto mt-6 h-[2px] w-16 bg-gradient-to-r from-rose-300 to-orange-100" />
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-7 text-gray-500">
+              Discover the latest beauty essentials added to our curated collection.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.name}
-                to="/products"
-                className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="aspect-[4/5] overflow-hidden bg-rose-50">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="p-5">
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400">
-                    {product.category}
-                  </p>
-                  <h3 className="font-serif text-lg font-bold text-gray-900">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={goToPrevNewArrivals}
+              className="absolute left-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-500 transition hover:text-gray-950 lg:flex"
+              aria-label="Previous new arrivals"
+            >
+              ‹
+            </button>
+
+            <button
+              type="button"
+              onClick={goToNextNewArrivals}
+              className="absolute right-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-400 transition hover:text-gray-950 lg:flex"
+              aria-label="Next new arrivals"
+            >
+              ›
+            </button>
+
+            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
+              {visibleNewArrivals.map((product) => (
+                <Link
+                  key={product.name}
+                  to="/products"
+                  className="group relative block text-center"
+                >
+                  <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+                    <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                      {product.discount}
+                    </span>
+
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+
+                  <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
                     {product.name}
                   </h3>
-                  <p className="mt-2 text-sm font-bold text-gray-500">
-                    {product.price}
+
+                  <p className="mt-2 min-h-[24px] text-base text-gray-400">
+                    {product.category}
                   </p>
-                </div>
-              </Link>
-            ))}
-          </div>
 
-          <div className="mt-14 text-center">
-            <Link
-              to="/products"
-              className="inline-block rounded-full border-2 border-[#5b2c45] px-12 py-4 text-sm font-bold uppercase tracking-widest text-[#5b2c45] transition-all duration-300 hover:scale-105 hover:bg-[#5b2c45] hover:text-white hover:shadow-xl"
-            >
-              View All Products &rarr;
-            </Link>
-          </div>
-        </div>
-      </section>
+                  <div className="mt-3 flex justify-center text-xl leading-none">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
 
-      <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="grid gap-8 rounded-[2rem] border border-gray-200 bg-white p-8 shadow-[0_24px_80px_rgba(28,25,23,0.08)] md:grid-cols-[0.9fr_1.1fr] lg:p-12">
-          <div className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#fff7f2] via-[#f7dce3] to-[#efe1ff] p-10">
-            <div
-              className="absolute left-0 top-0 h-full w-full opacity-40"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at top left, rgba(255,255,255,0.85) 0%, transparent 34%), radial-gradient(circle at bottom right, rgba(255,255,255,0.65) 0%, transparent 28%)',
-              }}
-            />
-            <div className="relative z-10 max-w-xl">
-              <p className="mb-3 text-xs font-bold uppercase tracking-[0.4em] text-[#9d5f72]">
-                Beauty Deals
-              </p>
-              <h2 className="mb-4 font-serif text-4xl font-bold tracking-tight text-[#2f2029] md:text-5xl">
-New Arrivals
-              </h2>
-              <p className="text-sm leading-relaxed text-[#785d68]">
-                Refresh your routine with seasonal savings on bestselling skincare and makeup essentials. Perfect for building effortless glow from morning to night.
-              </p>
-              <Link
-                to="/products"
-                className="mt-10 inline-flex h-14 items-center justify-center rounded-full border border-[#9d5f72] bg-[#fff6f2] px-8 text-sm font-bold uppercase tracking-[0.18em] text-[#2f2029] transition hover:border-pink-300 hover:bg-pink-50 hover:text-[#7b3154]"
-              >
-                Shop current deals
-              </Link>
+                  <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+                    <span className="text-gray-950">{product.price}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-8 flex justify-center gap-3">
+              {Array.from({ length: newArrivalPageCount }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setNewArrivalPage(index)}
+                  className={`h-3 w-3 rounded-full transition ${
+                    index === newArrivalPage
+                      ? 'bg-gray-700'
+                      : 'border-2 border-gray-300 bg-white hover:border-gray-500'
+                  }`}
+                  aria-label={`Go to new arrival page ${index + 1}`}
+                />
+              ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {featuredProducts.slice(0, 4).map((product) => (
-              <Link
-                key={product.name}
-                to="/products"
-                className="group overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="relative h-44 overflow-hidden bg-rose-50">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-pink-600 shadow-sm">
-                    Deal
-                  </span>
-                </div>
-                <div className="p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-400">
-                    {product.category}
-                  </p>
-                  <h3 className="mt-2 font-serif text-lg font-bold text-gray-950">
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-[1540px] px-6">
+          <div className="mb-14 text-center">
+            <h2 className="text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
+              Hot Deals
+            </h2>
+            <p className="mx-auto mt-6 max-w-3xl text-lg leading-7 text-gray-500">
+              Save more on selected beauty favorites before these offers disappear.
+            </p>
+          </div>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={goToPrevHotDeals}
+              className="absolute left-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-500 transition hover:text-gray-950 lg:flex"
+              aria-label="Previous hot deals"
+            >
+              ‹
+            </button>
+
+            <button
+              type="button"
+              onClick={goToNextHotDeals}
+              className="absolute right-0 top-[38%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center text-5xl font-light text-gray-400 transition hover:text-gray-950 lg:flex"
+              aria-label="Next hot deals"
+            >
+              ›
+            </button>
+
+            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
+              {visibleHotDeals.map((product) => (
+                <Link
+                  key={product.name}
+                  to="/products"
+                  className="group relative block text-center"
+                >
+                  <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+                    <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                      {product.discount}
+                    </span>
+
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+                    />
+                  </div>
+
+                  <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
                     {product.name}
                   </h3>
-                  <p className="mt-3 text-sm font-bold text-gray-700">
-                    {product.price}
+
+                  <p className="mt-2 min-h-[24px] text-base text-gray-400">
+                    {product.category}
                   </p>
-                </div>
-              </Link>
-            ))}
+
+                  <div className="mt-3 flex justify-center text-xl leading-none">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+                    <span className="text-base font-normal text-gray-400 line-through">
+                      {product.oldPrice}
+                    </span>
+                    <span className="text-gray-950">{product.price}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-8 flex justify-center gap-3">
+              {Array.from({ length: hotDealPageCount }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setHotDealPage(index)}
+                  className={`h-3 w-3 rounded-full transition ${
+                    index === hotDealPage
+                      ? 'bg-gray-700'
+                      : 'border-2 border-gray-300 bg-white hover:border-gray-500'
+                  }`}
+                  aria-label={`Go to hot deals page ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-gray-50 py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.4em] text-rose-400">
-              BeautyBliss Promise
-            </p>
-            <h2 className="font-serif text-4xl font-bold tracking-tighter text-gray-900 md:text-5xl">
-              Skincare Made Simple
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                label: '01',
-                title: 'Glow-Focused',
-                desc: 'Products selected to support hydrated, fresh-looking skin.',
-              },
-              {
-                label: '02',
-                title: 'Gentle Choices',
-                desc: 'Routine essentials designed for daily beauty rituals.',
-              },
-              {
-                label: '03',
-                title: 'Fast Delivery',
-                desc: 'Simple online shopping with reliable order handling.',
-              },
-              {
-                label: '04',
-                title: 'Easy Support',
-                desc: 'Helpful service for product questions and order updates.',
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="group rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="mb-5 text-xs font-bold uppercase tracking-[0.3em] text-rose-300">
-                  {item.label}
-                </div>
-                <h3 className="mb-3 font-serif text-lg font-bold text-gray-900 transition-colors group-hover:text-[#6f3a54]">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-gray-500">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="flex flex-wrap justify-center gap-4">
-          <ServicePill text="Routine Guidance" />
-          <ServicePill text="Secure Checkout" />
-          <ServicePill text="Gift Ready" />
-          <ServicePill text="Self-Care Edits" />
-          <ServicePill text="Beauty Support" />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-4xl px-6 pb-28 text-center">
-        <div className="mx-auto mb-12 h-[1px] w-16 bg-rose-300" />
-        <p className="mb-4 text-xs font-bold uppercase tracking-[0.4em] text-rose-400">
-          Glow Match Ready
-        </p>
-        <h2 className="mb-6 font-serif text-4xl font-bold tracking-tighter text-gray-900 md:text-5xl">
-          Your Glow Match Awaits
-        </h2>
-        <p className="mx-auto mb-10 max-w-lg text-sm leading-relaxed text-gray-500">
-          Explore curated collections, radiant essentials, and beauty edits built
-          to bring out the best version of your skin.
-        </p>
-        <Link
-          to="/products"
-          className="inline-block rounded-full bg-gradient-to-r from-[#5b2c45] to-rose-300 px-12 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all duration-300 hover:scale-105 hover:shadow-xl"
-        >
-          Browse the Edit
-        </Link>
-      </section>
 
       <style>{`
         @keyframes marquee {
