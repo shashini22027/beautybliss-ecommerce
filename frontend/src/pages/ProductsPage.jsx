@@ -137,10 +137,10 @@ const ProductsPage = () => {
 
     const categoryHeroItems = useMemo(() => {
         const featuredCategories = [
-            { name: "SKINCARE" },
-            { name: "COSMETICS" },
-            { name: "HAIRCARE" },
-            { name: "FRAGRANCES"},
+            { name: "SKINCARE", value: "skincare"},
+            { name: "COSMETICS", value: "cosmetics"},
+            { name: "HAIRCARE", value: "haircare" },
+            { name: "FRAGRANCES", value: "fragrances" },
         ];
 
         return featuredCategories.map((category) => ({
