@@ -29,11 +29,42 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
     );
 };
 
+const getPasswordStrength = (password) => {
+    if (!password) {
+        return {
+            label: "",
+            message: "",
+            className: "",
+            canSubmit: false,
+        };
+    }
+
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+    const isMedium = password.length >= 8 && hasLower && hasUpper && hasNumber && hasSymbol;
+
+    if (!isMedium) {
+        return {
+            label: "Very weak",
+            message: "Very weak - Please enter a stronger password.",
+            className: "bg-[#e7b84f] text-white",
+            canSubmit: false,
+        };
+    }
+
+    return {
+        label: "Medium",
+        message: "Medium",
+        className: "bg-[#459547] text-white",
+        canSubmit: true,
+    };
+};
+
 const RegisterPage = () => {
-    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [registerError, setRegisterError] = useState("");
@@ -41,23 +72,25 @@ const RegisterPage = () => {
     const navigate = useNavigate();
     const { search } = useLocation();
     const redirect = new URLSearchParams(search).get("redirect") || "/";
+    const passwordStrength = getPasswordStrength(password);
 
     const submitHandler = async (e) => {
         e.preventDefault();
         setRegisterError("");
 
-        if (password !== confirmPassword) {
-            setRegisterError("Passwords do not match");
+        if (!passwordStrength.canSubmit) {
+            setRegisterError("Please enter a stronger password.");
             return;
         }
 
         setLoading(true);
 
         try {
+            const generatedName = email.split("@")[0] || "Customer";
             const res = await fetch("/api/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({ name: generatedName, email, password }),
             });
             const data = await res.json();
 
@@ -75,209 +108,113 @@ const RegisterPage = () => {
     };
 
     return (
-        <main className="min-h-screen bg-[#faf7f4] px-4 py-8 text-gray-950 sm:px-6 lg:px-8">
-            <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_24px_80px_rgba(28,25,23,0.08)] lg:grid-cols-[0.92fr_1fr]">
-                <section className="relative hidden bg-[#1f1a17] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-                    <div className="absolute inset-0 opacity-80">
-                        <img
-                            src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80"
-                            alt=""
-                            className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1a17] via-[#1f1a17]/70 to-[#1f1a17]/20" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <Link
-                            to="/"
-                            className="inline-flex items-center text-2xl font-serif font-bold tracking-[0.18em]"
-                        >
-                            BEAUTYBLISS
+        <main className="min-h-screen bg-white text-gray-950">
+            <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+                <img
+                    src="https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=1800&q=85"
+                    alt="Skincare products"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-black/35" />
+                <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
+                    <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+                        My account
+                    </h1>
+                    <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+                        <Link to="/" className="text-white/85 transition hover:text-white">
+                            Home
                         </Link>
+                        <span>/</span>
+                        <span className="font-bold">My account</span>
                     </div>
+                </div>
+            </section>
 
-                    <div className="relative z-10 max-w-md">
-                        <p className="mb-4 text-xs font-bold uppercase tracking-[0.32em] text-pink-200">
-                            Glow starts here
-                        </p>
-                        <h1 className="text-5xl font-serif font-bold leading-tight tracking-tight">
-                            Create your beauty account.
-                        </h1>
-                        <p className="mt-5 text-sm leading-6 text-pink-50/80">
-                            Save favorites, check out faster, and keep your skincare and makeup picks in one place.
-                        </p>
-                    </div>
-                </section>
-
-                <section className="relative flex items-center justify-center p-6 sm:p-10">
-                    <Link
-                        to="/"
-                        aria-label="Close register page"
-                        className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-950"
-                    >
-                        <Icon name="x" className="h-5 w-5" />
-                    </Link>
-
-                    <div className="w-full max-w-md">
-                        <div className="mb-8 lg:hidden">
-                            <Link
-                                to="/"
-                                className="text-2xl font-serif font-bold tracking-[0.18em] text-gray-950"
-                            >
-                                BEAUTYBLISS
-                            </Link>
-                        </div>
-
-                        <div className="mb-8">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
-                                New Account
-                            </p>
-                            <h2 className="text-4xl font-serif font-bold tracking-tight text-gray-950">
-                                Join BeautyBliss
-                            </h2>
-                            <p className="mt-3 text-sm leading-6 text-gray-500">
-                                Build your personal beauty shelf and shop your favorites faster.
-                            </p>
-                        </div>
+            <section className="mx-auto max-w-[1240px] px-6 py-14 sm:py-20">
+                <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+                    <section className="lg:pr-10">
+                        <h2 className="mb-8 text-3xl font-extrabold uppercase">Register</h2>
 
                         {registerError && (
-                            <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                <span>{registerError}</span>
+                            <div className="mb-6 border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                {registerError}
                             </div>
                         )}
 
-                        <form onSubmit={submitHandler} className="space-y-4">
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Full Name
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="user"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Enter your name"
-                                        value={name}
-                                        required
-                                        onChange={(e) => setName(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                    />
-                                </span>
+                        <form onSubmit={submitHandler} className="space-y-7">
+                            <label className="block text-lg">
+                                Email address <span className="text-red-500">*</span>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    required
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="mt-3 h-[52px] w-full border border-gray-200 bg-white px-4 text-base outline-none transition focus:border-pink-300"
+                                />
                             </label>
 
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Email Address
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="mail"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
-                                    <input
-                                        type="email"
-                                        placeholder="your@email.com"
-                                        value={email}
-                                        required
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                    />
-                                </span>
-                            </label>
-
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Password
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="lock"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
+                            <label className="block text-lg">
+                                Password <span className="text-red-500">*</span>
+                                <span className="mt-3 flex h-[54px] w-full border border-gray-200 bg-white">
                                     <input
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="********"
                                         value={password}
                                         required
+                                        autoComplete="new-password"
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-12 text-sm font-medium tracking-widest text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                        className="h-full min-w-0 flex-1 px-4 text-base outline-none"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                        aria-label={
-                                            showPassword ? "Hide password" : "Show password"
-                                        }
+                                        className="flex h-full w-14 items-center justify-center bg-[#f3f3f3] text-gray-600 transition hover:text-gray-950"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
-                                        <Icon
-                                            name={showPassword ? "eyeOff" : "eye"}
-                                            className="h-5 w-5"
-                                        />
+                                        <Icon name={showPassword ? "eyeOff" : "eye"} className="h-5 w-5" />
                                     </button>
                                 </span>
                             </label>
 
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Confirm Password
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="lock"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
-                                    <input
-                                        type="password"
-                                        placeholder="********"
-                                        value={confirmPassword}
-                                        required
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium tracking-widest text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                    />
-                                </span>
-                            </label>
+                            {passwordStrength.message && (
+                                <div className={`rounded-xl px-6 py-4 text-base font-semibold ${passwordStrength.className}`}>
+                                    {passwordStrength.message}
+                                </div>
+                            )}
+
+                            <p className="text-lg leading-8 text-gray-600">
+                                Your personal data will be used to support your experience throughout this
+                                website, to manage access to your account, and for other purposes described
+                                in our <strong className="font-bold text-gray-950">privacy policy</strong>.
+                            </p>
 
                             <button
                                 type="submit"
-                                disabled={loading}
-                                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg bg-gray-950 px-5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-gray-950/10 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={loading || !passwordStrength.canSubmit}
+                                className="h-[52px] w-full bg-[#2b2b2b] text-base font-extrabold uppercase text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-[#8a8a8a] disabled:opacity-100"
                             >
-                                {loading ? (
-                                    <span className="inline-flex items-center gap-2">
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.2s]" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.4s]" />
-                                    </span>
-                                ) : (
-                                    <>
-                                        Create Account
-                                        <Icon name="arrow" className="h-5 w-5" />
-                                    </>
-                                )}
+                                {loading ? "Registering..." : "Register"}
                             </button>
                         </form>
+                    </section>
 
-                        <div className="mt-8 flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="text-sm text-gray-500">Already have an account?</p>
-                            <Link
-                                to={
-                                    redirect !== "/"
-                                        ? `/login?redirect=${redirect}`
-                                        : "/login"
-                                }
-                                className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-pink-600 transition hover:text-gray-950"
-                            >
-                                Sign In
-                                <Icon name="arrow" className="h-4 w-4" />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-            </div>
+                    <section className="border-t border-gray-200 pt-10 text-center lg:border-l lg:border-t-0 lg:pl-14 lg:pt-0">
+                        <h2 className="mb-8 text-3xl font-extrabold uppercase">Login</h2>
+                        <p className="mx-auto max-w-[540px] text-lg leading-8 text-gray-600">
+                            Registering for this site allows you to access your order status and history.
+                            Just fill in the fields below, and we'll get a new account set up for you in no
+                            time. We will only ask you for information necessary to make the purchase
+                            process faster and easier.
+                        </p>
+
+                        <Link
+                            to={redirect !== "/" ? `/login?redirect=${redirect}` : "/login"}
+                            className="mt-8 inline-flex h-[52px] items-center justify-center rounded-full bg-[#f6f6f6] px-9 text-base font-extrabold uppercase text-gray-950 transition hover:bg-[#2b2b2b] hover:text-white"
+                        >
+                            Login
+                        </Link>
+                    </section>
+                </div>
+            </section>
         </main>
     );
 };
