@@ -46,7 +46,7 @@ const productDescriptions = [
     {
         name: "Aliver Pumpkin Seed Oil 60ml",
         category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "රු2,390.00",
+        price: "රු47,800.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -57,7 +57,7 @@ const productDescriptions = [
     {
         name: "Aliver Luscious Lips Shimmer Lip Oil",
         category: "Lips",
-        price: "From රු1,390.00",
+        price: "From රු27,800.00",
         oldPrice: "",
         rating: 4,
         discount: "-34%",
@@ -68,8 +68,8 @@ const productDescriptions = [
     {
         name: "Aliver Teeth Whitening Foam Toothpaste Mint Flavour",
         category: "Oral Care",
-        price: "රු1,090.00",
-        oldPrice: "රු1,650.00",
+        price: "රු21,800.00",
+        oldPrice: "රු33,000.00",
         rating: 3,
         discount: "-34%",
         soldOut: true,
@@ -79,8 +79,8 @@ const productDescriptions = [
     {
         name: "Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set",
         category: "Lips, Lip glow",
-        price: "රු1,650.00",
-        oldPrice: "රු2,190.00",
+        price: "රු33,000.00",
+        oldPrice: "රු43,800.00",
         rating: 4,
         discount: "-25%",
         soldOut: false,
@@ -90,8 +90,8 @@ const productDescriptions = [
     {
         name: "Brightening Vitamin C Serum",
         category: "Skin Care",
-        price: "රු2,850.00",
-        oldPrice: "රු3,250.00",
+        price: "රු57,000.00",
+        oldPrice: "රු65,000.00",
         rating: 5,
         discount: "-12%",
         soldOut: false,
@@ -101,7 +101,7 @@ const productDescriptions = [
     {
         name: "Rose Cloud Cleanser",
         category: "Cleansers",
-        price: "රු3,250.00",
+        price: "රු65,000.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -112,8 +112,8 @@ const productDescriptions = [
     {
         name: "Daily Silk Sunscreen",
         category: "Sun Care",
-        price: "රු4,200.00",
-        oldPrice: "රු4,900.00",
+        price: "රු84,000.00",
+        oldPrice: "රු98,000.00",
         rating: 5,
         discount: "-14%",
         soldOut: false,
@@ -123,7 +123,7 @@ const productDescriptions = [
     {
         name: "Velvet Repair Cream",
         category: "Moisturizers",
-        price: "රු5,750.00",
+        price: "රු115,000.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -134,7 +134,7 @@ const productDescriptions = [
     {
         name: "Glow Boost Vitamin C Drops",
         category: "Skin Care",
-        price: "රු2,950.00",
+        price: "රු59,000.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -145,7 +145,7 @@ const productDescriptions = [
     {
         name: "Soft Matte Lip Tint",
         category: "Cosmetics",
-        price: "රු1,750.00",
+        price: "රු35,000.00",
         oldPrice: "",
         rating: 4,
         discount: "New",
@@ -156,7 +156,7 @@ const productDescriptions = [
     {
         name: "Hydra Dew Face Cream",
         category: "Moisturizers",
-        price: "රු3,650.00",
+        price: "රු73,000.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -167,7 +167,7 @@ const productDescriptions = [
     {
         name: "Fresh Bloom Body Mist",
         category: "Fragrances",
-        price: "රු2,490.00",
+        price: "රු49,800.00",
         oldPrice: "",
         rating: 4,
         discount: "New",
@@ -178,7 +178,7 @@ const productDescriptions = [
     {
         name: "Silk Repair Hair Serum",
         category: "Hair Care",
-        price: "රු3,150.00",
+        price: "රු63,000.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -189,8 +189,8 @@ const productDescriptions = [
     {
         name: "Glow Routine Bundle",
         category: "Beauty Sets",
-        price: "රු6,990.00",
-        oldPrice: "රු8,200.00",
+        price: "රු139,800.00",
+        oldPrice: "රු164,000.00",
         rating: 5,
         discount: "-15%",
         soldOut: false,
@@ -200,7 +200,7 @@ const productDescriptions = [
     {
         name: "Aliver Natural Foot Peel Mask 2 Packs (Lavender)",
         category: "Body Care, Foot & Hand",
-        price: "රු1,650.00",
+        price: "රු33,000.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -211,7 +211,7 @@ const productDescriptions = [
     {
         name: "Aliver Neem Oil 60ml",
         category: "Nourishing Oils",
-        price: "රු2,290.00",
+        price: "රු45,800.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -222,7 +222,7 @@ const productDescriptions = [
     {
         name: "Aliver Organic Sunflower Oil For Skin 60ml",
         category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "රු2,290.00",
+        price: "රු45,800.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -233,7 +233,7 @@ const productDescriptions = [
     {
         name: "Aliver Rosemary Essential Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු2,490.00",
+        price: "රු49,800.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -244,8 +244,8 @@ const productDescriptions = [
     {
         name: "Aliver Coffee Body Scrub",
         category: "Body Care",
-        price: "රු1,990.00",
-        oldPrice: "රු2,450.00",
+        price: "රු39,800.00",
+        oldPrice: "රු49,000.00",
         rating: 4,
         discount: "-19%",
         soldOut: false,
@@ -255,7 +255,7 @@ const productDescriptions = [
     {
         name: "Aliver Aloe Vera Soothing Gel",
         category: "Skin Care, Body Care",
-        price: "රු1,850.00",
+        price: "රු37,000.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -561,8 +561,8 @@ const ProductsPage = () => {
                                     </div>
 
                                     <div className="mt-4 space-y-2 text-sm font-semibold text-gray-400">
-                                        <p>3 X Rs. 763.33 with</p>
-                                        <p>or 3 X රු763.33 with KOKO</p>
+                                        <p>3 X Rs. 15,266.60 with</p>
+                                        <p>or 3 X රු15,266.60 with KOKO</p>
                                     </div>
                                 </article>
                             );

@@ -102,16 +102,16 @@ const imageSet = [
 ];
 
 const localProducts = [
-  ['Aliver Pumpkin Seed Oil 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු2,390.00', '', 5, '', false, 'A nourishing beauty oil made for soft, healthy-looking skin, body, and hair care routines.', imageSet[0]],
-  ['Aliver Luscious Lips Shimmer Lip Oil', 'Lips', 'From රු1,390.00', '', 4, '-34%', false, 'A glossy shimmer lip oil that helps lips look hydrated, smooth, and naturally radiant.', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Teeth Whitening Foam Toothpaste Mint Flavour', 'Oral Care', 'රු1,090.00', 'රු1,650.00', 3, '-34%', true, 'A mint-flavoured foam toothpaste designed for a fresh, clean daily oral-care routine.', 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set', 'Lips, Lip glow', 'රු1,650.00', 'රු2,190.00', 4, '-25%', false, 'A two-piece lip gloss set made to give lips a fuller-looking, hydrated, high-shine finish.', 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85'],
-  ['Brightening Vitamin C Serum', 'Skin Care', 'රු2,850.00', 'රු3,250.00', 5, '-12%', false, 'A brightening serum that supports a smoother, more radiant-looking daily skincare routine.', imageSet[1]],
-  ['Rose Cloud Cleanser', 'Cleansers', 'රු3,250.00', '', 4, '', false, 'A gentle cleanser for a soft, refreshed feel without stripping the skin.', imageSet[2]],
-  ['Daily Silk Sunscreen', 'Sun Care', 'රු4,200.00', 'රු4,900.00', 5, '-14%', false, 'A daily sunscreen made for lightweight, comfortable protection with a silky finish.', 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85'],
-  ['Velvet Repair Cream', 'Moisturizers', 'රු5,750.00', '', 4, '', false, 'A rich repair cream that helps skin feel softer, smoother, and deeply moisturized.', imageSet[0]],
-  ['Aliver Neem Oil 60ml', 'Nourishing Oils', 'රු2,290.00', '', 4, '', true, 'A cold-pressed neem oil for hair growth, scalp care, and skin nourishment.', 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Organic Sunflower Oil For Skin 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු2,290.00', '', 4, '', false, 'A lightweight sunflower seed oil for soft, nourished skin and hair.', 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Pumpkin Seed Oil 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු47,800.00', '', 5, '', false, 'A nourishing beauty oil made for soft, healthy-looking skin, body, and hair care routines.', imageSet[0]],
+  ['Aliver Luscious Lips Shimmer Lip Oil', 'Lips', 'From රු27,800.00', '', 4, '-34%', false, 'A glossy shimmer lip oil that helps lips look hydrated, smooth, and naturally radiant.', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Teeth Whitening Foam Toothpaste Mint Flavour', 'Oral Care', 'රු21,800.00', 'රු33,000.00', 3, '-34%', true, 'A mint-flavoured foam toothpaste designed for a fresh, clean daily oral-care routine.', 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set', 'Lips, Lip glow', 'රු33,000.00', 'රු43,800.00', 4, '-25%', false, 'A two-piece lip gloss set made to give lips a fuller-looking, hydrated, high-shine finish.', 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85'],
+  ['Brightening Vitamin C Serum', 'Skin Care', 'රු57,000.00', 'රු65,000.00', 5, '-12%', false, 'A brightening serum that supports a smoother, more radiant-looking daily skincare routine.', imageSet[1]],
+  ['Rose Cloud Cleanser', 'Cleansers', 'රු65,000.00', '', 4, '', false, 'A gentle cleanser for a soft, refreshed feel without stripping the skin.', imageSet[2]],
+  ['Daily Silk Sunscreen', 'Sun Care', 'රු84,000.00', 'රු98,000.00', 5, '-14%', false, 'A daily sunscreen made for lightweight, comfortable protection with a silky finish.', 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85'],
+  ['Velvet Repair Cream', 'Moisturizers', 'රු115,000.00', '', 4, '', false, 'A rich repair cream that helps skin feel softer, smoother, and deeply moisturized.', imageSet[0]],
+  ['Aliver Neem Oil 60ml', 'Nourishing Oils', 'රු45,800.00', '', 4, '', true, 'A cold-pressed neem oil for hair growth, scalp care, and skin nourishment.', 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Organic Sunflower Oil For Skin 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු45,800.00', '', 4, '', false, 'A lightweight sunflower seed oil for soft, nourished skin and hair.', 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85'],
 ].map(([name, category, price, oldPrice, rating, discount, soldOut, description, image], index) => ({
   name,
   category,

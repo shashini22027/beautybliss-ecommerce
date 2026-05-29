@@ -8,18 +8,34 @@ import {
   Hash,
   Image as ImageIcon,
   Package,
-  Sparkles,
   Tag,
   Upload,
   X,
+  LayoutDashboard,
+  LogOut,
+  ShoppingBag,
+  User,
+  Users,
 } from "lucide-react";
+
 import api from "../../services/api";
+
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("userInfo")) || null;
+  } catch {
+    return null;
+  }
+};
 
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
   const isCreate = !productId;
+
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+
+  const [userInfo] = useState(getStoredUser);
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
@@ -36,6 +52,30 @@ const ProductEditScreen = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
+  const sidebarItems = [
+    {
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      link: "/admin-dashboard",
+    },
+    {
+      name: "Customers",
+      icon: Users,
+      link: "/admin/userlist",
+    },
+    {
+      name: "Products",
+      icon: Package,
+      link: "/admin/productlist",
+      active: true,
+    },
+    {
+      name: "Orders",
+      icon: ShoppingBag,
+      link: "/admin/orderlist",
+    },
+  ];
+
   useEffect(() => {
     setImageError(false);
   }, [image]);
@@ -50,6 +90,7 @@ const ProductEditScreen = () => {
       try {
         setLoading(true);
         setError(null);
+
         const { data } = await api.get(`/products/${productId}`);
         const product = data.product || data;
 
@@ -57,11 +98,13 @@ const ProductEditScreen = () => {
         setPrice(product.price || 0);
         setImage(product.image || "");
         setBrand(product.brand || "");
+
         setCategory(
           typeof product.category === "object"
             ? product.category?._id || product.category?.name || ""
             : product.category || ""
         );
+
         setCountInStock(product.countInStock || 0);
         setDescription(product.description || "");
       } catch (err) {
@@ -76,6 +119,7 @@ const ProductEditScreen = () => {
 
   const uploadFileHandler = async (event) => {
     const file = event.target.files[0];
+
     if (!file) return;
 
     const formData = new FormData();
@@ -83,9 +127,13 @@ const ProductEditScreen = () => {
 
     try {
       setUploading(true);
+
       const { data } = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+
       setImage(data.url);
     } catch (err) {
       console.error("Image upload failed", err);
@@ -125,251 +173,381 @@ const ProductEditScreen = () => {
     }
   };
 
+  const logoutHandler = () => {
+    localStorage.removeItem("userInfo");
+    navigate("/login");
+  };
+
   const hasValidImage =
-    image && image !== "" && image !== "/images/sample.jpg" && !imageError;
+    image &&
+    image !== "" &&
+    image !== "/images/sample.jpg" &&
+    !imageError;
 
   return (
-    <main className="min-h-screen bg-[#fff7f8] px-4 py-10 text-gray-950 sm:px-6 lg:px-8">
-      <section className="mx-auto max-w-6xl">
-        <Link
-          to="/admin/productlist"
-          className="mb-8 inline-flex items-center gap-3 rounded-full border border-pink-200 bg-white px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 shadow-sm transition hover:border-pink-300 hover:text-gray-950"
-        >
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 text-pink-600">
-            <ArrowLeft size={12} strokeWidth={3} />
-          </span>
-          Back to Products
-        </Link>
+    <main className="min-h-screen bg-white text-gray-950">
+      {/* HERO SECTION */}
+      <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+        <img
+          src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1800&q=85"
+          alt="Beauty products"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
 
-        <div className="mb-8 rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-pink-500">
-            {isCreate ? "New Catalog Item" : "Catalog Editor"}
-          </p>
-          <h1 className="flex items-center gap-3 font-serif text-4xl font-bold tracking-tight text-gray-950 sm:text-5xl">
-            <Sparkles size={34} className="text-pink-500" />
+        <div className="absolute inset-0 bg-black/35" />
+
+        <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
+          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
             {isCreate ? "Create Product" : "Edit Product"}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-gray-500">
-            Update product details, inventory, pricing, and imagery for your
-            BeautyBliss catalog.
-          </p>
+
+          <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+            <Link
+              to="/"
+              className="text-white/85 transition hover:text-white"
+            >
+              Home
+            </Link>
+
+            <span>/</span>
+
+            <Link
+              to="/admin-dashboard"
+              className="text-white/85 transition hover:text-white"
+            >
+              Admin dashboard
+            </Link>
+
+            <span>/</span>
+
+            <span className="font-bold">
+              {isCreate ? "Create" : "Edit"} Product
+            </span>
+          </div>
         </div>
+      </section>
 
-        {loading ? (
-          <div className="rounded-2xl border border-pink-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-sm">
-            Loading product data...
-          </div>
-        ) : error ? (
-          <div className="rounded-2xl border border-red-100 bg-red-50 px-6 py-5 text-sm font-medium text-red-700">
-            {error}
-          </div>
-        ) : (
-          <form onSubmit={submitHandler} className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-            <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
-                Product Image
-              </h2>
+      <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
+          {/* SIDEBAR */}
+          <aside className="border-gray-200 lg:border-r lg:pr-9">
+            <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
+              Admin Panel
+            </h2>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                onChange={uploadFileHandler}
-                className="hidden"
-              />
+            <nav className="mt-5 space-y-1 text-lg font-bold">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
 
-              {hasValidImage ? (
-                <div className="group relative h-96 overflow-hidden rounded-2xl border border-pink-100 bg-[#fff0f4]">
-                  <img
-                    src={image}
-                    alt="Product preview"
-                    onError={() => setImageError(true)}
-                    className="h-full w-full object-contain bg-white transition duration-500 group-hover:scale-[1.02]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950/45 text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100"
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.link}
+                    className={`flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${item.active ? "bg-[#f2f2f2]" : ""
+                      }`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/20">
-                      <Upload size={20} />
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest">
-                      Replace Photo
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setImage("")}
-                    className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-950/70 text-white shadow-lg transition hover:bg-red-600"
-                    aria-label="Remove image"
-                  >
-                    <X size={16} />
-                  </button>
+                    <Icon className="h-5 w-5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600"
+              >
+                <User className="h-5 w-5" />
+                Profile
+              </Link>
+
+              <button
+                type="button"
+                onClick={logoutHandler}
+                className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"
+              >
+                <LogOut className="h-5 w-5" />
+                Logout
+              </button>
+            </nav>
+
+            <div className="mt-8 border border-gray-200 bg-white p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center bg-[#2b2b2b] text-lg font-extrabold text-white">
+                  {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`flex h-96 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition ${
-                    uploading
-                      ? "border-amber-400 bg-amber-50"
-                      : "border-pink-200 bg-[#fff0f4] hover:border-pink-400 hover:bg-[#ffe9f0]"
-                  }`}
-                >
-                  {uploading ? (
-                    <>
-                      <span className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-amber-700">
-                        Uploading image...
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-pink-500 shadow-sm">
-                        <Upload size={24} />
-                      </span>
-                      <span className="text-sm font-bold text-gray-800">
-                        {imageError
-                          ? "Image failed to load. Upload a new image."
-                          : "Upload product image"}
-                      </span>
-                      <span className="mt-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                        JPG, PNG or WebP
-                      </span>
-                    </>
-                  )}
-                </button>
-              )}
 
-              <div className="mt-5">
-                {!showUrlInput ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowUrlInput(true)}
-                    className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition hover:text-pink-600"
-                  >
-                    Or enter image URL manually
-                  </button>
-                ) : (
-                  <div className="rounded-xl border border-pink-100 bg-[#fff7f8] p-4">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                        Direct Image URL
-                      </label>
+                <div className="min-w-0">
+                  <p className="truncate text-base font-extrabold">
+                    {userInfo?.name || "Admin"}
+                  </p>
+
+                  <p className="mt-1 truncate text-sm text-gray-500">
+                    {userInfo?.email || "admin@beautybliss.com"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT */}
+          <section className="lg:pl-1">
+            <div className="mb-10 flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-extrabold uppercase">
+                  {isCreate ? "Create Product" : "Update Product"}
+                </h2>
+
+                <p className="mt-3 text-lg leading-8 text-gray-600">
+                  Manage BeautyBliss product information, images, pricing,
+                  inventory and product details.
+                </p>
+              </div>
+
+              <Link
+                to="/admin/productlist"
+                className="inline-flex items-center gap-2 bg-[#2b2b2b] px-5 py-3 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-pink-600"
+              >
+                <ArrowLeft size={16} />
+                Back
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="border border-gray-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
+                Loading product...
+              </div>
+            ) : error ? (
+              <div className="border border-red-100 bg-red-50 px-6 py-5 text-sm font-medium text-red-700">
+                {error}
+              </div>
+            ) : (
+              <form
+                onSubmit={submitHandler}
+                className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]"
+              >
+                {/* IMAGE SECTION */}
+                <section className="bg-[#f6f6f6] p-6">
+                  <h3 className="border-b border-gray-200 pb-4 text-2xl font-extrabold uppercase">
+                    Product Image
+                  </h3>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    onChange={uploadFileHandler}
+                    className="hidden"
+                  />
+
+                  <div className="mt-6">
+                    {hasValidImage ? (
+                      <div className="group relative overflow-hidden bg-white">
+                        <img
+                          src={image}
+                          alt="Product preview"
+                          onError={() => setImageError(true)}
+                          className="h-[420px] w-full object-contain transition duration-500 group-hover:scale-105"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
+                        >
+                          <Upload size={28} />
+
+                          <span className="text-sm font-bold uppercase tracking-widest">
+                            Replace Image
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setImage("")}
+                          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center bg-black text-white transition hover:bg-red-600"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() => setShowUrlInput(false)}
-                        className="text-[10px] font-bold uppercase tracking-widest text-gray-400 transition hover:text-pink-600"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`flex h-[420px] w-full flex-col items-center justify-center border-2 border-dashed bg-white p-8 text-center transition ${uploading
+                            ? "border-amber-400 bg-amber-50"
+                            : "border-gray-300 hover:border-pink-500"
+                          }`}
                       >
-                        Hide
+                        {uploading ? (
+                          <>
+                            <span className="mb-5 h-12 w-12 animate-spin rounded-full border-4 border-amber-400 border-t-transparent" />
+
+                            <span className="text-sm font-bold uppercase tracking-widest text-amber-700">
+                              Uploading...
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="mb-5 flex h-20 w-20 items-center justify-center bg-[#f6f6f6] text-pink-600">
+                              <Upload size={32} />
+                            </div>
+
+                            <p className="text-xl font-extrabold uppercase">
+                              Upload Product Image
+                            </p>
+
+                            <p className="mt-3 text-base text-gray-500">
+                              JPG, PNG or WEBP
+                            </p>
+                          </>
+                        )}
                       </button>
-                    </div>
-                    <div className="relative">
-                      <ImageIcon
-                        size={16}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="https://example.com/image.jpg"
-                        value={image}
-                        onChange={(event) => setImage(event.target.value)}
-                        className="w-full rounded-xl border border-pink-100 bg-white py-3.5 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-                      />
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </section>
 
-            <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
-              <h2 className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-gray-500">
-                Product Details
-              </h2>
+                  <div className="mt-6">
+                    {!showUrlInput ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowUrlInput(true)}
+                        className="text-sm font-bold uppercase tracking-widest text-gray-500 transition hover:text-pink-600"
+                      >
+                        Enter image URL manually
+                      </button>
+                    ) : (
+                      <div className="border border-gray-200 bg-white p-5">
+                        <div className="mb-4 flex items-center justify-between">
+                          <label className="text-sm font-bold uppercase tracking-widest text-gray-500">
+                            Image URL
+                          </label>
 
-              <div className="space-y-5">
-                <Field
-                  icon={Package}
-                  label="Product Name"
-                  value={name}
-                  onChange={setName}
-                  required
-                />
+                          <button
+                            type="button"
+                            onClick={() => setShowUrlInput(false)}
+                            className="text-sm font-bold uppercase tracking-widest text-pink-600"
+                          >
+                            Hide
+                          </button>
+                        </div>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field
-                    icon={DollarSign}
-                    label="Price ($)"
-                    type="number"
-                    step="0.01"
-                    value={price}
-                    onChange={setPrice}
-                    required
-                  />
-                  <Field
-                    icon={Hash}
-                    label="Stock Count"
-                    type="number"
-                    value={countInStock}
-                    onChange={setCountInStock}
-                    required
-                  />
-                </div>
+                        <div className="relative">
+                          <ImageIcon
+                            size={18}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
+                          />
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field
-                    icon={Tag}
-                    label="Brand"
-                    value={brand}
-                    onChange={setBrand}
-                    required
-                  />
-                  <Field
-                    icon={Tag}
-                    label="Category"
-                    value={category}
-                    onChange={setCategory}
-                    required
-                  />
-                </div>
+                          <input
+                            type="text"
+                            placeholder="https://example.com/image.jpg"
+                            value={image}
+                            onChange={(event) =>
+                              setImage(event.target.value)
+                            }
+                            className="w-full border border-gray-300 py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
 
-                <div>
-                  <label className="mb-2 ml-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                    Description
-                  </label>
-                  <div className="relative">
-                    <AlignLeft
-                      size={16}
-                      className="absolute left-4 top-5 text-pink-500"
-                    />
-                    <textarea
-                      value={description}
+                {/* DETAILS SECTION */}
+                <section className="bg-[#f6f6f6] p-6">
+                  <h3 className="border-b border-gray-200 pb-4 text-2xl font-extrabold uppercase">
+                    Product Details
+                  </h3>
+
+                  <div className="mt-6 space-y-6">
+                    <Field
+                      icon={Package}
+                      label="Product Name"
+                      value={name}
+                      onChange={setName}
                       required
-                      rows="5"
-                      onChange={(event) => setDescription(event.target.value)}
-                      className="w-full resize-none rounded-xl border border-pink-100 bg-[#fff7f8] py-4 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
                     />
-                  </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={updating || uploading}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-500 py-4 text-xs font-bold uppercase tracking-widest text-white shadow-xl shadow-pink-500/20 transition hover:bg-pink-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {updating ? (
-                    "Saving Changes..."
-                  ) : (
-                    <>
-                      <Check size={16} /> Save Product
-                    </>
-                  )}
-                </button>
-              </div>
-            </section>
-          </form>
-        )}
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <Field
+                        icon={DollarSign}
+                        label="Price (රු)"
+                        type="number"
+                        step="0.01"
+                        value={price}
+                        onChange={setPrice}
+                        required
+                      />
+
+                      <Field
+                        icon={Hash}
+                        label="Stock Count"
+                        type="number"
+                        value={countInStock}
+                        onChange={setCountInStock}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <Field
+                        icon={Tag}
+                        label="Brand"
+                        value={brand}
+                        onChange={setBrand}
+                        required
+                      />
+
+                      <Field
+                        icon={Tag}
+                        label="Category"
+                        value={category}
+                        onChange={setCategory}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-3 block text-sm font-bold uppercase tracking-widest text-gray-500">
+                        Description
+                      </label>
+
+                      <div className="relative">
+                        <AlignLeft
+                          size={18}
+                          className="absolute left-4 top-5 text-pink-500"
+                        />
+
+                        <textarea
+                          value={description}
+                          required
+                          rows={6}
+                          onChange={(event) =>
+                            setDescription(event.target.value)
+                          }
+                          className="w-full resize-none border border-gray-300 bg-white py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={updating || uploading}
+                      className="flex h-14 w-full items-center justify-center gap-3 bg-[#2b2b2b] text-sm font-extrabold uppercase tracking-widest text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {updating ? (
+                        "Saving Changes..."
+                      ) : (
+                        <>
+                          <Check size={18} />
+                          Save Product
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </section>
+              </form>
+            )}
+          </section>
+        </div>
       </section>
     </main>
   );
@@ -383,23 +561,30 @@ const Field = ({
   type = "text",
   required = false,
   step,
-}) => (
-  <div>
-    <label className="mb-2 ml-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
-      {label}
-    </label>
-    <div className="relative">
-      <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500" />
-      <input
-        type={type}
-        step={step}
-        value={value}
-        required={required}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-pink-100 bg-[#fff7f8] py-4 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
-      />
+}) => {
+  return (
+    <div>
+      <label className="mb-3 block text-sm font-bold uppercase tracking-widest text-gray-500">
+        {label}
+      </label>
+
+      <div className="relative">
+        <Icon
+          size={18}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
+        />
+
+        <input
+          type={type}
+          step={step}
+          value={value}
+          required={required}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full border border-gray-300 bg-white py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default ProductEditScreen;

@@ -145,9 +145,9 @@ const AdminDashboardPage = () => {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fff7f8] px-4 text-gray-950">
-        <div className="rounded-2xl border border-pink-200 bg-white px-10 py-12 text-center shadow-[0_24px_70px_rgba(190,24,93,0.12)]">
-          <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-2 border-pink-100 border-t-pink-600" />
+      <main className="flex min-h-screen items-center justify-center bg-white px-4 text-gray-950">
+        <div className="border border-gray-200 bg-white px-10 py-12 text-center shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
+          <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-2 border-gray-200 border-t-pink-600" />
           <p className="text-xs font-bold uppercase tracking-[0.28em] text-gray-500">
             Loading BeautyBliss Admin
           </p>
@@ -157,244 +157,203 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6edf1] text-gray-950 lg:flex">
-      <aside className="border-b border-pink-200 bg-white text-gray-950 shadow-sm lg:sticky lg:top-0 lg:min-h-screen lg:w-72 lg:border-b-0 lg:border-r lg:border-pink-200">
-        <div className="border-b border-pink-100 p-6">
-          <Link to="/" className="flex items-center gap-3">
-            <span>
-              <span className="block font-serif text-2xl font-bold tracking-[0.12em]">
-                BEAUTYBLISS
-              </span>
-              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.26em] text-gray-500">
-                Admin Studio
-              </span>
-            </span>
-          </Link>
-        </div>
-
-        <nav className="flex gap-2 overflow-x-auto p-4 lg:block lg:space-y-2 lg:overflow-visible">
-          {sidebarItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.link}
-              className={`flex min-w-fit items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] transition ${
-                item.active
-                  ? "bg-[#9f234f] text-white shadow-lg shadow-pink-900/20"
-                  : "text-gray-600 hover:bg-[#fff0f4] hover:text-[#9f234f]"
-              }`}
-            >
-              <Icon name={item.icon} className="h-5 w-5" />
-              {item.name}
+    <main className="min-h-screen bg-white text-gray-950">
+      <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+        <img
+          src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1800&q=85"
+          alt="Beauty products arranged for admin dashboard"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
+          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+            Dashboard
+          </h1>
+          <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+            <Link to="/" className="text-white/85 transition hover:text-white">
+              Home
             </Link>
-          ))}
-        </nav>
-
-        <div className="hidden border-t border-pink-100 p-4 lg:block">
-          <Link
-            to="/profile"
-            className="mb-2 flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gray-600 transition hover:bg-[#fff0f4] hover:text-[#9f234f]"
-          >
-            <Icon name="profile" className="h-5 w-5" />
-            Profile
-          </Link>
-          <button
-            type="button"
-            onClick={logoutHandler}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gray-600 transition hover:bg-red-50 hover:text-red-600"
-          >
-            <Icon name="logout" className="h-5 w-5" />
-            Logout
-          </button>
-        </div>
-
-        <div className="hidden p-4 lg:block">
-          <div className="rounded-2xl border border-pink-100 bg-[#fff7f8] p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#9f234f] font-bold text-white">
-                {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-bold uppercase tracking-[0.16em]">
-                  {userInfo?.name || "Admin"}
-                </p>
-                <p className="mt-1 truncate text-xs text-gray-500">
-                  {userInfo?.email || "admin@beautybliss.com"}
-                </p>
-              </div>
-            </div>
+            <span>/</span>
+            <span className="font-bold">Admin dashboard</span>
           </div>
         </div>
-      </aside>
+      </section>
 
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10">
-        <header className="mb-8 overflow-hidden rounded-2xl border border-[#d9a1b3] bg-white shadow-[0_18px_55px_rgba(86,28,52,0.12)]">
-          <div className="bg-white px-6 py-8 sm:px-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.32em] text-[#9f234f]">
-                  BeautyBliss Control Center
-                </p>
-                <h1 className="font-serif text-4xl font-bold tracking-tight text-gray-950 sm:text-5xl">
-                  Dashboard
-                </h1>
-                <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-gray-600">
-                  Monitor customers, product inventory, orders, and sales performance
-                  from one polished admin workspace.
-                </p>
-              </div>
-            </div>
-          </div>
-        </header>
+      <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
+        <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
+          <aside className="border-gray-200 lg:border-r lg:pr-9">
+            <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
+              Admin Panel
+            </h2>
 
-        {dashboardError && (
-          <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-            {dashboardError}
-          </div>
-        )}
-
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {statCards.map((stat) => (
-            <Link
-              key={stat.title}
-              to={stat.link}
-              className="group rounded-2xl border border-[#d9a1b3] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#9f234f] hover:shadow-[0_18px_45px_rgba(190,24,93,0.16)]"
-            >
-              <div className="mb-6 flex items-center justify-between">
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg} ${stat.color}`}
-                >
-                  <Icon name={stat.icon} className="h-6 w-6" />
-                </div>
-                <Icon
-                  name="arrow"
-                  className="h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-pink-600"
-                />
-              </div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-500">
-                {stat.title}
-              </p>
-              <p className="mt-2 font-serif text-3xl font-bold text-gray-950">
-                {stat.value}
-              </p>
-              <p className="mt-4 text-sm font-medium text-gray-500">{stat.detail}</p>
-            </Link>
-          ))}
-        </div>
-
-        <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_380px]">
-          <section className="rounded-2xl border border-[#d9a1b3] bg-white p-6 shadow-sm sm:p-8">
-            <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
-                  Quick Management
-                </p>
-                <h2 className="font-serif text-3xl font-bold text-gray-950">
-                  Admin Shortcuts
-                </h2>
-              </div>
-              <span className="rounded-full bg-[#fff0f4] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#9f234f]">
-                Beauty operations
-              </span>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {[
-                {
-                  to: "/admin/product/create",
-                  label: "Inventory",
-                  title: "Add New Product",
-                  icon: "plus",
-                  tone: "bg-pink-100 text-pink-600",
-                },
-                {
-                  to: "/admin/orderlist",
-                  label: "Orders",
-                  title: "Process Purchases",
-                  icon: "orders",
-                  tone: "bg-amber-50 text-amber-600",
-                },
-                {
-                  to: "/admin/userlist",
-                  label: "Customers",
-                  title: "Review Accounts",
-                  icon: "users",
-                  tone: "bg-sky-50 text-sky-600",
-                },
-                {
-                  to: "/admin/productlist",
-                  label: "Catalog",
-                  title: "Manage Products",
-                  icon: "products",
-                  tone: "bg-emerald-50 text-emerald-600",
-                },
-              ].map((item) => (
+            <nav className="mt-5 space-y-1 text-lg font-bold">
+              {sidebarItems.map((item) => (
                 <Link
-                  key={item.title}
-                  to={item.to}
-                  className="group flex items-center gap-4 rounded-2xl border border-pink-200 bg-[#fff7f8] p-5 transition hover:border-[#9f234f] hover:bg-[#fff0f4]"
+                  key={item.name}
+                  to={item.link}
+                  className={`flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${
+                    item.active ? "bg-[#f2f2f2]" : ""
+                  }`}
                 >
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${item.tone}`}>
-                    <Icon name={item.icon} className="h-6 w-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
-                      {item.label}
-                    </p>
-                    <p className="mt-1 font-bold text-gray-950">{item.title}</p>
-                  </div>
-                  <Icon
-                    name="arrow"
-                    className="ml-auto h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-pink-600"
-                  />
+                  <Icon name={item.icon} className="h-5 w-5" />
+                  {item.name}
                 </Link>
               ))}
-            </div>
-          </section>
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600"
+              >
+                <Icon name="profile" className="h-5 w-5" />
+                Profile
+              </Link>
+              <button
+                type="button"
+                onClick={logoutHandler}
+                className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"
+              >
+                <Icon name="logout" className="h-5 w-5" />
+                Logout
+              </button>
+            </nav>
 
-          <aside className="rounded-2xl border border-[#d9a1b3] bg-white p-6 text-gray-950 shadow-sm sm:p-8">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[#9f234f] text-white">
-              <Icon name="sparkle" className="h-6 w-6" />
-            </div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-[#9f234f]">
-              Admin Note
-            </p>
-            <h2 className="font-serif text-3xl font-bold">
-              Keep BeautyBliss polished.
-            </h2>
-            <p className="mt-4 text-sm font-medium leading-7 text-gray-600">
-              Watch stock levels, keep product images fresh, and process customer
-              orders quickly for a smooth beauty shopping experience.
-            </p>
-
-            <div className="mt-8 grid gap-3">
-              <div className="rounded-xl border border-pink-100 bg-[#fff7f8] p-4">
-                <div className="mb-2 flex items-center gap-2 text-[#9f234f]">
-                  <Icon name="shield" className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Secure Access
-                  </span>
+            <div className="mt-8 border border-gray-200 bg-white p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center bg-[#2b2b2b] text-lg font-extrabold text-white">
+                  {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
                 </div>
-                <p className="text-sm text-gray-600">
-                  Admin controls are available only for authorized BeautyBliss users.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-pink-100 bg-[#fff7f8] p-4">
-                <div className="mb-2 flex items-center gap-2 text-[#9f234f]">
-                  <Icon name="trend" className="h-4 w-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
-                    Daily Flow
-                  </span>
+                <div className="min-w-0">
+                  <p className="truncate text-base font-extrabold">
+                    {userInfo?.name || "Admin"}
+                  </p>
+                  <p className="mt-1 truncate text-sm text-gray-500">
+                    {userInfo?.email || "admin@beautybliss.com"}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Review orders first, then update low-stock product records.
-                </p>
               </div>
             </div>
           </aside>
+
+          <section className="lg:pl-1">
+            <p className="text-lg leading-8 text-gray-600">
+              Hello <strong>{userInfo?.name || "Admin"}</strong>. From your admin dashboard you can review customer accounts,
+              manage products, track orders, and monitor sales performance.
+            </p>
+
+            {dashboardError && (
+              <div className="mt-7 border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                {dashboardError}
+              </div>
+            )}
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {statCards.map((stat) => (
+                <Link
+                  key={stat.title}
+                  to={stat.link}
+                  className="group flex min-h-[176px] flex-col justify-between border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition hover:border-gray-300 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <Icon
+                      name={stat.icon}
+                      className="h-12 w-12 text-gray-300 transition group-hover:text-gray-950"
+                    />
+                    <Icon
+                      name="arrow"
+                      className="h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-pink-600"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold">{stat.title}</p>
+                    <p className="mt-2 text-3xl font-extrabold text-gray-950">
+                      {stat.value}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-500">{stat.detail}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-12 grid gap-12 xl:grid-cols-[1fr_360px]">
+              <section>
+                <h2 className="text-3xl font-extrabold uppercase">
+                  Admin Shortcuts
+                </h2>
+                <div className="mt-7 grid gap-6 md:grid-cols-2">
+                  {[
+                    {
+                      to: "/admin/product/create",
+                      label: "Add New Product",
+                      icon: "plus",
+                    },
+                    {
+                      to: "/admin/orderlist",
+                      label: "Process Purchases",
+                      icon: "orders",
+                    },
+                    {
+                      to: "/admin/userlist",
+                      label: "Review Accounts",
+                      icon: "users",
+                    },
+                    {
+                      to: "/admin/productlist",
+                      label: "Manage Products",
+                      icon: "products",
+                    },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.to}
+                      className="group flex min-h-[132px] items-center gap-5 border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition hover:border-gray-300 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+                    >
+                      <Icon
+                        name={item.icon}
+                        className="h-12 w-12 text-gray-300 transition group-hover:text-gray-950"
+                      />
+                      <span className="text-lg font-bold">{item.label}</span>
+                      <Icon
+                        name="arrow"
+                        className="ml-auto h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-pink-600"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </section>
+
+              <aside>
+                <h2 className="text-3xl font-extrabold uppercase">Admin Note</h2>
+                <p className="mt-7 text-lg italic leading-8 text-gray-600">
+                  Keep product records updated, review new orders first, and make sure
+                  every BeautyBliss customer has a smooth shopping experience.
+                </p>
+
+                <div className="mt-8 space-y-4">
+                  <div className="border border-gray-200 px-5 py-4">
+                    <div className="mb-2 flex items-center gap-3 font-bold text-gray-950">
+                      <Icon name="shield" className="h-5 w-5 text-gray-400" />
+                      Secure Access
+                    </div>
+                    <p className="text-sm leading-6 text-gray-600">
+                      Admin controls are available only for authorized BeautyBliss users.
+                    </p>
+                  </div>
+
+                  <div className="border border-gray-200 px-5 py-4">
+                    <div className="mb-2 flex items-center gap-3 font-bold text-gray-950">
+                      <Icon name="trend" className="h-5 w-5 text-gray-400" />
+                      Daily Flow
+                    </div>
+                    <p className="text-sm leading-6 text-gray-600">
+                      Review orders first, then update product and inventory records.
+                    </p>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 };
 

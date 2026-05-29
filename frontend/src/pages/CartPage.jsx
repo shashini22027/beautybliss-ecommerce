@@ -112,7 +112,7 @@ const suggestedProducts = [
     {
         name: "Aliver Rosemary Oil for Hair Growth",
         category: "Hair Care, Nourishing Oils",
-        price: "From රු2,350.00",
+        price: "From රු47,000.00",
         rating: 5,
         discount: "-11%",
         label: "HOT",
@@ -122,7 +122,7 @@ const suggestedProducts = [
     {
         name: "Wine Lip Tint, 06 Colors (Stock Clearance Sale)",
         category: "Lips, Lip glow",
-        price: "From රු490.00",
+        price: "From රු9,800.00",
         rating: 4,
         discount: "-51%",
         label: "",
@@ -132,7 +132,7 @@ const suggestedProducts = [
     {
         name: "Aliver Face Cream Liquid Blush (Stock Clearance Sale)",
         category: "Makeup",
-        price: "From රු890.00",
+        price: "From රු17,800.00",
         rating: 5,
         discount: "-44%",
         label: "",
@@ -142,7 +142,7 @@ const suggestedProducts = [
     {
         name: "Aliver Amla Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු2,250.00",
+        price: "රු45,000.00",
         rating: 5,
         discount: "",
         label: "",
@@ -152,7 +152,7 @@ const suggestedProducts = [
     {
         name: "Aliver Argan Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු1,650.00",
+        price: "රු33,000.00",
         rating: 5,
         discount: "-20%",
         label: "",
@@ -162,7 +162,7 @@ const suggestedProducts = [
     {
         name: "Aliver Batana Oil",
         category: "Hair Care, Nourishing Oils",
-        price: "From රු2,850.00",
+        price: "From රු57,000.00",
         rating: 5,
         discount: "",
         label: "NEW",
