@@ -18,6 +18,8 @@ import ErrorPage from '../pages/ErrorPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import OffersPage from '../pages/OffersPage';
 import AboutPage from '../pages/AboutPage';
+import Blog from '../pages/Blog';
+import BlogPostDetail from '../pages/BlogPostDetail';
 import ContactScreen from "../pages/ContactScreen";
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
@@ -60,6 +62,8 @@ const AppRoutes = () => {
           <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
           <Route path="/admin/userlist" element={<UserListScreen />} />
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPostDetail />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/contact" element={<ContactScreen />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
