@@ -10,8 +10,13 @@ const MobileNavigation = () => {
   const { wishlistItems } = useContext(WishlistContext);
   const { user } = useContext(AuthContext);
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
-  const wishlistCount = wishlistItems.length;
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+  const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
+  const cartCount = safeCartItems.reduce(
+    (acc, item) => acc + Number(item?.qty || item?.quantity || 1),
+    0
+  );
+  const wishlistCount = safeWishlistItems.length;
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },

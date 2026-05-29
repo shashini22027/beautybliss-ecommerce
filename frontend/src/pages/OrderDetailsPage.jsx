@@ -36,7 +36,37 @@ const formatDate = (date) => {
   });
 };
 
-const formatPrice = (value) => `$${Number(value || 0).toFixed(2)}`;
+const formatPrice = (value) =>
+  `රු${Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+const getSavedCheckoutOrder = (orderId) => {
+  try {
+    const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+    if (!Array.isArray(savedOrders)) return null;
+
+    return (
+      savedOrders.find((savedOrder) => {
+        const savedOrderId = savedOrder._id || savedOrder.id;
+        return String(savedOrderId) === String(orderId);
+      }) || null
+    );
+  } catch {
+    return null;
+  }
+};
+
+const getOrderItems = (order) => {
+  if (Array.isArray(order.orderItems)) return order.orderItems;
+  if (Array.isArray(order.items)) return order.items;
+  return [];
+};
+
+const getItemQty = (item) => Number(item.qty || item.quantity || 0);
+
+const getItemPrice = (item) => Number(item.price || 0);
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
@@ -50,16 +80,30 @@ const OrderDetailsPage = () => {
         setLoading(true);
         setError("");
 
+        const savedCheckoutOrder = getSavedCheckoutOrder(id);
+        if (savedCheckoutOrder) {
+          setOrder(savedCheckoutOrder);
+          return;
+        }
+
         const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
         const token = userInfo.token;
 
+        if (!token) {
+          throw new Error("Please log in to view this order.");
+        }
+
         const res = await fetch(`/api/orders/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
 
         if (!res.ok) {
-          throw new Error(data?.message || "Unable to load order details");
+          throw new Error(
+            data?.message === "Not authorized, no token"
+              ? "Please log in to view this order."
+              : data?.message || "Unable to load order details"
+          );
         }
 
         setOrder(data.order || data);
@@ -78,8 +122,8 @@ const OrderDetailsPage = () => {
       return { items: 0, shipping: 0, tax: 0, total: 0 };
     }
 
-    const items = (order.orderItems || []).reduce(
-      (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+    const items = getOrderItems(order).reduce(
+      (sum, item) => sum + getItemPrice(item) * getItemQty(item),
       0
     );
 
@@ -163,7 +207,7 @@ const OrderDetailsPage = () => {
               </div>
 
               <div className="divide-y divide-pink-200">
-                {(order.orderItems || []).map((item) => (
+                {getOrderItems(order).map((item) => (
                   <article
                     key={item.product || item.name}
                     className="grid gap-4 px-5 py-5 sm:grid-cols-[5rem_1fr_auto] sm:items-center"
@@ -179,11 +223,11 @@ const OrderDetailsPage = () => {
                     <div>
                       <p className="font-bold text-gray-950">{item.name}</p>
                       <p className="mt-1 text-sm text-gray-500">
-                        Qty {item.qty} x {formatPrice(item.price)}
+                        Qty {getItemQty(item)} x {formatPrice(getItemPrice(item))}
                       </p>
                     </div>
                     <p className="text-sm font-bold text-gray-950">
-                      {formatPrice(Number(item.qty || 0) * Number(item.price || 0))}
+                      {formatPrice(getItemQty(item) * getItemPrice(item))}
                     </p>
                   </article>
                 ))}
