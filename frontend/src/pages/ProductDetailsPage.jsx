@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
-import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
+import CartPage from './CartPage';
 
 const getTextValue = (value, fallback = '') => {
   if (!value) return fallback;
@@ -23,6 +23,52 @@ const getProductSlug = (product) =>
     .replace(/^-+|-+$/g, '');
 
 const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value || '');
+
+const readStoredCartItems = () => {
+  try {
+    const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    return Array.isArray(cartItems) ? cartItems : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeStoredCartItems = (items) => {
+  localStorage.setItem('cartItems', JSON.stringify(items));
+  localStorage.setItem('cart', JSON.stringify(items));
+};
+
+const getCartItemKey = (item) => {
+  const product = item?.product && typeof item.product === 'object' ? item.product : item;
+
+  return (
+    product?._id ||
+    product?.id ||
+    item?.product ||
+    item?.productId ||
+    getProductSlug(product || item || {})
+  );
+};
+
+const mergeStoredCartItems = (items) => {
+  const itemMap = new Map();
+
+  items.filter(Boolean).forEach((item) => {
+    const key = getCartItemKey(item);
+    const qty = Number(item.qty || item.quantity || 1);
+    const existingItem = itemMap.get(key);
+
+    if (existingItem) {
+      const nextQty = Number(existingItem.qty || existingItem.quantity || 1) + qty;
+      itemMap.set(key, { ...existingItem, qty: nextQty, quantity: nextQty });
+      return;
+    }
+
+    itemMap.set(key, { ...item, qty, quantity: qty });
+  });
+
+  return [...itemMap.values()];
+};
 
 const DetailIcon = ({ name, className = 'h-6 w-6' }) => {
   const paths = {
@@ -84,14 +130,13 @@ const localProducts = [
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext);
   const { toggleWishlist } = useContext(WishlistContext);
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState('');
   const [activeTab, setActiveTab] = useState('description');
   const [relatedPage, setRelatedPage] = useState(0);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -130,6 +175,9 @@ const ProductDetailsPage = () => {
 
       setProduct({ ...selectedProduct, images: productImages });
       setActiveImage(selectedProduct.image || productImages[0] || '');
+      setActiveTab('description');
+      setQty(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       setError('');
       setLoading(false);
       return;
@@ -182,8 +230,28 @@ const ProductDetailsPage = () => {
   );
 
   const handleAddToCart = () => {
-    addToCart(product, qty);
-    navigate('/cart');
+    const cartId = product._id || product.id || getProductSlug(product);
+    const cartProduct = {
+      ...product,
+      _id: product._id || cartId,
+      id: product.id || cartId,
+      product: cartId,
+      qty,
+      quantity: qty,
+    };
+    const currentItems = mergeStoredCartItems(readStoredCartItems());
+    const selectedQty = Math.max(1, Number(qty || 1));
+    const nextItems = [
+      ...currentItems.filter((item) => getCartItemKey(item) !== cartId),
+      {
+        ...cartProduct,
+        qty: selectedQty,
+        quantity: selectedQty,
+      },
+    ];
+
+    writeStoredCartItems(nextItems);
+    setCartDrawerOpen(true);
   };
 
   return (
@@ -524,6 +592,9 @@ const ProductDetailsPage = () => {
         </div>
       </section>
 
+      {cartDrawerOpen && (
+        <CartPage onClose={() => setCartDrawerOpen(false)} />
+      )}
     </main>
   );
 };
