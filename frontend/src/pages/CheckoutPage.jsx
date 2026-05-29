@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const getCartItems = () => {
     try {
@@ -37,11 +37,26 @@ const getItemPrice = (item) => {
     return Number(price || 0);
 };
 
+const getItemId = (item) => {
+    const product = getProductData(item);
+    const productId = item?.product && typeof item.product !== "object" ? item.product : "";
+    return product._id || product.id || item?._id || item?.id || productId || product.name;
+};
+
 const formatPrice = (value) =>
     `රු${Number(value || 0).toLocaleString("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })}`;
+
+const getSavedCheckoutOrders = () => {
+    try {
+        const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+        return Array.isArray(savedOrders) ? savedOrders : [];
+    } catch {
+        return [];
+    }
+};
 
 const sriLankanCities = [
     "Colombo",
@@ -124,10 +139,62 @@ const districts = [
     "Vavuniya",
 ];
 
+const initialCheckoutForm = {
+    billingFirstName: "",
+    billingLastName: "",
+    billingStreet: "",
+    billingCity: "",
+    billingPhone: "",
+    billingSecondaryPhone: "",
+    billingEmail: "",
+    shippingFirstName: "",
+    shippingLastName: "",
+    shippingStreet: "",
+    shippingDistrict: "",
+    shippingCity: "",
+    shippingPhone: "",
+    orderNotes: "",
+};
+
+const fieldLabels = {
+    billingFirstName: "First name",
+    billingLastName: "Last name",
+    billingStreet: "Street address",
+    billingCity: "Town / City",
+    billingPhone: "Phone",
+    billingEmail: "Email address",
+    shippingFirstName: "Shipping first name",
+    shippingLastName: "Shipping last name",
+    shippingStreet: "Shipping street address",
+    shippingCity: "Shipping city",
+    shippingPhone: "Shipping phone",
+};
+
+const requiredBillingFields = [
+    "billingFirstName",
+    "billingLastName",
+    "billingStreet",
+    "billingCity",
+    "billingPhone",
+    "billingEmail",
+];
+
+const requiredShippingFields = [
+    "shippingFirstName",
+    "shippingLastName",
+    "shippingStreet",
+    "shippingCity",
+    "shippingPhone",
+];
+
 const CheckoutPage = () => {
+    const navigate = useNavigate();
     const [paymentMethod, setPaymentMethod] = useState("card");
     const [shipDifferent, setShipDifferent] = useState(true);
     const [cartItems, setCartItems] = useState(getCartItems);
+    const [checkoutForm, setCheckoutForm] = useState(initialCheckoutForm);
+    const [errors, setErrors] = useState({});
+    const [formError, setFormError] = useState("");
 
     const subtotal = useMemo(
         () => cartItems.reduce((total, item) => total + getItemPrice(item) * getItemQty(item), 0),
@@ -151,6 +218,120 @@ const CheckoutPage = () => {
             })
         );
     };
+
+    const handleFieldChange = (event) => {
+        const { name, value } = event.target;
+
+        setCheckoutForm((currentForm) => ({
+            ...currentForm,
+            [name]: value,
+        }));
+
+        setErrors((currentErrors) => {
+            if (!currentErrors[name]) return currentErrors;
+            const nextErrors = { ...currentErrors };
+            delete nextErrors[name];
+            return nextErrors;
+        });
+        setFormError("");
+    };
+
+    const validateCheckout = () => {
+        const nextErrors = {};
+        const requiredFields = shipDifferent
+            ? [...requiredBillingFields, ...requiredShippingFields]
+            : requiredBillingFields;
+
+        requiredFields.forEach((fieldName) => {
+            if (!String(checkoutForm[fieldName] || "").trim()) {
+                nextErrors[fieldName] = `${fieldLabels[fieldName]} is required.`;
+            }
+        });
+
+        if (checkoutForm.billingEmail && !/^\S+@\S+\.\S+$/.test(checkoutForm.billingEmail)) {
+            nextErrors.billingEmail = "Enter a valid email address.";
+        }
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const handlePlaceOrder = () => {
+        if (cartItems.length === 0) {
+            setFormError("Your cart is empty. Add products before placing an order.");
+            return;
+        }
+
+        if (!validateCheckout()) {
+            setFormError("Please fill all required fields before placing your order.");
+            return;
+        }
+
+        const savedOrders = getSavedCheckoutOrders();
+        const orderItems = cartItems.map((item) => {
+            const product = getProductData(item);
+            const qty = getItemQty(item);
+            const price = getItemPrice(item);
+
+            return {
+                _id: getItemId(item),
+                product: getItemId(item),
+                name: product.name || "BeautyBliss product",
+                qty,
+                quantity: qty,
+                image: product.image || product.images?.[0] || "",
+                images: product.images || (product.image ? [product.image] : []),
+                price,
+                lineTotal: price * qty,
+            };
+        });
+        const orderTotal = orderItems.reduce((total, item) => total + item.lineTotal, 0);
+        const customerName = `${checkoutForm.billingFirstName} ${checkoutForm.billingLastName}`.trim();
+        const shippingName = shipDifferent
+            ? `${checkoutForm.shippingFirstName} ${checkoutForm.shippingLastName}`.trim()
+            : customerName;
+
+        const checkoutOrder = {
+            _id: `checkout-${Date.now()}`,
+            orderNo: `C${String(52 + savedOrders.length).padStart(4, "0")}`,
+            orderItems,
+            subtotal: orderTotal,
+            shippingPrice: 0,
+            totalPrice: orderTotal,
+            paymentMethod,
+            isPaid: paymentMethod === "card",
+            isDelivered: false,
+            createdAt: new Date().toISOString(),
+            customer: {
+                name: customerName,
+                email: checkoutForm.billingEmail,
+                phone: checkoutForm.billingPhone,
+            },
+            shippingAddress: {
+                fullName: shippingName,
+                phone: shipDifferent ? checkoutForm.shippingPhone : checkoutForm.billingPhone,
+                address: shipDifferent ? checkoutForm.shippingStreet : checkoutForm.billingStreet,
+                city: shipDifferent ? checkoutForm.shippingCity : checkoutForm.billingCity,
+                district: shipDifferent ? checkoutForm.shippingDistrict : "",
+                country: "Sri Lanka",
+            },
+            orderNotes: checkoutForm.orderNotes,
+            source: "checkout",
+        };
+
+        localStorage.setItem("checkoutOrders", JSON.stringify([checkoutOrder, ...savedOrders]));
+        navigate("/orders");
+    };
+
+    const getFieldClassName = (fieldName, extraClasses = "") =>
+        `${extraClasses} border ${
+            errors[fieldName] ? "border-red-400" : "border-gray-200"
+        } outline-none focus:border-pink-300`;
+
+    const renderError = (fieldName) =>
+        errors[fieldName] ? (
+            <p className="mt-2 text-sm font-semibold text-red-600">{errors[fieldName]}</p>
+        ) : null;
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
@@ -183,11 +364,23 @@ const CheckoutPage = () => {
                             <div className="grid gap-7 md:grid-cols-2">
                                 <label className="block text-lg">
                                     First Name <span className="text-red-500">*</span>
-                                    <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                    <input
+                                        name="billingFirstName"
+                                        value={checkoutForm.billingFirstName}
+                                        onChange={handleFieldChange}
+                                        className={getFieldClassName("billingFirstName", "mt-3 h-[52px] w-full px-4")}
+                                    />
+                                    {renderError("billingFirstName")}
                                 </label>
                                 <label className="block text-lg">
                                     Last Name <span className="text-red-500">*</span>
-                                    <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                    <input
+                                        name="billingLastName"
+                                        value={checkoutForm.billingLastName}
+                                        onChange={handleFieldChange}
+                                        className={getFieldClassName("billingLastName", "mt-3 h-[52px] w-full px-4")}
+                                    />
+                                    {renderError("billingLastName")}
                                 </label>
                             </div>
 
@@ -199,37 +392,62 @@ const CheckoutPage = () => {
                             <label className="block text-lg">
                                 Street Address <span className="text-red-500">*</span>
                                 <input
-                                    className="mt-3 h-[52px] w-full max-w-[340px] border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                    name="billingStreet"
+                                    value={checkoutForm.billingStreet}
+                                    onChange={handleFieldChange}
+                                    className={getFieldClassName("billingStreet", "mt-3 h-[52px] w-full max-w-[340px] px-4")}
                                     placeholder="House number and street name"
                                 />
+                                {renderError("billingStreet")}
                             </label>
 
                             <label className="block text-lg">
                                 Town / City <span className="text-red-500">*</span>
-                                <select className="mt-3 h-[52px] w-full border border-gray-200 px-4 text-gray-500 outline-none focus:border-pink-300">
-                                    <option>Select an option...</option>
+                                <select
+                                    name="billingCity"
+                                    value={checkoutForm.billingCity}
+                                    onChange={handleFieldChange}
+                                    className={getFieldClassName("billingCity", "mt-3 h-[52px] w-full px-4 text-gray-500")}
+                                >
+                                    <option value="">Select an option...</option>
                                     {sriLankanCities.map((city) => (
-                                        <option key={city}>{city}</option>
+                                        <option key={city} value={city}>{city}</option>
                                     ))}
                                 </select>
+                                {renderError("billingCity")}
                             </label>
 
                             <label className="block text-lg">
                                 Phone <span className="text-red-500">*</span>
-                                <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                <input
+                                    name="billingPhone"
+                                    value={checkoutForm.billingPhone}
+                                    onChange={handleFieldChange}
+                                    className={getFieldClassName("billingPhone", "mt-3 h-[52px] w-full px-4")}
+                                />
+                                {renderError("billingPhone")}
                             </label>
 
                             <label className="block text-lg">
                                 Secondary Number (optional)
-                                <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                <input
+                                    name="billingSecondaryPhone"
+                                    value={checkoutForm.billingSecondaryPhone}
+                                    onChange={handleFieldChange}
+                                    className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                />
                             </label>
 
                             <label className="block text-lg">
                                 Email address <span className="text-red-500">*</span>
                                 <input
                                     type="email"
-                                    className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                    name="billingEmail"
+                                    value={checkoutForm.billingEmail}
+                                    onChange={handleFieldChange}
+                                    className={getFieldClassName("billingEmail", "mt-3 h-[52px] w-full px-4")}
                                 />
+                                {renderError("billingEmail")}
                             </label>
 
                             <label className="flex items-center gap-3 text-lg font-bold">
@@ -247,11 +465,23 @@ const CheckoutPage = () => {
                                     <div className="grid gap-7 md:grid-cols-2">
                                         <label className="block text-lg">
                                             First name <span className="text-red-500">*</span>
-                                            <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                            <input
+                                                name="shippingFirstName"
+                                                value={checkoutForm.shippingFirstName}
+                                                onChange={handleFieldChange}
+                                                className={getFieldClassName("shippingFirstName", "mt-3 h-[52px] w-full px-4")}
+                                            />
+                                            {renderError("shippingFirstName")}
                                         </label>
                                         <label className="block text-lg">
                                             Last name <span className="text-red-500">*</span>
-                                            <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                            <input
+                                                name="shippingLastName"
+                                                value={checkoutForm.shippingLastName}
+                                                onChange={handleFieldChange}
+                                                className={getFieldClassName("shippingLastName", "mt-3 h-[52px] w-full px-4")}
+                                            />
+                                            {renderError("shippingLastName")}
                                         </label>
                                     </div>
 
@@ -263,37 +493,56 @@ const CheckoutPage = () => {
                                     <label className="block text-lg">
                                         Street address <span className="text-red-500">*</span>
                                         <input
-                                            className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                            name="shippingStreet"
+                                            value={checkoutForm.shippingStreet}
+                                            onChange={handleFieldChange}
+                                            className={getFieldClassName("shippingStreet", "mt-3 h-[52px] w-full px-4")}
                                             placeholder="House number and street name"
                                         />
+                                        {renderError("shippingStreet")}
                                     </label>
 
                                     <label className="block text-lg">
                                         District (optional)
-                                        <select className="mt-3 h-[52px] w-full border border-gray-200 px-4 text-gray-500 outline-none focus:border-pink-300">
-                                            <option>Select an option...</option>
+                                        <select
+                                            name="shippingDistrict"
+                                            value={checkoutForm.shippingDistrict}
+                                            onChange={handleFieldChange}
+                                            className="mt-3 h-[52px] w-full border border-gray-200 px-4 text-gray-500 outline-none focus:border-pink-300"
+                                        >
+                                            <option value="">Select an option...</option>
                                             {districts.map((district) => (
-                                                <option key={district}>{district}</option>
+                                                <option key={district} value={district}>{district}</option>
                                             ))}
                                         </select>
                                     </label>
 
                                     <label className="block text-lg">
-                                        City <span className="text-red-500">* *</span>
-                                        <select className="mt-3 h-[52px] w-full border border-gray-200 bg-gray-100 px-4 text-gray-500 outline-none focus:border-pink-300">
-                                            <option>Select an option...</option>
+                                        City <span className="text-red-500">*</span>
+                                        <select
+                                            name="shippingCity"
+                                            value={checkoutForm.shippingCity}
+                                            onChange={handleFieldChange}
+                                            className={getFieldClassName("shippingCity", "mt-3 h-[52px] w-full bg-gray-100 px-4 text-gray-500")}
+                                        >
+                                            <option value="">Select an option...</option>
                                             {sriLankanCities.map((city) => (
-                                                <option key={city}>{city}</option>
+                                                <option key={city} value={city}>{city}</option>
                                             ))}
                                         </select>
+                                        {renderError("shippingCity")}
                                     </label>
 
                                     <label className="block text-lg">
                                         Phone <span className="text-red-500">*</span>
                                         <input
-                                            className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                            name="shippingPhone"
+                                            value={checkoutForm.shippingPhone}
+                                            onChange={handleFieldChange}
+                                            className={getFieldClassName("shippingPhone", "mt-3 h-[52px] w-full px-4")}
                                             placeholder="phone Number"
                                         />
+                                        {renderError("shippingPhone")}
                                     </label>
                                 </div>
                             )}
@@ -302,6 +551,9 @@ const CheckoutPage = () => {
                                 Order notes (optional)
                                 <textarea
                                     rows="8"
+                                    name="orderNotes"
+                                    value={checkoutForm.orderNotes}
+                                    onChange={handleFieldChange}
                                     className="mt-3 w-full border border-gray-200 px-4 py-4 outline-none focus:border-pink-300"
                                     placeholder="Notes about your order, e.g. special notes for delivery."
                                 />
@@ -386,7 +638,17 @@ const CheckoutPage = () => {
                             <strong className="text-gray-950">privacy policy</strong>.
                         </div>
 
-                        <button className="mt-7 h-[60px] w-full bg-[#2b2b2b] text-lg font-bold uppercase text-white transition hover:bg-pink-600">
+                        {formError && (
+                            <div className="mt-6 border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                                {formError}
+                            </div>
+                        )}
+
+                        <button
+                            type="button"
+                            onClick={handlePlaceOrder}
+                            className="mt-7 h-[60px] w-full bg-[#2b2b2b] text-lg font-bold uppercase text-white transition hover:bg-pink-600"
+                        >
                             Place Order
                         </button>
                     </aside>
