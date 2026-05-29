@@ -4,8 +4,15 @@ export const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState(() => {
-    const local = localStorage.getItem('wishlistItems');
-    return local ? JSON.parse(local) : [];
+    try {
+      const local = localStorage.getItem('wishlistItems');
+      const parsedItems = local ? JSON.parse(local) : [];
+      return Array.isArray(parsedItems)
+        ? parsedItems.filter((item) => item && typeof item === 'object')
+        : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -13,9 +20,11 @@ export const WishlistProvider = ({ children }) => {
   }, [wishlistItems]);
 
   const toggleWishlist = (product) => {
-    const exist = wishlistItems.find(x => x._id === product._id);
+    if (!product || typeof product !== 'object') return;
+    const productId = product?._id || product?.id || product?.name;
+    const exist = wishlistItems.find(x => (x._id || x.id || x.name) === productId);
     if (exist) {
-      setWishlistItems(wishlistItems.filter(x => x._id !== product._id));
+      setWishlistItems(wishlistItems.filter(x => (x._id || x.id || x.name) !== productId));
     } else {
       setWishlistItems([...wishlistItems, product]);
     }
