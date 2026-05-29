@@ -32,6 +32,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [loginError, setLoginError] = useState("");
 
@@ -66,128 +67,68 @@ const LoginPage = () => {
     };
 
     return (
-        <main className="min-h-screen bg-[#faf7f4] px-4 py-8 text-gray-950 sm:px-6 lg:px-8">
-            <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_24px_80px_rgba(28,25,23,0.08)] lg:grid-cols-[0.92fr_1fr]">
-                <section className="relative hidden bg-[#1f1a17] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-                    <div className="absolute inset-0 opacity-80">
-                        <img
-                            src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80"
-                            alt=""
-                            className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1f1a17] via-[#1f1a17]/70 to-[#1f1a17]/20" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <Link
-                            to="/"
-                            className="inline-flex items-center text-2xl font-serif font-bold tracking-[0.18em]"
-                        >
-                            BEAUTYBLISS
+        <main className="min-h-screen bg-white text-gray-950">
+            <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+                <img
+                    src="https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=1800&q=85"
+                    alt="Skincare products"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-black/35" />
+                <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
+                    <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+                        My account
+                    </h1>
+                    <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+                        <Link to="/" className="text-white/85 transition hover:text-white">
+                            Home
                         </Link>
+                        <span>/</span>
+                        <span className="font-bold">My account</span>
                     </div>
+                </div>
+            </section>
 
-                    <div className="relative z-10 max-w-md">
-                        <p className="mb-4 text-xs font-bold uppercase tracking-[0.32em] text-pink-200">
-                            Welcome back
-                        </p>
-                        <h1 className="text-5xl font-serif font-bold leading-tight tracking-tight">
-                            Continue your beauty routine.
-                        </h1>
-                        <p className="mt-5 text-sm leading-6 text-pink-50/80">
-                            Sign in to revisit saved favorites, orders, and your personal beauty shelf.
-                        </p>
-                    </div>
-                </section>
-
-                <section className="relative flex items-center justify-center p-6 sm:p-10">
-                    <Link
-                        to="/"
-                        aria-label="Close login page"
-                        className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-950"
-                    >
-                        <Icon name="x" className="h-5 w-5" />
-                    </Link>
-
-                    <div className="w-full max-w-md">
-                        <div className="mb-8 lg:hidden">
-                            <Link
-                                to="/"
-                                className="text-2xl font-serif font-bold tracking-[0.18em] text-gray-950"
-                            >
-                                BEAUTYBLISS
-                            </Link>
-                        </div>
-
-                        <div className="mb-8">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
-                                Sign In
-                            </p>
-                            <h2 className="text-4xl font-serif font-bold tracking-tight text-gray-950">
-                                Welcome back
-                            </h2>
-                            <p className="mt-3 text-sm leading-6 text-gray-500">
-                                Access your BeautyBliss account and keep shopping your favorites.
-                            </p>
-                        </div>
+            <section className="mx-auto max-w-[1240px] px-6 py-14 sm:py-20">
+                <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+                    <section className="lg:pr-10">
+                        <h2 className="mb-8 text-3xl font-extrabold uppercase">Login</h2>
 
                         {loginError && (
-                            <div className="mb-6 flex items-start gap-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                <span>{loginError}</span>
+                            <div className="mb-6 border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                {loginError}
                             </div>
                         )}
 
-                        <form onSubmit={submitHandler} className="space-y-4">
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Email Address
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="mail"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
-                                    <input
-                                        type="email"
-                                        placeholder="your@email.com"
-                                        value={email}
-                                        required
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                    />
-                                </span>
+                        <form onSubmit={submitHandler} className="space-y-7">
+                            <label className="block text-lg">
+                                Username or email address <span className="text-red-500">*</span>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    required
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="mt-3 h-[52px] w-full border border-gray-200 bg-white px-4 text-base outline-none transition focus:border-pink-300"
+                                />
                             </label>
 
-                            <label className="block">
-                                <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                    Password
-                                </span>
-                                <span className="relative block">
-                                    <Icon
-                                        name="lock"
-                                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                    />
+                            <label className="block text-lg">
+                                Password <span className="text-red-500">*</span>
+                                <span className="mt-3 flex h-[54px] w-full border border-gray-200 bg-white">
                                     <input
                                         type={showPassword ? "text" : "password"}
-                                        placeholder="********"
                                         value={password}
                                         required
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="h-12 w-full rounded-lg border border-gray-200 bg-white pl-12 pr-12 text-sm font-medium tracking-widest text-gray-950 outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+                                        className="h-full min-w-0 flex-1 px-4 text-base outline-none"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-                                        aria-label={
-                                            showPassword ? "Hide password" : "Show password"
-                                        }
+                                        className="flex h-full w-14 items-center justify-center bg-[#f3f3f3] text-gray-600 transition hover:text-gray-950"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
-                                        <Icon
-                                            name={showPassword ? "eyeOff" : "eye"}
-                                            className="h-5 w-5"
-                                        />
+                                        <Icon name={showPassword ? "eyeOff" : "eye"} className="h-5 w-5" />
                                     </button>
                                 </span>
                             </label>
@@ -195,40 +136,46 @@ const LoginPage = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg bg-gray-950 px-5 text-sm font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-gray-950/10 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="h-[52px] w-full bg-[#2b2b2b] text-base font-extrabold uppercase text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                {loading ? (
-                                    <span className="inline-flex items-center gap-2">
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.2s]" />
-                                        <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-white [animation-delay:0.4s]" />
-                                    </span>
-                                ) : (
-                                    <>
-                                        Sign In
-                                        <Icon name="arrow" className="h-5 w-5" />
-                                    </>
-                                )}
+                                {loading ? "Logging in..." : "Log in"}
                             </button>
-                        </form>
 
-                        <div className="mt-8 flex flex-col gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
-                            <p className="text-sm text-gray-500">New to BeautyBliss?</p>
-                            <Link
-                                to={
-                                    redirect !== "/"
-                                        ? `/register?redirect=${redirect}`
-                                        : "/register"
-                                }
-                                className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-pink-600 transition hover:text-gray-950"
-                            >
-                                Create Account
-                                <Icon name="arrow" className="h-4 w-4" />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-            </div>
+                            <div className="flex flex-col gap-4 text-lg sm:flex-row sm:items-center sm:justify-between">
+                                <label className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(event) => setRememberMe(event.target.checked)}
+                                        className="h-4 w-4 border border-gray-300"
+                                    />
+                                    Remember me
+                                </label>
+                                <Link to="/forgot-password" className="transition hover:text-pink-600">
+                                    Lost your password?
+                                </Link>
+                            </div>
+                        </form>
+                    </section>
+
+                    <section className="border-t border-gray-200 pt-10 text-center lg:border-l lg:border-t-0 lg:pl-14 lg:pt-0">
+                        <h2 className="mb-8 text-3xl font-extrabold uppercase">Register</h2>
+                        <p className="mx-auto max-w-[540px] text-lg leading-8 text-gray-600">
+                            Registering for this site allows you to access your order status and history.
+                            Just fill in the fields below, and we'll get a new account set up for you in no
+                            time. We will only ask you for information necessary to make the purchase
+                            process faster and easier.
+                        </p>
+
+                        <Link
+                            to={redirect !== "/" ? `/register?redirect=${redirect}` : "/register"}
+                            className="mt-8 inline-flex h-[52px] items-center justify-center rounded-full bg-[#f6f6f6] px-9 text-base font-extrabold uppercase text-gray-950 transition hover:bg-[#2b2b2b] hover:text-white"
+                        >
+                            Register
+                        </Link>
+                    </section>
+                </div>
+            </section>
         </main>
     );
 };
