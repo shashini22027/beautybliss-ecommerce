@@ -1,462 +1,396 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const Icon = ({ name, className = "w-5 h-5" }) => {
-    const paths = {
-        user: "M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
-        mail: "M4 6h16v12H4V6zm0 0 8 7 8-7",
-        phone: "M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.8a2 2 0 0 1-.6 1.8L7.7 9.6a16 16 0 0 0 6.7 6.7l1.3-1.3a2 2 0 0 1 1.8-.6l2.8.5a2 2 0 0 1 1.7 2z",
-        map: "M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-        card: "M3 6h18v12H3V6zm0 4h18",
-        bag: "M6 8h12l-1 13H7L6 8zm3 0a3 3 0 0 1 6 0",
-        arrow: "M5 12h14m-6-6 6 6-6 6",
-        check: "M20 6 9 17l-5-5",
-        sparkle: "M12 2l1.7 5.3L19 9l-5.3 1.7L12 16l-1.7-5.3L5 9l5.3-1.7L12 2z",
-    };
-
-    return (
-        <svg
-            className={className}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-        >
-            <path d={paths[name]} />
-        </svg>
-    );
-};
-
-const getStoredJson = (key, fallback) => {
+const getCartItems = () => {
     try {
-        return JSON.parse(localStorage.getItem(key)) || fallback;
+        const storedCartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+        const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        if (Array.isArray(storedCartItems) && storedCartItems.length) return storedCartItems;
+        if (Array.isArray(storedCartItems?.cartItems) && storedCartItems.cartItems.length) return storedCartItems.cartItems;
+        if (Array.isArray(storedCart) && storedCart.length) return storedCart;
+        if (Array.isArray(storedCart?.cartItems)) return storedCart.cartItems;
+        return [];
     } catch {
-        return fallback;
+        return [];
     }
 };
 
-const getItemId = (item) => item.product?._id || item.product?.id || item._id || item.id || item.productId;
+const getProductData = (item) => {
+    if (item?.product && typeof item.product === "object") {
+        return { ...item.product, qty: item.qty || item.quantity, quantity: item.quantity || item.qty };
+    }
+
+    return item || {};
+};
+
 const getItemQty = (item) => Number(item.qty || item.quantity || 1);
-const getItemPrice = (item) => Number(item.product?.price || item.price || 0);
+
+const getItemPrice = (item) => {
+    const product = getProductData(item);
+    if (typeof product.price === "number") return product.price;
+
+    const price = String(product.price || "0")
+        .replace(/From/gi, "")
+        .replace(/[^\d.]/g, "");
+
+    return Number(price || 0);
+};
+
+const formatPrice = (value) =>
+    `රු${Number(value || 0).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
+
+const sriLankanCities = [
+    "Colombo",
+    "Dehiwala-Mount Lavinia",
+    "Moratuwa",
+    "Sri Jayawardenepura Kotte",
+    "Negombo",
+    "Gampaha",
+    "Kelaniya",
+    "Kadawatha",
+    "Ja-Ela",
+    "Wattala",
+    "Ragama",
+    "Kandana",
+    "Panadura",
+    "Kalutara",
+    "Horana",
+    "Kandy",
+    "Peradeniya",
+    "Katugastota",
+    "Gampola",
+    "Nawalapitiya",
+    "Matale",
+    "Dambulla",
+    "Kurunegala",
+    "Kuliyapitiya",
+    "Puttalam",
+    "Chilaw",
+    "Anuradhapura",
+    "Polonnaruwa",
+    "Trincomalee",
+    "Batticaloa",
+    "Ampara",
+    "Kalmunai",
+    "Jaffna",
+    "Vavuniya",
+    "Mannar",
+    "Kilinochchi",
+    "Galle",
+    "Hikkaduwa",
+    "Matara",
+    "Weligama",
+    "Hambantota",
+    "Tangalle",
+    "Ratnapura",
+    "Embilipitiya",
+    "Badulla",
+    "Bandarawela",
+    "Ella",
+    "Nuwara Eliya",
+    "Hatton",
+    "Monaragala",
+];
+
+const districts = [
+    "Ampara",
+    "Anuradhapura",
+    "Badulla",
+    "Batticaloa",
+    "Colombo",
+    "Galle",
+    "Gampaha",
+    "Hambantota",
+    "Jaffna",
+    "Kalutara",
+    "Kandy",
+    "Kegalle",
+    "Kilinochchi",
+    "Kurunegala",
+    "Mannar",
+    "Matale",
+    "Matara",
+    "Monaragala",
+    "Mullaitivu",
+    "Nuwara Eliya",
+    "Polonnaruwa",
+    "Puttalam",
+    "Ratnapura",
+    "Trincomalee",
+    "Vavuniya",
+];
 
 const CheckoutPage = () => {
-    const navigate = useNavigate();
-    const userInfo = getStoredJson("userInfo", {});
-    const [cartItems] = useState(() => getStoredJson("cartItems", []));
-    const [fullName, setFullName] = useState(userInfo.name || "");
-    const [email, setEmail] = useState(userInfo.email || "");
-    const [phone, setPhone] = useState("");
-    const [address, setAddress] = useState("");
-    const [city, setCity] = useState("");
-    const [postalCode, setPostalCode] = useState("");
-    const [country, setCountry] = useState("");
-    const [paymentMethod, setPaymentMethod] = useState("Cash on Delivery");
-    const [loading, setLoading] = useState(false);
-    const [checkoutError, setCheckoutError] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("card");
+    const [shipDifferent, setShipDifferent] = useState(true);
+    const [cartItems, setCartItems] = useState(getCartItems);
 
     const subtotal = useMemo(
-        () =>
-            cartItems.reduce(
-                (total, item) => total + getItemPrice(item) * getItemQty(item),
-                0
-            ),
+        () => cartItems.reduce((total, item) => total + getItemPrice(item) * getItemQty(item), 0),
         [cartItems]
     );
 
-    const shipping = subtotal > 0 && subtotal < 75 ? 6.99 : 0;
-    const tax = subtotal * 0.05;
-    const total = subtotal + shipping + tax;
+    const saveCart = (items) => {
+        setCartItems(items);
+        localStorage.setItem("cartItems", JSON.stringify(items));
+        localStorage.setItem("cart", JSON.stringify(items));
+    };
 
-    const placeOrderHandler = async (e) => {
-        e.preventDefault();
-        setCheckoutError("");
-
-        if (cartItems.length === 0) {
-            setCheckoutError("Your cart is empty");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const orderPayload = {
-                orderItems: cartItems.map((item) => ({
-                    product: getItemId(item),
-                    name: item.product?.name || item.name,
-                    image: item.product?.image || item.image || item.images?.[0],
-                    price: getItemPrice(item),
-                    qty: getItemQty(item),
-                })),
-                shippingAddress: {
-                    fullName,
-                    email,
-                    phone,
-                    address,
-                    city,
-                    postalCode,
-                    country,
-                },
-                paymentMethod,
-                itemsPrice: subtotal,
-                shippingPrice: shipping,
-                taxPrice: tax,
-                totalPrice: total,
-            };
-
-            const res = await fetch("/api/orders", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(userInfo?.token
-                        ? { Authorization: `Bearer ${userInfo.token}` }
-                        : {}),
-                },
-                body: JSON.stringify(orderPayload),
-            });
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data?.message || "Unable to place order");
-            }
-
-            localStorage.removeItem("cartItems");
-            navigate(data?._id ? `/order/${data._id}` : "/orders");
-        } catch (err) {
-            setCheckoutError(err.message || "Unable to place order");
-        } finally {
-            setLoading(false);
-        }
+    const removeItem = (targetItem) => {
+        const targetProduct = getProductData(targetItem);
+        const targetKey = targetProduct._id || targetProduct.id || targetProduct.name;
+        saveCart(
+            cartItems.filter((item) => {
+                const product = getProductData(item);
+                const key = product._id || product.id || product.name;
+                return key !== targetKey;
+            })
+        );
     };
 
     return (
-        <main
-            className="min-h-screen px-4 py-8 text-gray-950 sm:px-6 lg:px-8"
-            style={{
-                background:
-                    "linear-gradient(135deg, #fff1f4 0%, #faf0ea 48%, #f8e7ee 100%)",
-            }}
-        >
-            <section className="mx-auto max-w-7xl">
-                <div className="mb-8 flex flex-col gap-5 border-b border-pink-200/70 pb-6 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
-                            BeautyBliss Checkout
-                        </p>
-                        <h1 className="text-4xl font-serif font-bold tracking-tight text-gray-950 sm:text-5xl">
-                            Checkout
-                        </h1>
-                        <p className="mt-3 text-sm leading-6 text-gray-500">
-                            Confirm your details and complete your beauty order.
-                        </p>
-                    </div>
-
-                    <Link
-                        to="/cart"
-                        className="inline-flex h-12 items-center justify-center gap-3 rounded-lg border border-pink-200 bg-[#fff4f6]/90 px-5 text-sm font-bold uppercase tracking-[0.16em] text-gray-700 transition hover:border-pink-300 hover:text-pink-600"
-                    >
-                        Back to Cart
-                        <Icon name="bag" className="h-5 w-5" />
-                    </Link>
-                </div>
-
-                {cartItems.length === 0 ? (
-                    <div className="rounded-lg border border-pink-200 bg-[#fff4f6]/90 px-6 py-16 text-center shadow-sm">
-                        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
-                            <Icon name="bag" className="h-7 w-7" />
-                        </div>
-                        <h2 className="text-2xl font-serif font-bold text-gray-950">
-                            Your cart is empty
-                        </h2>
-                        <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-500">
-                            Add your skincare and makeup favorites before checking out.
-                        </p>
-                        <Link
-                            to="/products"
-                            className="mt-7 inline-flex h-12 items-center justify-center gap-3 rounded-lg bg-gray-950 px-6 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-pink-600"
-                        >
-                            Shop Products
-                            <Icon name="arrow" className="h-5 w-5" />
+        <main className="min-h-screen bg-white text-gray-950">
+            <section className="relative min-h-[195px] overflow-hidden">
+                <img
+                    src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=1800&q=85"
+                    alt="Beauty checkout"
+                    className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="relative z-10 mx-auto flex min-h-[195px] max-w-[1540px] items-center justify-center px-6 text-white">
+                    <div className="flex flex-wrap items-center justify-center gap-4 text-3xl font-extrabold uppercase">
+                        <Link to="/cart" className="text-white/80 transition hover:text-white">
+                            Shopping Cart
                         </Link>
+                        <span className="text-white/80">→</span>
+                        <span className="border-b-4 border-black pb-2">Checkout</span>
+                        <span className="text-white/80">→</span>
+                        <span className="text-white/80">Order Complete</span>
                     </div>
-                ) : (
-                    <form
-                        onSubmit={placeOrderHandler}
-                        className="grid gap-6 lg:grid-cols-[1fr_390px]"
-                    >
-                        <div className="space-y-6">
-                            <section className="rounded-lg border border-pink-200 bg-[#fff4f6]/90 p-6 shadow-sm sm:p-8">
-                                <div className="mb-7">
-                                    <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
-                                        Shipping Details
-                                    </p>
-                                    <h2 className="text-2xl font-serif font-bold text-gray-950">
-                                        Where should we send it?
-                                    </h2>
-                                </div>
+                </div>
+            </section>
 
-                                {checkoutError && (
-                                    <div className="mb-6 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                                        {checkoutError}
-                                    </div>
-                                )}
+            <section className="mx-auto max-w-[1460px] px-6 py-12">
+                <div className="grid gap-20 lg:grid-cols-[1fr_0.95fr]">
+                    <section>
+                        <h1 className="mb-8 text-3xl font-extrabold uppercase">Billing Details</h1>
 
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Full Name
-                                        </span>
-                                        <span className="relative block">
-                                            <Icon
-                                                name="user"
-                                                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={fullName}
-                                                required
-                                                onChange={(e) =>
-                                                    setFullName(e.target.value)
-                                                }
-                                                className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                            />
-                                        </span>
-                                    </label>
-
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Email
-                                        </span>
-                                        <span className="relative block">
-                                            <Icon
-                                                name="mail"
-                                                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                            />
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                required
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                            />
-                                        </span>
-                                    </label>
-
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Phone
-                                        </span>
-                                        <span className="relative block">
-                                            <Icon
-                                                name="phone"
-                                                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                            />
-                                            <input
-                                                type="tel"
-                                                value={phone}
-                                                required
-                                                onChange={(e) => setPhone(e.target.value)}
-                                                className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                            />
-                                        </span>
-                                    </label>
-
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            City
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={city}
-                                            required
-                                            onChange={(e) => setCity(e.target.value)}
-                                            className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] px-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                        />
-                                    </label>
-
-                                    <label className="block sm:col-span-2">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Address
-                                        </span>
-                                        <span className="relative block">
-                                            <Icon
-                                                name="map"
-                                                className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={address}
-                                                required
-                                                onChange={(e) =>
-                                                    setAddress(e.target.value)
-                                                }
-                                                className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] pl-12 pr-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                            />
-                                        </span>
-                                    </label>
-
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Postal Code
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={postalCode}
-                                            required
-                                            onChange={(e) =>
-                                                setPostalCode(e.target.value)
-                                            }
-                                            className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] px-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                        />
-                                    </label>
-
-                                    <label className="block">
-                                        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-gray-600">
-                                            Country
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={country}
-                                            required
-                                            onChange={(e) =>
-                                                setCountry(e.target.value)
-                                            }
-                                            className="h-12 w-full rounded-lg border border-pink-200 bg-[#fff7f8] px-4 text-sm font-medium text-gray-950 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-                                        />
-                                    </label>
-                                </div>
-                            </section>
-
-                            <section className="rounded-lg border border-pink-200 bg-[#fff4f6]/90 p-6 shadow-sm sm:p-8">
-                                <div className="mb-5 flex items-center gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
-                                        <Icon name="card" className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
-                                            Payment
-                                        </p>
-                                        <h2 className="text-xl font-serif font-bold">
-                                            Choose payment method
-                                        </h2>
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    {["Cash on Delivery", "Card Payment"].map(
-                                        (method) => (
-                                            <label
-                                                key={method}
-                                                className={`flex cursor-pointer items-center justify-between rounded-lg border px-4 py-4 transition ${
-                                                    paymentMethod === method
-                                                        ? "border-pink-500 bg-pink-50 text-pink-700"
-                                                        : "border-pink-200 bg-[#fff7f8] text-gray-600 hover:border-pink-300"
-                                                }`}
-                                            >
-                                                <span className="text-sm font-bold">
-                                                    {method}
-                                                </span>
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value={method}
-                                                    checked={paymentMethod === method}
-                                                    onChange={(e) =>
-                                                        setPaymentMethod(e.target.value)
-                                                    }
-                                                    className="h-4 w-4 accent-pink-500"
-                                                />
-                                            </label>
-                                        )
-                                    )}
-                                </div>
-                            </section>
-                        </div>
-
-                        <aside className="h-fit rounded-lg border border-pink-200 bg-[#fff4f6]/90 p-6 shadow-sm">
-                            <div className="mb-6 flex items-center gap-3">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
-                                    <Icon name="sparkle" className="h-5 w-5" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
-                                        Order Summary
-                                    </p>
-                                    <h2 className="text-xl font-serif font-bold">
-                                        Beauty Bag
-                                    </h2>
-                                </div>
+                        <form className="space-y-7">
+                            <div className="grid gap-7 md:grid-cols-2">
+                                <label className="block text-lg">
+                                    First Name <span className="text-red-500">*</span>
+                                    <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                </label>
+                                <label className="block text-lg">
+                                    Last Name <span className="text-red-500">*</span>
+                                    <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                </label>
                             </div>
 
-                            <div className="max-h-72 space-y-4 overflow-auto pr-1">
-                                {cartItems.map((item) => {
-                                    const id = getItemId(item);
+                            <label className="block text-lg">
+                                Country / Region <span className="text-red-500">*</span>
+                                <p className="mt-3 font-semibold text-gray-600">Sri Lanka</p>
+                            </label>
+
+                            <label className="block text-lg">
+                                Street Address <span className="text-red-500">*</span>
+                                <input
+                                    className="mt-3 h-[52px] w-full max-w-[340px] border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                    placeholder="House number and street name"
+                                />
+                            </label>
+
+                            <label className="block text-lg">
+                                Town / City <span className="text-red-500">*</span>
+                                <select className="mt-3 h-[52px] w-full border border-gray-200 px-4 text-gray-500 outline-none focus:border-pink-300">
+                                    <option>Select an option...</option>
+                                    {sriLankanCities.map((city) => (
+                                        <option key={city}>{city}</option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label className="block text-lg">
+                                Phone <span className="text-red-500">*</span>
+                                <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                            </label>
+
+                            <label className="block text-lg">
+                                Secondary Number (optional)
+                                <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                            </label>
+
+                            <label className="block text-lg">
+                                Email address <span className="text-red-500">*</span>
+                                <input
+                                    type="email"
+                                    className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                />
+                            </label>
+
+                            <label className="flex items-center gap-3 text-lg font-bold">
+                                <input
+                                    type="checkbox"
+                                    checked={shipDifferent}
+                                    onChange={(event) => setShipDifferent(event.target.checked)}
+                                    className="h-4 w-4"
+                                />
+                                Ship to a different address?
+                            </label>
+
+                            {shipDifferent && (
+                                <div className="space-y-7 pt-2">
+                                    <div className="grid gap-7 md:grid-cols-2">
+                                        <label className="block text-lg">
+                                            First name <span className="text-red-500">*</span>
+                                            <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                        </label>
+                                        <label className="block text-lg">
+                                            Last name <span className="text-red-500">*</span>
+                                            <input className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300" />
+                                        </label>
+                                    </div>
+
+                                    <label className="block text-lg">
+                                        Country / Region <span className="text-red-500">*</span>
+                                        <p className="mt-3 font-semibold text-gray-600">Sri Lanka</p>
+                                    </label>
+
+                                    <label className="block text-lg">
+                                        Street address <span className="text-red-500">*</span>
+                                        <input
+                                            className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                            placeholder="House number and street name"
+                                        />
+                                    </label>
+
+                                    <label className="block text-lg">
+                                        District (optional)
+                                        <select className="mt-3 h-[52px] w-full border border-gray-200 px-4 text-gray-500 outline-none focus:border-pink-300">
+                                            <option>Select an option...</option>
+                                            {districts.map((district) => (
+                                                <option key={district}>{district}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    <label className="block text-lg">
+                                        City <span className="text-red-500">* *</span>
+                                        <select className="mt-3 h-[52px] w-full border border-gray-200 bg-gray-100 px-4 text-gray-500 outline-none focus:border-pink-300">
+                                            <option>Select an option...</option>
+                                            {sriLankanCities.map((city) => (
+                                                <option key={city}>{city}</option>
+                                            ))}
+                                        </select>
+                                    </label>
+
+                                    <label className="block text-lg">
+                                        Phone <span className="text-red-500">*</span>
+                                        <input
+                                            className="mt-3 h-[52px] w-full border border-gray-200 px-4 outline-none focus:border-pink-300"
+                                            placeholder="phone Number"
+                                        />
+                                    </label>
+                                </div>
+                            )}
+
+                            <label className="block text-lg">
+                                Order notes (optional)
+                                <textarea
+                                    rows="8"
+                                    className="mt-3 w-full border border-gray-200 px-4 py-4 outline-none focus:border-pink-300"
+                                    placeholder="Notes about your order, e.g. special notes for delivery."
+                                />
+                            </label>
+                        </form>
+                    </section>
+
+                    <aside className="bg-[#f6f6f6] px-9 pb-10 pt-12">
+                        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase">Your Order</h2>
+
+                        <div className="rounded-xl bg-white px-8 py-7 shadow-sm">
+                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 pb-5 text-xl font-extrabold uppercase">
+                                <span>Product</span>
+                                <span className="text-right">Subtotal</span>
+                            </div>
+
+                            {cartItems.length === 0 ? (
+                                <p className="py-8 text-gray-500">Your cart is empty.</p>
+                            ) : (
+                                cartItems.map((item) => {
+                                    const product = getProductData(item);
                                     const qty = getItemQty(item);
+                                    const lineTotal = getItemPrice(item) * qty;
 
                                     return (
-                                        <div key={id || item.name} className="flex gap-3">
-                                            <div className="h-16 w-16 overflow-hidden rounded-lg bg-[#f3dfe6]">
-                                                <img
-                                                    src={
-                                                        item.image ||
-                                                        item.images?.[0] ||
-                                                        "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80"
-                                                    }
-                                                    alt={item.name || "Beauty product"}
-                                                    className="h-full w-full object-cover"
-                                                />
+                                        <div key={`${product.name}-${qty}`} className="border-b border-gray-200 py-5">
+                                            <div className="grid grid-cols-[1fr_140px] gap-4">
+                                                <p className="text-lg leading-6 text-gray-600">{product.name}</p>
+                                                <p className="text-right text-lg text-gray-600">{formatPrice(lineTotal)}</p>
                                             </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="line-clamp-2 text-sm font-bold text-gray-950">
-                                                    {item.name || "Beauty Essential"}
-                                                </p>
-                                                <p className="mt-1 text-xs font-medium text-gray-500">
-                                                    Qty {qty}
-                                                </p>
+                                            <div className="mt-3 inline-flex h-10 items-center border border-gray-200">
+                                                <span className="flex h-full w-8 items-center justify-center text-gray-500">-</span>
+                                                <span className="flex h-full w-10 items-center justify-center">{qty}</span>
+                                                <span className="flex h-full w-8 items-center justify-center text-gray-500">+</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeItem(item)}
+                                                    className="ml-3 font-bold transition hover:text-red-600"
+                                                    aria-label="Remove product"
+                                                >
+                                                    x
+                                                </button>
                                             </div>
-                                            <p className="text-sm font-bold text-gray-950">
-                                                ${(getItemPrice(item) * qty).toFixed(2)}
-                                            </p>
                                         </div>
                                     );
-                                })}
-                            </div>
+                                })
+                            )}
 
-                            <div className="mt-6 space-y-4 border-y border-pink-200 py-5 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Subtotal</span>
-                                    <span className="font-bold">${subtotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Shipping</span>
-                                    <span className="font-bold">
-                                        {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Tax</span>
-                                    <span className="font-bold">${tax.toFixed(2)}</span>
-                                </div>
+                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-5 text-lg">
+                                <span className="font-bold">Subtotal</span>
+                                <span className="text-right">{formatPrice(subtotal)}</span>
                             </div>
-
-                            <div className="mt-5 flex items-center justify-between text-lg font-bold">
+                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-5 text-lg">
+                                <span className="font-bold">Shipping</span>
+                                <span className="text-right">Free Shipping</span>
+                            </div>
+                            <div className="grid grid-cols-[1fr_140px] py-5 text-xl font-bold">
                                 <span>Total</span>
-                                <span>${total.toFixed(2)}</span>
+                                <span className="text-right">{formatPrice(subtotal)}</span>
                             </div>
+                        </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="mt-6 inline-flex h-12 w-full items-center justify-center gap-3 rounded-lg bg-gray-950 px-5 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                {loading ? "Placing Order..." : "Place Order"}
-                                <Icon name="check" className="h-5 w-5" />
-                            </button>
-                        </aside>
-                    </form>
-                )}
+                        <div className="mt-8 space-y-5 text-lg">
+                            {[
+                                ["card", "Pay by Visa, MasterCard, AMEX,Lanka QR"],
+                                ["cod", "Cash on delivery"],
+                            ].map(([value, label]) => (
+                                <label key={value} className="flex items-center gap-3">
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        checked={paymentMethod === value}
+                                        onChange={() => setPaymentMethod(value)}
+                                    />
+                                    <span>{label}</span>
+                                </label>
+                            ))}
+                        </div>
+
+                        <div className="mt-7 border-t border-gray-200 pt-7 text-base leading-7 text-gray-600">
+                            Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our{" "}
+                            <strong className="text-gray-950">privacy policy</strong>.
+                        </div>
+
+                        <button className="mt-7 h-[60px] w-full bg-[#2b2b2b] text-lg font-bold uppercase text-white transition hover:bg-pink-600">
+                            Place Order
+                        </button>
+                    </aside>
+                </div>
             </section>
         </main>
     );

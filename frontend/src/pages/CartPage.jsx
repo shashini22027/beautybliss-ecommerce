@@ -35,6 +35,9 @@ const getCartItems = () => {
     }
 };
 
+const hasStoredCart = () =>
+    localStorage.getItem("cartItems") !== null || localStorage.getItem("cart") !== null;
+
 const getProductData = (item) => {
     if (item?.product && typeof item.product === "object") {
         return { ...item.product, qty: item.qty || item.quantity, quantity: item.quantity || item.qty };
@@ -180,6 +183,7 @@ const CartPage = ({ onClose }) => {
 
     const [cartItems, setCartItems] = useState(() => mergeCartItems(getCartItems()));
     const [coupon, setCoupon] = useState("");
+    const [removedItem, setRemovedItem] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -203,13 +207,20 @@ const CartPage = ({ onClose }) => {
 
         const storedItems = mergeCartItems(getCartItems());
         const contextItems = mergeCartItems(contextCartItems);
-        const nextItems = storedItems.length ? storedItems : contextItems;
+        const nextItems = hasStoredCart() ? storedItems : contextItems;
         setCartItems(nextItems);
     }, [contextCartItems, location.key, onClose]);
 
     const removeItem = (item) => {
         const id = getItemId(item);
+        setRemovedItem(normalizeCartItem(item));
         saveCart(cartItems.filter((cartItem) => getItemId(cartItem) !== id));
+    };
+
+    const undoRemove = () => {
+        if (!removedItem) return;
+        saveCart([...cartItems, removedItem]);
+        setRemovedItem(null);
     };
 
     const updateQuantity = (item, nextQty) => {
@@ -329,6 +340,22 @@ const CartPage = ({ onClose }) => {
             </section>
 
             <section className="mx-auto max-w-[1535px] px-6 pt-[76px] pb-16">
+                {removedItem && (
+                    <div className="mx-auto mb-14 flex max-w-[1490px] items-center gap-6 rounded-xl bg-[#439447] px-8 py-7 text-white">
+                        <span className="text-4xl font-light leading-none">✓</span>
+                        <p className="text-lg">
+                            “{removedItem.name || "Product"}” removed.
+                            <button
+                                type="button"
+                                onClick={undoRemove}
+                                className="ml-3 underline underline-offset-4 transition hover:text-white/80"
+                            >
+                                Undo?
+                            </button>
+                        </p>
+                    </div>
+                )}
+
                 <div className="lg:pt-[24px]">
                     {cartItems.length === 0 ? (
                         <div className="border border-gray-200 px-8 py-16 text-center">
