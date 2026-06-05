@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import categoryGroups from '../data/categoryGroups';
+import { formatPrice } from '../utils/currency';
 
 const fallbackImages = [
   'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
@@ -39,8 +40,8 @@ const buildFallbackProducts = (category) =>
       name: `${item} Essential ${number}`,
       category: category.title,
       subcategory: item,
-      price: `රු${(itemIndex + number) * 12000 + 21800}.00`,
-      oldPrice: number === 2 ? `රු${(itemIndex + number) * 13500 + 24800}.00` : '',
+      price: Math.round(((itemIndex + number) * 12 + 21.8) * 30),
+      oldPrice: number === 2 ? Math.round(((itemIndex + number) * 13.5 + 24.8) * 30) : '',
       rating: 5 - ((itemIndex + number) % 2),
       discount: number === 2 ? '-15%' : '',
       soldOut: number === 3 && itemIndex === 0,
@@ -62,7 +63,7 @@ const formatProductPrice = (product) => {
   const price = product.price || product.currentPrice || product.salePrice;
 
   if (typeof price === 'number') {
-    return `රු${price.toLocaleString('en-US')}.00`;
+    return formatPrice(price);
   }
 
   return price || 'View Product';

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { formatPrice, parsePrice } from "../utils/currency";
 
 const getCartItems = () => {
     try {
@@ -28,13 +29,7 @@ const getItemQty = (item) => Number(item.qty || item.quantity || 1);
 
 const getItemPrice = (item) => {
     const product = getProductData(item);
-    if (typeof product.price === "number") return product.price;
-
-    const price = String(product.price || "0")
-        .replace(/From/gi, "")
-        .replace(/[^\d.]/g, "");
-
-    return Number(price || 0);
+    return parsePrice(product.price);
 };
 
 const getItemId = (item) => {
@@ -42,12 +37,6 @@ const getItemId = (item) => {
     const productId = item?.product && typeof item.product !== "object" ? item.product : "";
     return product._id || product.id || item?._id || item?.id || productId || product.name;
 };
-
-const formatPrice = (value) =>
-    `රු${Number(value || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
 
 const getSavedCheckoutOrders = () => {
     try {

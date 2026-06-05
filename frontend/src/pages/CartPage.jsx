@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { WishlistContext } from "../context/WishlistContext";
+import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -61,16 +62,8 @@ const getItemQty = (item) => Number(item.qty || item.quantity || 1);
 
 const getItemPrice = (item) => {
     const product = getProductData(item);
-    if (typeof product.price === "number") return product.price;
-    const price = String(product.price || "0").replace(/From/gi, "").replace(/[^\d.]/g, "");
-    return Number(price || 0);
+    return parsePrice(product.price);
 };
-
-const formatPrice = (value) =>
-    `රු${Number(value || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
 
 const normalizeCartItem = (item) => {
     const product = getProductData(item);
@@ -112,7 +105,7 @@ const suggestedProducts = [
     {
         name: "Aliver Rosemary Oil for Hair Growth",
         category: "Hair Care, Nourishing Oils",
-        price: "From රු47,000.00",
+        price: "From Rs. 1,410.00",
         rating: 5,
         discount: "-11%",
         label: "HOT",
@@ -122,7 +115,7 @@ const suggestedProducts = [
     {
         name: "Wine Lip Tint, 06 Colors (Stock Clearance Sale)",
         category: "Lips, Lip glow",
-        price: "From රු9,800.00",
+        price: "From Rs. 294.00",
         rating: 4,
         discount: "-51%",
         label: "",
@@ -132,7 +125,7 @@ const suggestedProducts = [
     {
         name: "Aliver Face Cream Liquid Blush (Stock Clearance Sale)",
         category: "Makeup",
-        price: "From රු17,800.00",
+        price: "From Rs. 534.00",
         rating: 5,
         discount: "-44%",
         label: "",
@@ -142,7 +135,7 @@ const suggestedProducts = [
     {
         name: "Aliver Amla Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු45,000.00",
+        price: "Rs. 1,350.00",
         rating: 5,
         discount: "",
         label: "",
@@ -152,7 +145,7 @@ const suggestedProducts = [
     {
         name: "Aliver Argan Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු33,000.00",
+        price: "Rs. 990.00",
         rating: 5,
         discount: "-20%",
         label: "",
@@ -162,7 +155,7 @@ const suggestedProducts = [
     {
         name: "Aliver Batana Oil",
         category: "Hair Care, Nourishing Oils",
-        price: "From රු57,000.00",
+        price: "From Rs. 1,710.00",
         rating: 5,
         discount: "",
         label: "NEW",
@@ -530,3 +523,5 @@ const CartPage = ({ onClose }) => {
 };
 
 export default CartPage;
+
+

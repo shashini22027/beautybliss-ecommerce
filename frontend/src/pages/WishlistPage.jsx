@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { WishlistContext } from "../context/WishlistContext";
+import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
   const paths = {
@@ -37,18 +38,8 @@ const getBrandName = (brand) => {
 };
 
 const getProductPrice = (product) => {
-  if (typeof product?.price === "number") return product.price;
-  const price = String(product?.price || "0")
-    .replace(/From/gi, "")
-    .replace(/[^\d.]/g, "");
-  return Number(price || 0);
+  return parsePrice(product?.price);
 };
-
-const formatPrice = (value) =>
-  `රු${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 
 const WishlistPage = () => {
   const wishlistContext = useContext(WishlistContext) || {};

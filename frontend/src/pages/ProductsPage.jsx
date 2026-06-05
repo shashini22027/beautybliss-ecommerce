@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { WishlistContext } from "../context/WishlistContext";
+import { formatPrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -46,7 +47,7 @@ const productDescriptions = [
     {
         name: "Aliver Pumpkin Seed Oil 60ml",
         category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "රු47,800.00",
+        price: "Rs. 1,434.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -57,7 +58,7 @@ const productDescriptions = [
     {
         name: "Aliver Luscious Lips Shimmer Lip Oil",
         category: "Lips",
-        price: "From රු27,800.00",
+        price: "From Rs. 834.00",
         oldPrice: "",
         rating: 4,
         discount: "-34%",
@@ -68,8 +69,8 @@ const productDescriptions = [
     {
         name: "Aliver Teeth Whitening Foam Toothpaste Mint Flavour",
         category: "Oral Care",
-        price: "රු21,800.00",
-        oldPrice: "රු33,000.00",
+        price: "Rs. 654.00",
+        oldPrice: "Rs. 990.00",
         rating: 3,
         discount: "-34%",
         soldOut: true,
@@ -79,8 +80,8 @@ const productDescriptions = [
     {
         name: "Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set",
         category: "Lips, Lip glow",
-        price: "රු33,000.00",
-        oldPrice: "රු43,800.00",
+        price: "Rs. 990.00",
+        oldPrice: "Rs. 1,314.00",
         rating: 4,
         discount: "-25%",
         soldOut: false,
@@ -90,8 +91,8 @@ const productDescriptions = [
     {
         name: "Brightening Vitamin C Serum",
         category: "Skin Care",
-        price: "රු57,000.00",
-        oldPrice: "රු65,000.00",
+        price: "Rs. 1,710.00",
+        oldPrice: "Rs. 1,950.00",
         rating: 5,
         discount: "-12%",
         soldOut: false,
@@ -101,7 +102,7 @@ const productDescriptions = [
     {
         name: "Rose Cloud Cleanser",
         category: "Cleansers",
-        price: "රු65,000.00",
+        price: "Rs. 1,950.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -112,8 +113,8 @@ const productDescriptions = [
     {
         name: "Daily Silk Sunscreen",
         category: "Sun Care",
-        price: "රු84,000.00",
-        oldPrice: "රු98,000.00",
+        price: "Rs. 2,520.00",
+        oldPrice: "Rs. 2,940.00",
         rating: 5,
         discount: "-14%",
         soldOut: false,
@@ -123,7 +124,7 @@ const productDescriptions = [
     {
         name: "Velvet Repair Cream",
         category: "Moisturizers",
-        price: "රු115,000.00",
+        price: "Rs. 3,450.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -134,7 +135,7 @@ const productDescriptions = [
     {
         name: "Glow Boost Vitamin C Drops",
         category: "Skin Care",
-        price: "රු59,000.00",
+        price: "Rs. 1,770.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -145,7 +146,7 @@ const productDescriptions = [
     {
         name: "Soft Matte Lip Tint",
         category: "Cosmetics",
-        price: "රු35,000.00",
+        price: "Rs. 1,050.00",
         oldPrice: "",
         rating: 4,
         discount: "New",
@@ -156,7 +157,7 @@ const productDescriptions = [
     {
         name: "Hydra Dew Face Cream",
         category: "Moisturizers",
-        price: "රු73,000.00",
+        price: "Rs. 2,190.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -167,7 +168,7 @@ const productDescriptions = [
     {
         name: "Fresh Bloom Body Mist",
         category: "Fragrances",
-        price: "රු49,800.00",
+        price: "Rs. 1,494.00",
         oldPrice: "",
         rating: 4,
         discount: "New",
@@ -178,7 +179,7 @@ const productDescriptions = [
     {
         name: "Silk Repair Hair Serum",
         category: "Hair Care",
-        price: "රු63,000.00",
+        price: "Rs. 1,890.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -189,8 +190,8 @@ const productDescriptions = [
     {
         name: "Glow Routine Bundle",
         category: "Beauty Sets",
-        price: "රු139,800.00",
-        oldPrice: "රු164,000.00",
+        price: "Rs. 4,194.00",
+        oldPrice: "Rs. 4,920.00",
         rating: 5,
         discount: "-15%",
         soldOut: false,
@@ -200,7 +201,7 @@ const productDescriptions = [
     {
         name: "Aliver Natural Foot Peel Mask 2 Packs (Lavender)",
         category: "Body Care, Foot & Hand",
-        price: "රු33,000.00",
+        price: "Rs. 990.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -211,7 +212,7 @@ const productDescriptions = [
     {
         name: "Aliver Neem Oil 60ml",
         category: "Nourishing Oils",
-        price: "රු45,800.00",
+        price: "Rs. 1,374.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -222,7 +223,7 @@ const productDescriptions = [
     {
         name: "Aliver Organic Sunflower Oil For Skin 60ml",
         category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "රු45,800.00",
+        price: "Rs. 1,374.00",
         oldPrice: "",
         rating: 4,
         discount: "",
@@ -233,7 +234,7 @@ const productDescriptions = [
     {
         name: "Aliver Rosemary Essential Oil 60ml",
         category: "Hair Care, Nourishing Oils",
-        price: "රු49,800.00",
+        price: "Rs. 1,494.00",
         oldPrice: "",
         rating: 5,
         discount: "New",
@@ -244,8 +245,8 @@ const productDescriptions = [
     {
         name: "Aliver Coffee Body Scrub",
         category: "Body Care",
-        price: "රු39,800.00",
-        oldPrice: "රු49,000.00",
+        price: "Rs. 1,194.00",
+        oldPrice: "Rs. 1,470.00",
         rating: 4,
         discount: "-19%",
         soldOut: false,
@@ -255,7 +256,7 @@ const productDescriptions = [
     {
         name: "Aliver Aloe Vera Soothing Gel",
         category: "Skin Care, Body Care",
-        price: "රු37,000.00",
+        price: "Rs. 1,110.00",
         oldPrice: "",
         rating: 5,
         discount: "",
@@ -552,17 +553,17 @@ const ProductsPage = () => {
                                     <div className="mt-4 flex items-center justify-center gap-2 text-lg font-bold">
                                         {product.oldPrice && (
                                             <span className="text-base font-normal text-gray-400 line-through">
-                                                {typeof product.oldPrice === "string" ? product.oldPrice : `Rs. ${Number(product.oldPrice || 0).toFixed(2)}`}
+                                                {typeof product.oldPrice === "string" ? product.oldPrice : formatPrice(product.oldPrice)}
                                             </span>
                                         )}
                                         <span className="text-gray-950">
-                                            {typeof product.price === "string" ? product.price : `Rs. ${Number(product.price || 0).toFixed(2)}`}
+                                            {typeof product.price === "string" ? product.price : formatPrice(product.price)}
                                         </span>
                                     </div>
 
                                     <div className="mt-4 space-y-2 text-sm font-semibold text-gray-400">
-                                        <p>3 X Rs. 15,266.60 with</p>
-                                        <p>or 3 X රු15,266.60 with KOKO</p>
+                                        <p>3 X Rs. 458.00 with</p>
+                                        <p>or 3 X Rs. 458.00 with KOKO</p>
                                     </div>
                                 </article>
                             );
@@ -614,3 +615,5 @@ const ProductsPage = () => {
 };
 
 export default ProductsPage;
+
+

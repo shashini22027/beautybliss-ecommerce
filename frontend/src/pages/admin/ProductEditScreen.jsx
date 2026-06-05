@@ -469,7 +469,7 @@ const ProductEditScreen = () => {
                     <div className="grid gap-6 sm:grid-cols-2">
                       <Field
                         icon={DollarSign}
-                        label="Price (රු)"
+                        label="Price (Rs.)"
                         type="number"
                         step="0.01"
                         value={price}
@@ -588,3 +588,4 @@ const Field = ({
 };
 
 export default ProductEditScreen;
+

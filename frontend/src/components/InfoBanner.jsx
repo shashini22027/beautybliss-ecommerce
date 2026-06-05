@@ -6,7 +6,7 @@ const InfoBanner = () => {
     {
       icon: Truck,
       title: 'Free Shipping',
-      description: 'Free delivery for orders above LKR 6,000',
+      description: 'Free delivery for orders above Rs. 1,800.00',
     },
     {
       icon: CreditCard,
@@ -48,3 +48,5 @@ const InfoBanner = () => {
 };
 
 export default InfoBanner;
+
+

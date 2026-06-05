@@ -4,6 +4,7 @@ import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
 import { WishlistContext } from '../context/WishlistContext';
 import CartPage from './CartPage';
+import { formatPrice, parsePrice } from '../utils/currency';
 
 const getTextValue = (value, fallback = '') => {
   if (!value) return fallback;
@@ -12,7 +13,7 @@ const getTextValue = (value, fallback = '') => {
 };
 
 const getNumberValue = (value, fallback = 0) => {
-  const numberValue = Number(value);
+  const numberValue = parsePrice(value);
   return Number.isFinite(numberValue) ? numberValue : fallback;
 };
 
@@ -102,16 +103,16 @@ const imageSet = [
 ];
 
 const localProducts = [
-  ['Aliver Pumpkin Seed Oil 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු47,800.00', '', 5, '', false, 'A nourishing beauty oil made for soft, healthy-looking skin, body, and hair care routines.', imageSet[0]],
-  ['Aliver Luscious Lips Shimmer Lip Oil', 'Lips', 'From රු27,800.00', '', 4, '-34%', false, 'A glossy shimmer lip oil that helps lips look hydrated, smooth, and naturally radiant.', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Teeth Whitening Foam Toothpaste Mint Flavour', 'Oral Care', 'රු21,800.00', 'රු33,000.00', 3, '-34%', true, 'A mint-flavoured foam toothpaste designed for a fresh, clean daily oral-care routine.', 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set', 'Lips, Lip glow', 'රු33,000.00', 'රු43,800.00', 4, '-25%', false, 'A two-piece lip gloss set made to give lips a fuller-looking, hydrated, high-shine finish.', 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85'],
-  ['Brightening Vitamin C Serum', 'Skin Care', 'රු57,000.00', 'රු65,000.00', 5, '-12%', false, 'A brightening serum that supports a smoother, more radiant-looking daily skincare routine.', imageSet[1]],
-  ['Rose Cloud Cleanser', 'Cleansers', 'රු65,000.00', '', 4, '', false, 'A gentle cleanser for a soft, refreshed feel without stripping the skin.', imageSet[2]],
-  ['Daily Silk Sunscreen', 'Sun Care', 'රු84,000.00', 'රු98,000.00', 5, '-14%', false, 'A daily sunscreen made for lightweight, comfortable protection with a silky finish.', 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85'],
-  ['Velvet Repair Cream', 'Moisturizers', 'රු115,000.00', '', 4, '', false, 'A rich repair cream that helps skin feel softer, smoother, and deeply moisturized.', imageSet[0]],
-  ['Aliver Neem Oil 60ml', 'Nourishing Oils', 'රු45,800.00', '', 4, '', true, 'A cold-pressed neem oil for hair growth, scalp care, and skin nourishment.', 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Organic Sunflower Oil For Skin 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'රු45,800.00', '', 4, '', false, 'A lightweight sunflower seed oil for soft, nourished skin and hair.', 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Pumpkin Seed Oil 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'Rs. 1,434.00', '', 5, '', false, 'A nourishing beauty oil made for soft, healthy-looking skin, body, and hair care routines.', imageSet[0]],
+  ['Aliver Luscious Lips Shimmer Lip Oil', 'Lips', 'From Rs. 834.00', '', 4, '-34%', false, 'A glossy shimmer lip oil that helps lips look hydrated, smooth, and naturally radiant.', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Teeth Whitening Foam Toothpaste Mint Flavour', 'Oral Care', 'Rs. 654.00', 'Rs. 990.00', 3, '-34%', true, 'A mint-flavoured foam toothpaste designed for a fresh, clean daily oral-care routine.', 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set', 'Lips, Lip glow', 'Rs. 990.00', 'Rs. 1,314.00', 4, '-25%', false, 'A two-piece lip gloss set made to give lips a fuller-looking, hydrated, high-shine finish.', 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85'],
+  ['Brightening Vitamin C Serum', 'Skin Care', 'Rs. 1,710.00', 'Rs. 1,950.00', 5, '-12%', false, 'A brightening serum that supports a smoother, more radiant-looking daily skincare routine.', imageSet[1]],
+  ['Rose Cloud Cleanser', 'Cleansers', 'Rs. 1,950.00', '', 4, '', false, 'A gentle cleanser for a soft, refreshed feel without stripping the skin.', imageSet[2]],
+  ['Daily Silk Sunscreen', 'Sun Care', 'Rs. 2,520.00', 'Rs. 2,940.00', 5, '-14%', false, 'A daily sunscreen made for lightweight, comfortable protection with a silky finish.', 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85'],
+  ['Velvet Repair Cream', 'Moisturizers', 'Rs. 3,450.00', '', 4, '', false, 'A rich repair cream that helps skin feel softer, smoother, and deeply moisturized.', imageSet[0]],
+  ['Aliver Neem Oil 60ml', 'Nourishing Oils', 'Rs. 1,374.00', '', 4, '', true, 'A cold-pressed neem oil for hair growth, scalp care, and skin nourishment.', 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85'],
+  ['Aliver Organic Sunflower Oil For Skin 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'Rs. 1,374.00', '', 4, '', false, 'A lightweight sunflower seed oil for soft, nourished skin and hair.', 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85'],
 ].map(([name, category, price, oldPrice, rating, discount, soldOut, description, image], index) => ({
   name,
   category,
@@ -326,11 +327,11 @@ const ProductDetailsPage = () => {
           <div className="mt-7 flex flex-wrap items-end gap-3">
             {hasOldPrice && (
               <span className="text-xl text-gray-400 line-through">
-                {typeof product.oldPrice === 'string' ? product.oldPrice : `Rs. ${oldPrice.toFixed(2)}`}
+                {typeof product.oldPrice === 'string' ? product.oldPrice : formatPrice(oldPrice)}
               </span>
             )}
             <span className="text-3xl font-bold text-black">
-              {typeof product.price === 'string' ? product.price : `Rs. ${price.toFixed(2)}`}
+              {typeof product.price === 'string' ? product.price : formatPrice(price)}
             </span>
           </div>
 
@@ -600,3 +601,5 @@ const ProductDetailsPage = () => {
 };
 
 export default ProductDetailsPage;
+
+

@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import api from "../../services/api";
+import { formatPrice } from "../../utils/currency";
 
 const getTextValue = (value, fallback = "") => {
   if (!value) return fallback;
@@ -27,12 +28,6 @@ const getStoredUser = () => {
     return null;
   }
 };
-
-const formatPrice = (value) =>
-  `රු${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 
 const getProductImage = (product) =>
   product.image || product.images?.[0] || product.thumbnail || "";

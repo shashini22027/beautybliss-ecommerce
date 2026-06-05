@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import {
+  fetchAdminDashboardData,
+  selectAdminDashboardStats,
+} from "../store/adminDashboardSlice";
+import { formatPrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
   const paths = {
@@ -35,62 +42,24 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
   );
 };
 
-const getStoredUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("userInfo")) || null;
-  } catch {
-    return null;
-  }
-};
-
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
-  const [userInfo] = useState(getStoredUser);
-  const [stats, setStats] = useState({
-    users: 0,
-    products: 0,
-    orders: 0,
-    sales: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [dashboardError, setDashboardError] = useState("");
+  const dispatch = useDispatch();
+  const { user, logout } = useContext(AuthContext);
+  const stats = useSelector(selectAdminDashboardStats);
+  const dashboardError = useSelector((state) => state.adminDashboard.error);
 
   useEffect(() => {
-    if (!userInfo?.isAdmin) {
+    if (!user?.isAdmin) {
       navigate("/login");
       return;
     }
 
-    const loadStats = async () => {
-      try {
-        const headers = userInfo?.token
-          ? { Authorization: `Bearer ${userInfo.token}` }
-          : {};
-        const statsRes = await fetch("/api/admin/stats", { headers });
-        const statsData = await statsRes.json();
-
-        if (!statsRes.ok) {
-          throw new Error(statsData.message || "Unable to load dashboard statistics");
-        }
-
-        setStats({
-          users: statsData.totalUsers || 0,
-          products: statsData.totalProducts || 0,
-          orders: statsData.totalOrders || 0,
-          sales: statsData.totalSales || 0,
-        });
-      } catch (err) {
-        setDashboardError(err.message || "Unable to load dashboard statistics");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadStats();
-  }, [navigate, userInfo]);
+    dispatch(fetchAdminDashboardData());
+  }, [dispatch, navigate, user]);
 
   const logoutHandler = () => {
-    localStorage.removeItem("userInfo");
+    logout();
     navigate("/login");
   };
 
@@ -125,7 +94,7 @@ const AdminDashboardPage = () => {
       },
       {
         title: "Sales",
-        value: `$${Number(stats.sales || 0).toFixed(2)}`,
+        value: formatPrice(stats.sales),
         detail: "Paid revenue",
         icon: "sales",
         link: "/admin/orderlist",
@@ -142,19 +111,6 @@ const AdminDashboardPage = () => {
     { name: "Products", icon: "products", link: "/admin/productlist" },
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },
   ];
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-white px-4 text-gray-950">
-        <div className="border border-gray-200 bg-white px-10 py-12 text-center shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
-          <div className="mx-auto mb-5 h-12 w-12 animate-spin rounded-full border-2 border-gray-200 border-t-pink-600" />
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-gray-500">
-            Loading BeautyBliss Admin
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-white text-gray-950">
@@ -219,14 +175,14 @@ const AdminDashboardPage = () => {
             <div className="mt-8 border border-gray-200 bg-white p-5">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center bg-[#2b2b2b] text-lg font-extrabold text-white">
-                  {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
+                  {user?.name?.charAt(0)?.toUpperCase() || "A"}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-base font-extrabold">
-                    {userInfo?.name || "Admin"}
+                    {user?.name || "Admin"}
                   </p>
                   <p className="mt-1 truncate text-sm text-gray-500">
-                    {userInfo?.email || "admin@beautybliss.com"}
+                    {user?.email || "admin@beautybliss.com"}
                   </p>
                 </div>
               </div>
@@ -235,7 +191,7 @@ const AdminDashboardPage = () => {
 
           <section className="lg:pl-1">
             <p className="text-lg leading-8 text-gray-600">
-              Hello <strong>{userInfo?.name || "Admin"}</strong>. From your admin dashboard you can review customer accounts,
+              Hello <strong>{user?.name || "Admin"}</strong>. From your admin dashboard you can review customer accounts,
               manage products, track orders, and monitor sales performance.
             </p>
 

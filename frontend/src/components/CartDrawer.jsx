@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { CartContext } from '../context/CartContext';
 import { X, Trash2 } from 'lucide-react';
+import { formatPrice } from '../utils/currency';
 
 const CartDrawer = ({ isOpen, onClose }) => {
   const { cartItems, removeFromCart } = useContext(CartContext);
@@ -25,7 +26,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 <div className="flex-grow">
                   <h4 className="text-xs font-semibold text-stone-850">{item.product.name}</h4>
                   <p className="text-xs text-stone-400 mt-1">Qty: {item.qty}</p>
-                  <p className="text-xs text-stone-900 font-bold mt-1">${(item.product.price * item.qty).toFixed(2)}</p>
+                  <p className="text-xs text-stone-900 font-bold mt-1">{formatPrice(item.product.price * item.qty)}</p>
                 </div>
                 <button onClick={() => removeFromCart(item.product._id)} className="text-stone-400 hover:text-red-500 self-center"><Trash2 size={16} /></button>
               </div>
@@ -35,7 +36,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
         <div className="p-6 border-t border-pink-100 space-y-4">
           <div className="flex justify-between font-serif font-bold text-stone-900">
             <span>Total Amount:</span>
-            <span>${cartItems.reduce((acc, x) => acc + x.product.price * x.qty, 0).toFixed(2)}</span>
+            <span>{formatPrice(cartItems.reduce((acc, x) => acc + x.product.price * x.qty, 0))}</span>
           </div>
           <a href="/checkout" className="block text-center bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-full uppercase tracking-wider text-xs transition">Proceed to Checkout</a>
         </div>

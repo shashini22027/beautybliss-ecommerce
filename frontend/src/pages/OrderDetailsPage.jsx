@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { formatPrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
   const paths = {
@@ -35,12 +36,6 @@ const formatDate = (date) => {
     day: "numeric",
   });
 };
-
-const formatPrice = (value) =>
-  `රු${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 
 const getSavedCheckoutOrder = (orderId) => {
   try {

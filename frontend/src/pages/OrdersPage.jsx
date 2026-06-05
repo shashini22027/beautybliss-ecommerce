@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -38,12 +39,6 @@ const formatDate = (date) => {
     });
 };
 
-const formatPrice = (value) =>
-    `රු${Number(value || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-
 const getOrderNumber = (order, index) => {
     if (order.orderNo || order.orderNumber) {
         return String(order.orderNo || order.orderNumber).toUpperCase();
@@ -68,13 +63,7 @@ const getOrderItems = (order) => {
 const getItemQty = (item) => Number(item.qty || item.quantity || 1);
 
 const getItemPrice = (item) => {
-    if (typeof item.price === "number") return item.price;
-
-    const price = String(item.price || "0")
-        .replace(/From/gi, "")
-        .replace(/[^\d.]/g, "");
-
-    return Number(price || 0);
+    return parsePrice(item.price);
 };
 
 const getItemLineTotal = (item) => {

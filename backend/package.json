@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node seed/seeder.js"
+    "seed": "node seed/seeder.js",
+    "update-prices": "node seed/updateProductPrices.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -3,6 +3,7 @@ import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
+import { formatPrice } from '../utils/currency';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
@@ -101,9 +102,9 @@ const ProductCard = ({ product }) => {
           {/* Price Display */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col">
-              <span className="text-stone-900 font-bold text-sm">{product.price}</span>
+              <span className="text-stone-900 font-bold text-sm">{typeof product.price === 'number' ? formatPrice(product.price) : product.price}</span>
               {oldPrice && (
-                <span className="text-xs text-stone-400 line-through">{oldPrice}</span>
+                <span className="text-xs text-stone-400 line-through">{typeof oldPrice === 'number' ? formatPrice(oldPrice) : oldPrice}</span>
               )}
             </div>
           </div>

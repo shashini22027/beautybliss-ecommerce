@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BadgePercent, Gift, Sparkles, Truck } from 'lucide-react';
 import API from '../services/api';
+import { formatPrice } from '../utils/currency';
 
 const fallbackOffers = [
   {
@@ -165,7 +166,7 @@ const OffersPage = () => {
                 <div className="p-4">
                   <h3 className="line-clamp-2 min-h-[2.75rem] font-bold text-stone-950">{product.name}</h3>
                   <p className="mt-2 text-sm font-bold text-pink-700">
-                    {product.price ? `Rs. ${product.price}` : 'View offer'}
+                    {product.price ? formatPrice(product.price) : 'View offer'}
                   </p>
                 </div>
               </Link>
@@ -182,3 +183,4 @@ const OffersPage = () => {
 };
 
 export default OffersPage;
+

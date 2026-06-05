@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import api from "../../services/api";
+import { formatPrice, parsePrice } from "../../utils/currency";
 
 const formatDate = (date) => {
   if (!date) return "Pending";
@@ -21,12 +22,6 @@ const formatDate = (date) => {
     day: "numeric",
   });
 };
-
-const formatPrice = (value) =>
-  `රු${Number(value || 0).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
 
 const getOrderNumber = (order, index) => {
   if (order.orderNo || order.orderNumber) {
@@ -54,13 +49,7 @@ const getOrderItems = (order) => {
 const getItemQty = (item) => Number(item.qty || item.quantity || 1);
 
 const getItemPrice = (item) => {
-  if (typeof item.price === "number") return item.price;
-
-  const price = String(item.price || "0")
-    .replace(/From/gi, "")
-    .replace(/[^\d.]/g, "");
-
-  return Number(price || 0);
+  return parsePrice(item.price);
 };
 
 const getItemLineTotal = (item) => {
