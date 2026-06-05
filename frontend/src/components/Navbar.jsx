@@ -179,32 +179,67 @@ const Navbar = () => {
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
                     {user ? (
                       <>
+                        <div className="border-b border-gray-100 px-4 py-3">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">My Account</p>
+                        </div>
                         <Link
                           to="/profile"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
-                          Profile
+                          Dashboard
                         </Link>
                         <Link
                           to="/orders"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
                           Orders
                         </Link>
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          Downloads
+                        </Link>
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          Addresses
+                        </Link>
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          Account details
+                        </Link>
+                        <Link
+                          to="/wishlist"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                        >
+                          Wishlist
+                        </Link>
                         {isAdmin && (
-                          <Link
-                            to="/admin-dashboard"
-                            onClick={() => setShowProfileMenu(false)}
-                            className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
-                          >
-                            Admin Dashboard
-                          </Link>
+                          <>
+                            <div className="border-t border-gray-100 my-1"></div>
+                            <Link
+                              to="/admin-dashboard"
+                              onClick={() => setShowProfileMenu(false)}
+                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                            >
+                              Admin Dashboard
+                            </Link>
+                          </>
                         )}
+                        <div className="border-t border-gray-100 my-1"></div>
                         <button
                           type="button"
                           onClick={() => {
@@ -212,7 +247,7 @@ const Navbar = () => {
                             setShowProfileMenu(false);
                             navigate('/login');
                           }}
-                          className="block w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50"
+                          className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
                           Logout
                         </button>
@@ -222,14 +257,14 @@ const Navbar = () => {
                         <Link
                           to="/login"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
                           Login
                         </Link>
                         <Link
                           to="/register"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
                         >
                           Create Account
                         </Link>

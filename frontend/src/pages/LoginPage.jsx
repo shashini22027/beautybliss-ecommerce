@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -38,6 +39,7 @@ const LoginPage = () => {
 
     const navigate = useNavigate();
     const { search } = useLocation();
+    const { login } = useContext(AuthContext);
     const redirect = new URLSearchParams(search).get("redirect") || "/";
 
     const submitHandler = async (e) => {
@@ -57,7 +59,7 @@ const LoginPage = () => {
                 throw new Error(data?.message || "Login failed");
             }
 
-            localStorage.setItem("userInfo", JSON.stringify(data));
+            login(data);
             navigate(redirect);
         } catch (err) {
             setLoginError(err.message || "Login failed");

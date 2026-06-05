@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -71,6 +72,7 @@ const RegisterPage = () => {
 
     const navigate = useNavigate();
     const { search } = useLocation();
+    const { login } = useContext(AuthContext);
     const redirect = new URLSearchParams(search).get("redirect") || "/";
     const passwordStrength = getPasswordStrength(password);
 
@@ -98,7 +100,7 @@ const RegisterPage = () => {
                 throw new Error(data?.message || "Registration failed");
             }
 
-            localStorage.setItem("userInfo", JSON.stringify(data));
+            login(data);
             navigate(redirect);
         } catch (err) {
             setRegisterError(err.message || "Registration failed");
