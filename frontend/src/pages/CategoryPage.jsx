@@ -1,337 +1,358 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import categoryGroups from '../data/categoryGroups';
 
-const Icon = ({ name, className = "w-5 h-5" }) => {
-  const paths = {
-    search: "M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z",
-    arrow: "M5 12h14m-6-6 6 6-6 6",
-  };
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+  'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+  'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
+  'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
+  'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+  'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+];
 
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d={paths[name]} />
-    </svg>
-  );
-};
-
-const getTextValue = (value, fallback = "") => {
-  if (!value) return fallback;
-  if (typeof value === "string" || typeof value === "number") return String(value);
-  return value.name || value.title || value._id || fallback;
-};
-
-const getCategoryId = (category) => {
-  if (!category) return "";
-  if (typeof category === "string" || typeof category === "number") return String(category);
-  return category._id || category.id || getTextValue(category);
-};
-
-const slugify = (text) =>
-  String(text || "")
+const getCategorySlug = (title) =>
+  title
     .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/&/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 
-const formatCategoryTitle = (value) =>
-  String(value || "")
-    .split(/[-_\s]+/)
+const normalize = (value = '') => value.toString().trim().toLowerCase();
+
+const getProductCategoryText = (product) =>
+  [
+    product.category,
+    product.subcategory,
+    product.subCategory,
+    product.type,
+    ...(Array.isArray(product.categories) ? product.categories : []),
+  ]
     .filter(Boolean)
-    .map((word) => `${word[0].toUpperCase()}${word.slice(1)}`)
-    .join(" ");
+    .join(' ');
+
+const buildFallbackProducts = (category) =>
+  category.items.flatMap((item, itemIndex) =>
+    [1, 2, 3].map((number) => ({
+      id: `${getCategorySlug(category.title)}-${getCategorySlug(item)}-${number}`,
+      name: `${item} Essential ${number}`,
+      category: category.title,
+      subcategory: item,
+      price: `රු${(itemIndex + number) * 12000 + 21800}.00`,
+      oldPrice: number === 2 ? `රු${(itemIndex + number) * 13500 + 24800}.00` : '',
+      rating: 5 - ((itemIndex + number) % 2),
+      discount: number === 2 ? '-15%' : '',
+      soldOut: number === 3 && itemIndex === 0,
+      image: fallbackImages[(itemIndex + number - 1) % fallbackImages.length],
+    }))
+  );
+
+const getProductImage = (product) => {
+  if (typeof product.image === 'string') return product.image;
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    return typeof product.images[0] === 'string'
+      ? product.images[0]
+      : product.images[0]?.url;
+  }
+  return product.image?.url || fallbackImages[0];
+};
+
+const formatProductPrice = (product) => {
+  const price = product.price || product.currentPrice || product.salePrice;
+
+  if (typeof price === 'number') {
+    return `රු${price.toLocaleString('en-US')}.00`;
+  }
+
+  return price || 'View Product';
+};
+
+const ProductCard = ({ product }) => (
+  <Link
+    to="/products"
+    className="group relative block text-center"
+  >
+    <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+      {product.discount && (
+        <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+          {product.discount}
+        </span>
+      )}
+
+      {product.soldOut && (
+        <span className="absolute left-5 top-14 z-10 text-sm font-bold uppercase tracking-wide text-black">
+          SOLD OUT
+        </span>
+      )}
+
+      <img
+        src={getProductImage(product)}
+        alt={product.name}
+        className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+      />
+
+      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <button
+          type="button"
+          onClick={(event) => event.preventDefault()}
+          className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+          aria-label="Add to cart"
+        >
+          <svg
+            aria-hidden="true"
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M6 7h12l-1 13H7L6 7Z" />
+            <path d="M9 7a3 3 0 0 1 6 0" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={(event) => event.preventDefault()}
+          className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+          aria-label="Add to wishlist"
+        >
+          <svg
+            aria-hidden="true"
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+      {product.name}
+    </h3>
+
+    <p className="mt-2 min-h-[24px] text-base text-gray-400">
+      {product.subcategory || product.category}
+    </p>
+
+    <div className="mt-3 flex justify-center text-xl leading-none">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={star <= (product.rating || 5) ? 'text-yellow-400' : 'text-gray-300'}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+
+    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-lg font-bold">
+      {product.oldPrice && (
+        <span className="text-base font-normal text-gray-400 line-through">
+          {product.oldPrice}
+        </span>
+      )}
+      <span className="text-gray-950">
+        {formatProductPrice(product)}
+      </span>
+    </div>
+  </Link>
+);
 
 const CategoryPage = () => {
-  const { id } = useParams();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { categorySlug } = useParams();
+  const [selectedSubcategory, setSelectedSubcategory] = useState('All');
+  const [apiProducts, setApiProducts] = useState([]);
 
-  const categoryKey = id || "";
-
-  const categoryImages = {
-    skincare:
-      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1600&q=80",
-    makeup:
-      "https://images.unsplash.com/photo-1631214174585-fe5582DF1a5c?auto=format&fit=crop&w=1600&q=80",
-    "body-care":
-      "https://images.unsplash.com/photo-1600857062241-98e5dba7f214?auto=format&fit=crop&w=1600&q=80",
-    fragrance:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=1600&q=80",
-    haircare:
-      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1600&q=80",
-  };
-
-  const categoryDescriptions = {
-    skincare: "Nourish your skin with our premium skincare collection",
-    makeup: "Express yourself with our curated makeup essentials",
-    "body-care": "Pamper yourself with luxurious body care products",
-    fragrance: "Discover captivating scents that define your style",
-    haircare: "Transform your hair with our professional haircare range",
-  };
-
-  const categoryTitle = useMemo(() => {
-    if (!categoryKey) return "Category";
-
-    const normalizedKey = slugify(categoryKey);
-    const matchingProduct = products.find((product) => {
-      const productCategory = product.category;
-      const productCategoryName = getTextValue(productCategory);
-      const productCategoryId = getCategoryId(productCategory);
-
-      return (
-        categoryKey === productCategoryId ||
-        normalizedKey === slugify(productCategoryName) ||
-        normalizedKey === slugify(productCategoryId)
-      );
-    });
-
-    if (matchingProduct) {
-      return getTextValue(matchingProduct.category, formatCategoryTitle(categoryKey));
-    }
-
-    return formatCategoryTitle(categoryKey);
-  }, [categoryKey, products]);
-  const searchTerm = "";
+  const category = categoryGroups.find(
+    (group) => getCategorySlug(group.title) === categorySlug
+  );
 
   useEffect(() => {
+    setSelectedSubcategory('All');
+  }, [categorySlug]);
+
+  useEffect(() => {
+    let isMounted = true;
+
     const loadProducts = async () => {
       try {
-        const res = await fetch("/api/products");
-        const data = await res.json();
+        const response = await fetch('/api/products');
+        const products = await response.json();
 
-        if (!res.ok) throw new Error(data?.message || "Unable to load products");
-        setProducts(Array.isArray(data) ? data : data.products || []);
-      } catch (err) {
-        setError(err.message || "Unable to load products");
-      } finally {
-        setLoading(false);
+        if (isMounted && Array.isArray(products)) {
+          setApiProducts(products);
+        }
+      } catch {
+        if (isMounted) {
+          setApiProducts([]);
+        }
       }
     };
 
     loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    const normalizedCategory = slugify(categoryKey);
+  const categoryProducts = useMemo(() => {
+    if (!category) return [];
+
+    const fallbackProducts = buildFallbackProducts(category);
+    const products = apiProducts.length > 0 ? apiProducts : fallbackProducts;
+    const categoryTitle = normalize(category.title);
+    const subcategoryNames = category.items.map(normalize);
 
     return products.filter((product) => {
-      const productCategory = getTextValue(product.category);
-      const productCategoryId = getCategoryId(product.category);
-      const productSlug = slugify(productCategory);
+      const categoryText = normalize(getProductCategoryText(product));
+      const belongsToCategory =
+        categoryText.includes(categoryTitle) ||
+        subcategoryNames.some((subcategory) => categoryText.includes(subcategory));
 
-      const matchesCategory =
-        !normalizedCategory ||
-        normalizedCategory === productSlug ||
-        normalizedCategory === slugify(productCategoryId) ||
-        normalizedCategory === slugify(productCategory);
+      if (selectedSubcategory === 'All') {
+        return belongsToCategory;
+      }
 
-      const matchesSearch = `${product.name || ""} ${productCategory}`
-        .toLowerCase()
-        .includes(searchTerm.trim().toLowerCase());
-
-      return matchesCategory && matchesSearch;
+      return (
+        belongsToCategory &&
+        categoryText.includes(normalize(selectedSubcategory))
+      );
     });
-  }, [categoryKey, products, searchTerm]);
+  }, [apiProducts, category, selectedSubcategory]);
 
-  const heroImage = categoryImages[categoryKey] || categoryImages.skincare;
-  const categoryDesc =
-    categoryDescriptions[categoryKey] ||
-    "Discover premium beauty products curated for you";
+  if (!category) {
+    return (
+      <main className="min-h-screen bg-white px-6 py-24 text-center">
+        <p className="text-sm font-bold uppercase tracking-[0.3em] text-gray-400">
+          Category
+        </p>
+        <h1 className="mt-4 text-4xl font-bold text-gray-950">
+          Category not found
+        </h1>
+        <Link
+          to="/"
+          className="mt-8 inline-block bg-[#3a2430] px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[#5b2c45]"
+        >
+          Back Home
+        </Link>
+      </main>
+    );
+  }
+
+  const filters = ['All', ...category.items];
 
   return (
     <main className="min-h-screen bg-white">
-      {/* Hero Banner */}
-      <section className="relative h-[450px] w-full overflow-hidden lg:h-[500px]">
-        <img
-          src={heroImage}
-          alt={categoryTitle}
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
-
-        <div className="absolute inset-0 flex flex-col items-start justify-end px-6 py-12 sm:px-10 sm:py-16 lg:py-20">
-          <div className="max-w-2xl">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.15em] text-pink-300">
-              Collection
-            </p>
-            <h1 className="mb-4 text-5xl font-serif font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
-              {categoryTitle}
-            </h1>
-            <p className="text-lg leading-relaxed text-pink-50/90">
-              {categoryDesc}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Content Section */}
-      <section className="bg-gradient-to-b from-white via-[#fff9f8] to-white px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div className="mx-auto max-w-7xl">
-          {/* Header Stats */}
-          <div className="mb-12 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-pink-500">
-                BeautyBliss Curated
-              </p>
-              <h2 className="text-3xl font-serif font-bold text-gray-950 sm:text-4xl">
-                Featured Products
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          <aside className="lg:col-span-1">
+            <div className="sticky top-6 rounded-lg border border-gray-200 bg-white p-6">
+              <h2 className="border-b border-gray-200 pb-5 text-lg font-bold uppercase tracking-tight text-gray-950">
+                Subcategories
               </h2>
-              <p className="mt-2 text-base text-gray-600">
-                {filteredProducts.length} products available in this collection
-              </p>
-            </div>
 
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 rounded-lg bg-pink-600 px-6 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:bg-pink-700 hover:shadow-lg"
-            >
-              Browse All
-              <Icon name="arrow" className="h-4 w-4" />
-            </Link>
-          </div>
+              <div className="mt-6 flex flex-col gap-2">
+                {filters.map((filter) => {
+                  const isActive = selectedSubcategory === filter;
 
-          {/* Loading State */}
-          {loading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-                <div
-                  key={item}
-                  className="space-y-4 rounded-xl border border-pink-100 bg-white p-4"
-                >
-                  <div className="aspect-[4/5] animate-pulse rounded-lg bg-gradient-to-br from-pink-100 to-pink-50" />
-                  <div className="space-y-2">
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
-                    <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
-                    <div className="h-3 w-2/3 animate-pulse rounded bg-gray-200" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4">
-              <p className="font-medium text-red-800">{error}</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="rounded-xl border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-25 px-8 py-20 text-center">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-pink-200/50" />
-              <p className="mb-2 text-lg font-semibold text-gray-950">
-                No products found
-              </p>
-              <p className="text-gray-600">
-                This collection is currently empty. Check back soon!
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredProducts.map((product) => {
-                const productId = product._id || product.id;
-
-                return (
-                  <article
-                    key={productId || product.name}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-pink-100 bg-white shadow-sm transition duration-300 hover:border-pink-300 hover:shadow-[0_20px_50px_rgba(190,24,93,0.15)]"
-                  >
-                    {/* Product Image */}
-                    <Link
-                      to={productId ? `/product/${productId}` : "#"}
-                      className="relative block overflow-hidden bg-gradient-to-br from-pink-50 to-pink-25"
+                  return (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setSelectedSubcategory(filter)}
+                      className={`w-full rounded-md border px-4 py-3 text-left text-sm font-semibold transition ${
+                        isActive
+                          ? 'border-gray-950 bg-gray-950 text-white'
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-950 hover:text-gray-950'
+                      }`}
                     >
-                      <div className="relative aspect-[4/5]">
-                        <img
-                          src={
-                            product.image ||
-                            product.images?.[0] ||
-                            "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
-                          }
-                          alt={product.name || "Beauty product"}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
-                      </div>
-
-                      {/* Badge */}
-                      {product.rating && product.rating > 4.5 && (
-                        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold text-amber-950 shadow-md">
-                          <span>★</span>
-                          <span>{Number(product.rating).toFixed(1)}</span>
-                        </div>
-                      )}
-                    </Link>
-
-                    {/* Product Info */}
-                    <div className="flex flex-1 flex-col p-4">
-                      <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-pink-600">
-                        {getTextValue(
-                          product.brand,
-                          getTextValue(product.category, "BeautyBliss")
-                        )}
-                      </p>
-
-                      <Link to={productId ? `/product/${productId}` : "#"}>
-                        <h3 className="mb-3 line-clamp-2 text-base font-bold leading-snug text-gray-950 transition group-hover:text-pink-600">
-                          {product.name || "Beauty Essential"}
-                        </h3>
-                      </Link>
-
-                      {product.description && (
-                        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-gray-600">
-                          {product.description}
-                        </p>
-                      )}
-
-                      {/* Price & Action */}
-                      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                        <div>
-                          <p className="text-2xl font-bold text-gray-950">
-                            ${Number(product.price || 0).toFixed(2)}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-pink-600 to-pink-700 text-white transition hover:shadow-lg active:scale-95"
-                          aria-label="Add to cart"
-                        >
-                          <Icon name="arrow" className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+                      {filter}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </div>
-      </section>
+          </aside>
 
-      {/* CTA Section */}
-      {filteredProducts.length > 0 && (
-        <section className="border-t border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-600 px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="mb-4 text-3xl font-serif font-bold text-white sm:text-4xl">
-              Complete Your Beauty Routine
-            </h2>
-            <p className="mb-8 text-lg text-pink-50">
-              Discover more premium products to elevate your beauty collection
-            </p>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-3 text-sm font-bold uppercase tracking-[0.12em] text-pink-600 transition hover:bg-pink-50"
-            >
-              Shop Now
-              <Icon name="arrow" className="h-4 w-4" />
-            </Link>
-          </div>
-        </section>
-      )}
+          <section className="min-w-0 lg:col-span-3">
+            <div className="mb-8 rounded-lg border border-gray-200 bg-white px-5 py-4">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <nav className="text-sm text-gray-500">
+                  <Link to="/" className="transition hover:text-gray-950">
+                    Home
+                  </Link>
+                  <span className="mx-2">/</span>
+                  <span className="font-bold text-gray-950">{category.title}</span>
+                </nav>
+
+                <div className="flex flex-wrap items-center gap-5">
+                  <p className="text-sm text-gray-500">
+                    Products:{' '}
+                    <span className="font-bold text-gray-950">
+                      {categoryProducts.length}
+                    </span>
+                  </p>
+
+                  <label className="flex items-center gap-3 text-sm font-bold text-gray-950">
+                    Sort
+                    <select
+                      className="min-w-[170px] rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 outline-none transition focus:border-gray-950"
+                      defaultValue="default"
+                    >
+                      <option value="default">Default sorting</option>
+                      <option value="popular">Most popular</option>
+                      <option value="newest">Newest</option>
+                      <option value="price-low">Price: low to high</option>
+                      <option value="price-high">Price: high to low</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight text-gray-950 md:text-4xl">
+                {category.title} Products
+              </h1>
+              {selectedSubcategory !== 'All' && (
+                <p className="mt-3 text-base font-medium text-gray-500">
+                  Showing {selectedSubcategory}
+                </p>
+              )}
+            </div>
+
+            {categoryProducts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-4">
+                {categoryProducts.map((product) => (
+                  <ProductCard
+                    key={product.id || product._id || product.name}
+                    product={product}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-gray-200 bg-white px-6 py-16 text-center">
+                <h3 className="text-2xl font-bold text-gray-950">
+                  No products found
+                </h3>
+                <p className="mx-auto mt-3 max-w-lg text-gray-500">
+                  Try another subcategory or check back after products are added.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </main>
   );
 };

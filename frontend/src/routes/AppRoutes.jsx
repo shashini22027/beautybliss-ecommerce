@@ -40,7 +40,8 @@ const AppRoutes = () => {
     >
       <MainLayout>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/category/:categorySlug" element={<CategoryPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/product/:id" element={<ProductDetailsPage />} />
           <Route path="/category/:id" element={<CategoryPage />} />

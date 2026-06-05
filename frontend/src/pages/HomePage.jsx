@@ -75,7 +75,7 @@ const CategoryCard = ({ title, subtitle, to, image, video, accent }) => (
 const HomeCategoryTile = ({ title, to, image, objectPosition = 'center' }) => (
   <Link
     to={to}
-    className="group relative block aspect-[4/5] overflow-hidden rounded-xl bg-gray-100"
+    className="group relative block aspect-[5/4] overflow-hidden rounded-xl bg-gray-100"
   >
     <img
       src={image}
@@ -561,19 +561,24 @@ const goToNextHotDeals = () => {
       Shop by Categories
     </h2>
     <p className="mx-auto mt-6 max-w-3xl text-lg leading-7 text-gray-500">
-      Browse our curated categories to find exactly what you need, from skincare to cosmetics.
+      Browse our curated categories to find exactly what you need, from skincare to beauty tools.
     </p>
   </div>
 
-  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
     <HomeCategoryTile
-      title="Skin Care"
+      title="Skincare"
       to="/category/skincare"
       image="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=900&q=85"
     />
     <HomeCategoryTile
-      title="Cosmetics"
-      to="/category/cosmetics"
+      title="Haircare"
+      to="/category/haircare"
+      image="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=900&q=85"
+    />
+    <HomeCategoryTile
+      title="Makeup"
+      to="/category/makeup"
       image="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=85"
     />
     <HomeCategoryTile
@@ -582,9 +587,14 @@ const goToNextHotDeals = () => {
       image="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85"
     />
     <HomeCategoryTile
-      title="Hair Care"
-      to="/category/haircare"
-      image="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=900&q=85"
+      title="Bath & Body"
+      to="/category/bath-body"
+      image="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85"
+    />
+    <HomeCategoryTile
+      title="Beauty Tools"
+      to="/category/beauty-tools"
+      image="https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=900&q=85"
     />
   </div>
 </section>
