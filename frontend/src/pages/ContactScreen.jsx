@@ -1,261 +1,232 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-const contactDetails = [
+const faqItems = [
   {
-    icon: "B",
-    label: "Beauty Studio",
-    value: "BeautyBliss, Colombo 03, Sri Lanka",
+    question: "Will I receive the same product that I see in the picture?",
+    answer:
+      "Yes, we strive to ensure that the product you receive matches the images displayed on our website. Our product photos are taken under professional lighting to accurately represent colors, textures, and details. However, slight variations may occur due to factors such as screen resolution, lighting conditions, and manufacturing updates. Rest assured, we are committed to providing high-quality products that meet your expectations. If you have any concerns upon receiving your order, our customer support team is always available to assist you.",
   },
   {
-    icon: "P",
-    label: "Phone",
-    value: "+94 70 198 4663",
+    question: "Where can I view my sales receipt?",
+    answer:
+      "You can view your sales receipt in your account dashboard under the Orders section. After completing your purchase, a receipt will be sent to your registered email address. You can also download it from your account anytime.",
   },
   {
-    icon: "E",
-    label: "Email",
-    value: "hello@beautybliss.lk",
+    question: "How can I return an item?",
+    answer:
+      "We offer a hassle-free return policy. You can initiate a return within 14 days of purchase from your account dashboard. Please ensure the product is unused and in its original packaging.",
   },
   {
-    icon: "H",
-    label: "Opening Hours",
-    value: "Mon - Sat: 9.00 AM - 7.00 PM\nSun: 10.00 AM - 5.00 PM",
+    question: "Will you restock items indicated as 'out of stock'?",
+    answer:
+      "Yes, we regularly restock popular items. You can check back soon or enable notifications on the product page to be alerted when it becomes available again.",
+  },
+  {
+    question: "Where can I ship my order?",
+    answer:
+      "We ship to various locations across South Asia and internationally. Shipping options and costs depend on your location. During checkout, you can select your delivery address and see available shipping options.",
   },
 ];
 
-const initialForm = {
-  name: "",
-  email: "",
-  phone: "",
-  subject: "",
-  message: "",
-};
-
 const ContactScreen = () => {
-  const [form, setForm] = useState(initialForm);
-  const [status, setStatus] = useState(null);
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    message: "",
+  });
+  const [submitStatus, setSubmitStatus] = useState(null);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((currentForm) => ({ ...currentForm, [name]: value }));
+  const toggleFAQ = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setStatus("sending");
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitStatus("sending");
     setTimeout(() => {
-      setStatus("success");
-      setForm(initialForm);
-      setTimeout(() => setStatus(null), 5000);
-    }, 1200);
+      setSubmitStatus("success");
+      setFormData({ name: "", email: "", phone: "", company: "", message: "" });
+      setTimeout(() => setSubmitStatus(null), 3000);
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-[#fffaf8]">
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#4a1737_0%,#9f315f_52%,#f4a7b9_100%)] py-24 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_28%),radial-gradient(circle_at_78%_30%,rgba(255,235,217,0.2),transparent_24%)]" />
-        <div className="relative z-10 mx-auto max-w-3xl px-6">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.42em] text-[#ffd6df]">
-            Contact BeautyBliss
-          </p>
-          <h1 className="mb-6 font-serif text-5xl font-bold tracking-tight md:text-7xl">
-            Let&apos;s Talk Beauty
+    <div className="bg-white">
+      {/* Hero Banner */}
+      <section className="relative h-80 md:h-96 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85)",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
+            CONTACT US
           </h1>
-          <p className="mx-auto max-w-xl text-sm leading-7 text-white/78">
-            Have a question about skincare, makeup, orders, or product
-            recommendations? Send us a note and our beauty team will help you
-            choose what feels right.
-          </p>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-5 lg:gap-16">
-          <aside className="space-y-6 lg:col-span-2">
-            <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.36em] text-[#c84772]">
-                Our Information
+      {/* Main Content */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* FAQ Section */}
+          <div>
+            <div className="mb-8">
+              <p className="text-stone-500 text-xs font-bold uppercase tracking-widest mb-2">
+                INFORMATION QUESTIONS
               </p>
-              <h2 className="font-serif text-3xl font-bold tracking-tight text-gray-950">
-                Visit or Message Us
+              <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
+                Frequently Asked Questions
               </h2>
-              <div className="mt-4 h-0.5 w-12 bg-[#c84772]" />
             </div>
 
-            <div className="space-y-4 pt-2">
-              {contactDetails.map((item) => (
+            <div className="space-y-4">
+              {faqItems.map((item, index) => (
                 <div
-                  key={item.label}
-                  className="flex gap-4 rounded-lg border border-rose-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  key={index}
+                  className="border-b border-stone-200 pb-4 last:border-b-0"
                 >
-                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#fde7ed] text-sm font-bold text-[#b92e61]">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-400">
-                      {item.label}
-                    </p>
-                    <p className="whitespace-pre-line text-sm font-medium leading-6 text-gray-700">
-                      {item.value}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => toggleFAQ(index)}
+                    className="w-full flex items-start justify-between gap-4 py-4 hover:text-rose-600 transition text-left"
+                  >
+                    <span className="font-bold text-stone-900 text-base">
+                      {item.question}
+                    </span>
+                    <ChevronDown
+                      size={20}
+                      className={`flex-shrink-0 transition-transform ${
+                        expandedIndex === index ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {expandedIndex === index && (
+                    <div className="pb-4 text-stone-600 text-sm leading-relaxed">
+                      {item.answer}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+          </div>
 
-            <div className="flex h-56 items-center justify-center overflow-hidden rounded-lg border border-rose-100 bg-[linear-gradient(135deg,#fff0f4,#fff8ed)] shadow-sm">
-              <div className="px-6 text-center">
-                <p className="mb-3 font-serif text-3xl font-bold text-[#b92e61]">
-                  BeautyBliss
-                </p>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                  Colombo 03, Sri Lanka
-                </p>
-              </div>
-            </div>
-          </aside>
-
-          <section className="lg:col-span-3">
-            <div className="rounded-lg border border-rose-100 bg-white p-6 shadow-sm sm:p-10">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.36em] text-[#c84772]">
-                Send a Message
+          {/* Contact Form Section */}
+          <div>
+            <div className="mb-8">
+              <p className="text-stone-500 text-xs font-bold uppercase tracking-widest mb-2">
+                INFORMATION ABOUT US
               </p>
-              <h2 className="mb-8 font-serif text-3xl font-bold tracking-tight text-gray-950">
-                We&apos;ll Get Back To You Soon
+              <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
+                Contact Us For Any Questions
               </h2>
+            </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="contact-name"
-                      className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400"
-                    >
-                      Your Name
-                    </label>
-                    <input
-                      id="contact-name"
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="e.g. Amaya Perera"
-                      className="w-full rounded-lg border border-gray-200 px-5 py-3.5 text-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#d94f7b]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="contact-email"
-                      className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="contact-email"
-                      name="email"
-                      type="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="you@example.com"
-                      className="w-full rounded-lg border border-gray-200 px-5 py-3.5 text-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#d94f7b]"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="contact-phone"
-                      className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400"
-                    >
-                      Phone Optional
-                    </label>
-                    <input
-                      id="contact-phone"
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleChange}
-                      placeholder="+94 77 000 0000"
-                      className="w-full rounded-lg border border-gray-200 px-5 py-3.5 text-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#d94f7b]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="contact-subject"
-                      className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400"
-                    >
-                      Subject
-                    </label>
-                    <select
-                      id="contact-subject"
-                      name="subject"
-                      value={form.subject}
-                      onChange={handleChange}
-                      required
-                      className="w-full rounded-lg border border-gray-200 bg-white px-5 py-3.5 text-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#d94f7b]"
-                    >
-                      <option value="">Select a subject...</option>
-                      <option value="product-advice">Product Advice</option>
-                      <option value="shade-match">Shade Match Help</option>
-                      <option value="skin-care">Skincare Routine Help</option>
-                      <option value="order">Order Enquiry</option>
-                      <option value="returns">Returns or Exchanges</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                </div>
-
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label
-                    htmlFor="contact-message"
-                    className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400"
-                  >
-                    Your Message
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Your Name
                   </label>
-                  <textarea
-                    id="contact-message"
-                    name="message"
-                    value={form.message}
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     required
-                    rows={5}
-                    placeholder="Tell us what you are looking for..."
-                    className="w-full resize-none rounded-lg border border-gray-200 px-5 py-3.5 text-sm transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#d94f7b]"
+                    placeholder="John Doe"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-600 transition"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Your Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="john@example.com"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-600 transition"
+                  />
+                </div>
+              </div>
 
-                {status === "success" && (
-                  <div className="rounded-lg border border-[#f4b7c8] bg-[#fff0f4] p-4 text-sm font-medium text-[#8a244e]">
-                    Thank you. Your message has been sent and we will be in
-                    touch soon.
-                  </div>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+94 77 000 0000"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-600 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Company
+                  </label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
+                    placeholder="Your Company"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-600 transition"
+                  />
+                </div>
+              </div>
 
-                {status === "error" && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
-                    Something went wrong. Please try again.
-                  </div>
-                )}
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-2">
+                  Your Message
+                </label>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  placeholder="Please tell us your message here..."
+                  rows={6}
+                  className="w-full px-4 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-600 transition resize-none"
+                />
+              </div>
 
-                <button
-                  id="contact-submit-btn"
-                  type="submit"
-                  disabled={status === "sending"}
-                  className="w-full rounded-full bg-[linear-gradient(90deg,#b92e61,#f08aa2)] py-4 text-sm font-bold uppercase tracking-widest text-white shadow-sm transition-all duration-300 hover:scale-[1.01] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {status === "sending" ? "Sending..." : "Send Message"}
-                </button>
-              </form>
-            </div>
-          </section>
+              {submitStatus === "success" && (
+                <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+                  Thank you! Your message has been sent successfully.
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitStatus === "sending"}
+                className="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-3 px-6 rounded-lg transition disabled:opacity-50"
+              >
+                {submitStatus === "sending" ? "Sending..." : "ASK A QUESTION"}
+              </button>
+            </form>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 };
