@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../services/api";
 
+const PROFIT_MARGIN = 0.35;
+
 const getListFromResponse = (data, key) => {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.[key])) return data[key];
@@ -37,6 +39,29 @@ const getOrderTotal = (order) => {
   return itemsTotal || Number(order.totalPrice || order.total || order.amount || 0);
 };
 
+const getCheckoutOrders = () => {
+  try {
+    const orders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+    return Array.isArray(orders) ? orders : [];
+  } catch {
+    return [];
+  }
+};
+
+const getOrderKey = (order, index) =>
+  order._id || order.id || order.orderNo || order.orderNumber || `checkout-${index}`;
+
+const mergeOrders = (primaryOrders, secondaryOrders) => {
+  const orderMap = new Map();
+
+  [...primaryOrders, ...secondaryOrders].forEach((order, index) => {
+    if (!order) return;
+    orderMap.set(getOrderKey(order, index), order);
+  });
+
+  return [...orderMap.values()];
+};
+
 export const fetchAdminDashboardData = createAsyncThunk(
   "adminDashboard/fetchData",
   async (_, { rejectWithValue }) => {
@@ -66,7 +91,7 @@ export const fetchAdminDashboardData = createAsyncThunk(
 
       return {
         products,
-        orders,
+        orders: mergeOrders(orders, getCheckoutOrders()),
         users: stats.totalUsers || stats.users || 0,
         error:
           failedRequest?.reason?.response?.data?.message ||
@@ -116,12 +141,27 @@ const adminDashboardSlice = createSlice({
 export const selectAdminDashboardStats = (state) => {
   const { products, orders, users } = state.adminDashboard;
   const sales = orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
+  const paidIncome = orders
+    .filter((order) => order.isPaid || order.paidAt)
+    .reduce((sum, order) => sum + getOrderTotal(order), 0);
+  const deliveredIncome = orders
+    .filter((order) => order.isDelivered || order.deliveredAt)
+    .reduce((sum, order) => sum + getOrderTotal(order), 0);
+  const profit = sales * PROFIT_MARGIN;
+  const soldItems = orders.reduce(
+    (sum, order) => sum + getOrderItems(order).reduce((itemSum, item) => itemSum + getItemQty(item), 0),
+    0
+  );
 
   return {
     users,
     products: products.length,
     orders: orders.length,
     sales,
+    paidIncome,
+    deliveredIncome,
+    profit,
+    soldItems,
   };
 };
 

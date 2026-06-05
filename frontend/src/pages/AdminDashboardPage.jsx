@@ -17,7 +17,6 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
       "M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7zM3.3 7 12 12l8.7-5M12 22V12",
     orders: "M7 3h10v18l-2-1-2 1-2-1-2 1-2-1V3zM9 7h6M9 11h6M9 15h4",
     sales: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6",
-    profile: "M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
     logout: "M10 17l5-5-5-5M15 12H3M21 3v18",
     arrow: "M5 12h14m-6-6 6 6-6 6",
     plus: "M12 5v14M5 12h14",
@@ -95,9 +94,14 @@ const AdminDashboardPage = () => {
       {
         title: "Sales",
         value: formatPrice(stats.sales),
-        detail: "Paid revenue",
+        detail: `${stats.soldItems} sold items`,
+        highlights: [
+          ["Profit", formatPrice(stats.profit)],
+          ["Paid", formatPrice(stats.paidIncome)],
+          ["Delivered", formatPrice(stats.deliveredIncome)],
+        ],
         icon: "sales",
-        link: "/admin/orderlist",
+        link: "/admin/sales",
         color: "text-pink-700",
         bg: "bg-pink-50",
       },
@@ -110,6 +114,7 @@ const AdminDashboardPage = () => {
     { name: "Customers", icon: "users", link: "/admin/userlist" },
     { name: "Products", icon: "products", link: "/admin/productlist" },
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },
+    { name: "Sales", icon: "sales", link: "/admin/sales" },
   ];
 
   return (
@@ -155,13 +160,6 @@ const AdminDashboardPage = () => {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600"
-              >
-                <Icon name="profile" className="h-5 w-5" />
-                Profile
-              </Link>
               <button
                 type="button"
                 onClick={logoutHandler}
@@ -224,6 +222,16 @@ const AdminDashboardPage = () => {
                       {stat.value}
                     </p>
                     <p className="mt-2 text-sm text-gray-500">{stat.detail}</p>
+                    {stat.highlights && (
+                      <div className="mt-4 grid gap-2 text-xs font-bold uppercase tracking-wide text-gray-500">
+                        {stat.highlights.map(([label, value]) => (
+                          <p key={label} className="flex items-center justify-between gap-3">
+                            <span>{label}</span>
+                            <span className="text-gray-950">{value}</span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </Link>
               ))}
@@ -242,19 +250,9 @@ const AdminDashboardPage = () => {
                       icon: "plus",
                     },
                     {
-                      to: "/admin/orderlist",
-                      label: "Process Purchases",
-                      icon: "orders",
-                    },
-                    {
-                      to: "/admin/userlist",
+                      to: "/admin/reviews",
                       label: "Review Accounts",
                       icon: "users",
-                    },
-                    {
-                      to: "/admin/productlist",
-                      label: "Manage Products",
-                      icon: "products",
                     },
                   ].map((item) => (
                     <Link

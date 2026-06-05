@@ -1,5 +1,6 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import Order from '../models/Order.js';
+import mongoose from 'mongoose';
 
 const addOrderItems = asyncHandler(async (req, res) => {
   const { orderItems, shippingAddress, totalPrice, paymentMethod } = req.body;
@@ -35,11 +36,21 @@ const getMyOrders = asyncHandler(async (req, res) => {
 });
 
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
-  if (order) {
-    order.isDelivered = true;
-    order.deliveredAt = Date.now();
-    const updatedOrder = await order.save();
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    res.status(400).json({ message: 'Invalid order id' });
+    return;
+  }
+
+  const updatedOrder = await Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      isDelivered: true,
+      deliveredAt: Date.now(),
+    },
+    { new: true, runValidators: false }
+  ).populate('user', 'name email');
+
+  if (updatedOrder) {
     res.json(updatedOrder);
   } else {
     res.status(404).json({ message: 'Order not found' });

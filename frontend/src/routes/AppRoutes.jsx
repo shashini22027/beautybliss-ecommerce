@@ -28,6 +28,8 @@ import TermsConditionsScreen from '../pages/TermsConditionsScreen';
 import OrderListScreen from '../pages/admin/OrderListScreen';
 import ProductEditScreen from '../pages/admin/ProductEditScreen';
 import ProductListScreen from '../pages/admin/ProductListScreen';
+import ReviewListScreen from '../pages/admin/ReviewListScreen';
+import SalesReportScreen from '../pages/admin/SalesReportScreen';
 import UserListScreen from '../pages/admin/UserListScreen';
 
 const AppRoutes = () => {
@@ -58,9 +60,11 @@ const AppRoutes = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
+          <Route path="/admin/sales" element={<SalesReportScreen />} />
           <Route path="/admin/productlist" element={<ProductListScreen />} />
           <Route path="/admin/product/create" element={<ProductEditScreen />} />
           <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
+          <Route path="/admin/reviews" element={<ReviewListScreen />} />
           <Route path="/admin/userlist" element={<UserListScreen />} />
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="/blog" element={<Blog />} />

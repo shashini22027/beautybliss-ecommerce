@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   LogOut,
   ShoppingBag,
-  User,
   Users,
 } from "lucide-react";
 
@@ -253,11 +252,11 @@ const ProductEditScreen = () => {
               })}
 
               <Link
-                to="/profile"
+                to="/admin/sales"
                 className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600"
               >
-                <User className="h-5 w-5" />
-                Profile
+                <DollarSign className="h-5 w-5" />
+                Sales
               </Link>
 
               <button

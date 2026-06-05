@@ -74,6 +74,31 @@ const getOrderTotal = (order) => {
   return itemsTotal || Number(order.totalPrice || order.total || order.amount || 0);
 };
 
+const getCheckoutOrders = () => {
+  try {
+    const orders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+    return Array.isArray(orders) ? orders : [];
+  } catch {
+    return [];
+  }
+};
+
+const getOrderKey = (order, index) =>
+  order._id || order.id || order.orderNo || order.orderNumber || `checkout-${index}`;
+
+const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value || "");
+
+const mergeOrders = (primaryOrders, secondaryOrders) => {
+  const orderMap = new Map();
+
+  [...primaryOrders, ...secondaryOrders].forEach((order, index) => {
+    if (!order) return;
+    orderMap.set(getOrderKey(order, index), order);
+  });
+
+  return [...orderMap.values()];
+};
+
 const getStoredUser = () => {
   try {
     return JSON.parse(localStorage.getItem("userInfo")) || null;
@@ -85,9 +110,10 @@ const getStoredUser = () => {
 const OrderListScreen = () => {
   const navigate = useNavigate();
   const [userInfo] = useState(getStoredUser);
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(getCheckoutOrders);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deliveringId, setDeliveringId] = useState("");
 
   const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
@@ -102,9 +128,16 @@ const OrderListScreen = () => {
         setLoading(true);
         setError(null);
         const { data } = await api.get("/orders");
-        setOrders(Array.isArray(data) ? data : data.orders || []);
+        const apiOrders = Array.isArray(data) ? data : data.orders || [];
+        setOrders(mergeOrders(apiOrders, getCheckoutOrders()));
       } catch (err) {
-        setError(err?.response?.data?.message || err.message);
+        const checkoutOrders = getCheckoutOrders();
+        if (checkoutOrders.length) {
+          setOrders(checkoutOrders);
+          setError(null);
+        } else {
+          setError(err?.response?.data?.message || err.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -117,7 +150,7 @@ const OrderListScreen = () => {
     const paid = orders.filter((order) => order.isPaid).length;
     const delivered = orders.filter((order) => order.isDelivered).length;
     const revenue = orders.reduce(
-      (sum, order) => sum + Number(order.totalPrice || 0),
+      (sum, order) => sum + getOrderTotal(order),
       0
     );
 
@@ -127,6 +160,50 @@ const OrderListScreen = () => {
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
     navigate("/login");
+  };
+
+  const markOrderDelivered = async (order, index) => {
+    const orderId = order._id || order.id;
+    const orderKey = getOrderKey(order, index);
+
+    try {
+      setDeliveringId(orderKey);
+      setError(null);
+
+      let updatedOrder;
+      if (isObjectId(orderId)) {
+        const { data } = await api.put(`/orders/${orderId}/deliver`);
+        updatedOrder = data;
+      } else {
+        updatedOrder = {
+          ...order,
+          isDelivered: true,
+          deliveredAt: new Date().toISOString(),
+        };
+      }
+
+      setOrders((currentOrders) =>
+        currentOrders.map((currentOrder, currentIndex) =>
+          getOrderKey(currentOrder, currentIndex) === orderKey
+            ? { ...currentOrder, ...updatedOrder }
+            : currentOrder
+        )
+      );
+
+      const checkoutOrders = getCheckoutOrders();
+      if (checkoutOrders.length) {
+        const nextCheckoutOrders = checkoutOrders.map((checkoutOrder, checkoutIndex) =>
+          getOrderKey(checkoutOrder, checkoutIndex) === orderKey
+            ? { ...checkoutOrder, ...updatedOrder }
+            : checkoutOrder
+        );
+        localStorage.setItem("checkoutOrders", JSON.stringify(nextCheckoutOrders));
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Unable to update delivery status");
+    } finally {
+      setDeliveringId("");
+    }
   };
 
   return (
@@ -276,7 +353,12 @@ const OrderListScreen = () => {
                     const isDelivered = Boolean(order.isDelivered || order.deliveredAt);
                     const total = getOrderTotal(order);
                     const customerName =
-                      order.user?.name || order.customer?.name || "Customer";
+                      order.user?.name ||
+                      order.customer?.name ||
+                      order.shippingAddress?.name ||
+                      order.shippingAddress?.fullName ||
+                      "Customer";
+                    const orderKey = getOrderKey(order, index);
 
                     return (
                       <article key={id || orderNumber} className="bg-white">
@@ -325,6 +407,17 @@ const OrderListScreen = () => {
                             >
                               View
                             </Link>
+                            {!isDelivered && (
+                              <button
+                                type="button"
+                                onClick={() => markOrderDelivered(order, index)}
+                                disabled={deliveringId === orderKey}
+                                className="inline-flex h-10 items-center justify-center gap-2 border border-emerald-200 bg-emerald-50 px-4 text-xs font-bold uppercase text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <Truck size={14} />
+                                {deliveringId === orderKey ? "Updating" : "Mark Delivered"}
+                              </button>
+                            )}
                           </div>
                         </div>
 
