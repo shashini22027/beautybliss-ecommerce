@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import FeaturedProducts from '../components/FeaturedProducts';
+import ShopByCategories from '../components/ShopByCategories';
+import InfoBanner from '../components/InfoBanner';
+import ProductSection from '../components/ProductSection';
+import Testimonials from '../components/Testimonials';
 
 const StatBadge = ({ value, label }) => (
   <div className="text-center">
@@ -654,6 +659,46 @@ const goToNextHotDeals = () => {
                 alt={product.name}
                 className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
               />
+
+              <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                <span
+                  className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                  aria-label="View cart"
+                  title="View cart"
+                >
+                  <svg
+                    aria-hidden="true"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M6 7h12l-1 13H7L6 7Z" />
+                    <path d="M9 7a3 3 0 0 1 6 0" />
+                  </svg>
+                </span>
+                <span
+                  className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                  aria-label="View wishlist"
+                  title="View wishlist"
+                >
+                  <svg
+                    aria-hidden="true"
+                    className="h-6 w-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+                  </svg>
+                </span>
+              </div>
             </div>
 
             <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
@@ -897,6 +942,11 @@ const goToNextHotDeals = () => {
         </div>
       </section>
 
+      {/* Info Banner Section */}
+      <InfoBanner />
+
+      {/* Testimonials Section */}
+      <Testimonials />
 
       <style>{`
         @keyframes marquee {
