@@ -1,129 +1,204 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
-const termsSections = [
+const termsContent = [
   {
-    icon: "01",
+    section: 1,
     title: "Website Use",
-    subtitle: "Access Terms",
-    body: "By using the BeautyBliss website, you agree to use it for lawful shopping, account, enquiry, and support purposes only. You must not misuse the site, attempt unauthorized access, or interfere with normal operation.",
-    highlight: "Use the site responsibly",
+    subsections: [
+      {
+        subtitle: "1.1 Lawful Use Only",
+        content:
+          "By accessing and using the BeautyBliss website, you agree to use it solely for lawful shopping, account management, inquiries, and customer support purposes. You must not misuse the site, attempt unauthorized access, interfere with normal operations, or engage in any illegal activities.",
+      },
+      {
+        subtitle: "1.2 User Responsibility",
+        content:
+          "You are responsible for ensuring your use of the website complies with all applicable laws and regulations. BeautyBliss reserves the right to suspend or terminate access for any violation of these terms or unauthorized use.",
+      },
+    ],
   },
   {
-    icon: "02",
+    section: 2,
     title: "Product Information",
-    subtitle: "Cosmetic Details",
-    body: "We aim to present product names, images, prices, shades, ingredients, sizes, availability, and descriptions accurately. Colors and finishes may look slightly different because of lighting, screens, skin tone, or product batches.",
-    highlight: "Shades may vary slightly",
+    subsections: [
+      {
+        subtitle: "2.1 Accuracy of Details",
+        content:
+          "We aim to present product names, images, prices, shades, ingredients, sizes, availability, and descriptions as accurately as possible. However, we cannot guarantee absolute accuracy and reserve the right to correct any errors in product information or pricing.",
+      },
+      {
+        subtitle: "2.2 Color and Finish Variations",
+        content:
+          "Due to lighting conditions, screen display differences, individual skin tones, and product batch variations, actual product colors and finishes may appear slightly different from images shown on our website. We recommend testing products before use.",
+      },
+    ],
   },
   {
-    icon: "03",
-    title: "Orders And Payments",
-    subtitle: "Secure Purchase",
-    body: "Orders are confirmed after successful payment and availability checks. BeautyBliss may cancel or contact you about an order if payment fails, stock changes, pricing errors occur, or verification is required.",
-    highlight: "Payment confirms your order",
+    section: 3,
+    title: "Orders and Payments",
+    subsections: [
+      {
+        subtitle: "3.1 Order Confirmation",
+        content:
+          "Your order is confirmed only after successful payment processing and product availability verification. BeautyBliss may cancel or contact you regarding an order if payment fails, stock becomes unavailable, pricing errors occur, or additional verification is required.",
+      },
+      {
+        subtitle: "3.2 Payment Security",
+        content:
+          "All payments are processed securely through our payment gateway. You are responsible for maintaining the confidentiality of your payment information. BeautyBliss is not liable for unauthorized charges resulting from your disclosure of payment details.",
+      },
+    ],
   },
   {
-    icon: "04",
+    section: 4,
     title: "Delivery",
-    subtitle: "Shipping Service",
-    body: "Delivery timelines depend on location, item availability, courier service, and order volume. Please provide accurate contact and delivery details so we can complete your order smoothly.",
-    highlight: "Accurate details help delivery",
+    subsections: [
+      {
+        subtitle: "4.1 Delivery Timeline",
+        content:
+          "Delivery timelines depend on location, item availability, courier service capacity, and current order volume. Estimated delivery dates are provided for reference only and are not guaranteed. We will keep you updated on your shipment status.",
+      },
+      {
+        subtitle: "4.2 Accurate Delivery Details",
+        content:
+          "Please provide accurate contact information and delivery address details to ensure smooth order completion. BeautyBliss is not responsible for delivery failures or delays caused by incomplete or incorrect customer information.",
+      },
+    ],
   },
   {
-    icon: "05",
-    title: "Returns And Exchanges",
-    subtitle: "Customer Care",
-    body: "Return or exchange eligibility may depend on product condition, seal status, hygiene requirements, expiry period, and inspection. Opened or used cosmetics may not be eligible unless faulty or incorrect.",
-    highlight: "Hygiene rules may apply",
+    section: 5,
+    title: "Returns and Exchanges",
+    subsections: [
+      {
+        subtitle: "5.1 Eligibility Criteria",
+        content:
+          "Return or exchange eligibility depends on product condition, seal integrity, hygiene requirements, expiry period, and inspection results. Products must be unused, unopened, and in original packaging to qualify for returns unless the item is faulty or incorrectly shipped.",
+      },
+      {
+        subtitle: "5.2 Cosmetic Products",
+        content:
+          "Due to hygiene regulations, opened or used cosmetic products cannot be accepted for returns or exchanges unless they are defective or the wrong item was sent. Please inspect products immediately upon delivery.",
+      },
+    ],
   },
   {
-    icon: "06",
+    section: 6,
     title: "Account Responsibility",
-    subtitle: "Your Login",
-    body: "You are responsible for keeping your account login details secure and for activity under your account. Contact us quickly if you believe your account or order information has been used without permission.",
-    highlight: "Keep login details secure",
+    subsections: [
+      {
+        subtitle: "6.1 Account Security",
+        content:
+          "You are responsible for maintaining the confidentiality of your account login credentials and password. You are fully liable for all activity that occurs under your account. You must promptly notify BeautyBliss of any unauthorized access or suspected account compromise.",
+      },
+      {
+        subtitle: "6.2 Account Misuse",
+        content:
+          "If you believe your account or order information has been used without authorization, contact our support team immediately. BeautyBliss will investigate such claims and take appropriate action to protect your account.",
+      },
+    ],
+  },
+  {
+    section: 7,
+    title: "Limitation of Liability",
+    subsections: [
+      {
+        subtitle: "7.1 Use at Your Own Risk",
+        content:
+          "The BeautyBliss website and all products are provided 'as is' without warranties of any kind, either express or implied. BeautyBliss does not warrant that the website will be uninterrupted, error-free, or free from viruses or malicious code.",
+      },
+      {
+        subtitle: "7.2 Damage Exclusion",
+        content:
+          "To the fullest extent permitted by law, BeautyBliss shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the website or products, including loss of profits, data, or business interruption.",
+      },
+    ],
+  },
+  {
+    section: 8,
+    title: "Changes to Terms",
+    subsections: [
+      {
+        subtitle: "8.1 Policy Updates",
+        content:
+          "We reserve the right to update, modify, or change these Terms & Conditions at any time. Changes will be effective immediately upon posting to the website. Your continued use of BeautyBliss after any modifications constitutes your acceptance of the updated terms.",
+      },
+      {
+        subtitle: "8.2 Notification",
+        content:
+          "For significant changes to these terms, we will notify you by email or through prominent website notices. We encourage you to review these terms periodically to stay informed of any updates.",
+      },
+    ],
   },
 ];
 
 const TermsConditionsScreen = () => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[#fffaf8]">
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#321024_0%,#8f2854_58%,#f2a1b5_100%)] py-28 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,214,223,0.26),transparent_28%),radial-gradient(circle_at_82%_34%,rgba(255,244,232,0.18),transparent_26%)]" />
-        <div className="relative z-10 mx-auto max-w-4xl px-6">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.45em] text-[#ffd6df]">
-            BeautyBliss Purchase Guide
-          </p>
-          <h1 className="mb-6 font-serif text-5xl font-bold tracking-tight md:text-7xl">
+    <div className="bg-white">
+      {/* Hero Banner */}
+      <section className="relative h-64 md:h-80 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85)",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold drop-shadow-lg mb-4">
             Terms & Conditions
           </h1>
-          <p className="mx-auto max-w-xl text-sm leading-7 text-white/78">
-            These terms explain how website use, product information, orders,
-            payments, delivery, returns, and account care work when shopping
-            with BeautyBliss.
-          </p>
-          <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.3em] text-white/50">
-            Last updated: May 2026
-          </p>
+          <div className="flex items-center gap-2">
+            <Link to="/" className="hover:text-rose-200 transition">
+              Home
+            </Link>
+            <span>/</span>
+            <span className="text-rose-200">Terms & Conditions</span>
+          </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {termsSections.map((section) => (
-            <article
-              key={section.title}
-              className="group relative overflow-hidden rounded-lg border border-rose-100 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-            >
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,#9f234f,#f2a1b5)] opacity-0 transition-opacity duration-300 group-hover:opacity-[0.04]" />
-              <div className="relative z-10">
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-lg border border-[#f4b7c8] bg-[#fff0f4] font-serif text-xl font-bold text-[#9f234f]">
-                  {section.icon}
-                </div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-[#c84772]">
-                  {section.subtitle}
-                </p>
-                <h2 className="mb-4 font-serif text-2xl font-bold text-gray-950 transition-colors group-hover:text-[#9f234f]">
-                  {section.title}
-                </h2>
-                <p className="mb-6 text-sm font-medium leading-7 text-gray-600">
-                  {section.body}
-                </p>
-                <div className="flex items-center gap-2 border-t border-rose-100 pt-4">
-                  <div className="h-2 w-2 flex-shrink-0 rounded-full bg-[#9f234f]" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    {section.highlight}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </main>
+      {/* Main Content */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div>
+          {/* Main Content Area */}
+          <div>
+            {/* Introduction */}
+            <div className="mb-12 pb-8 border-b border-stone-200">
+              <p className="text-stone-600 leading-relaxed">
+                These Terms & Conditions govern your use of the BeautyBliss website and your purchase of products. By accessing and using our website, you agree to be bound by these terms. Please read them carefully before making any purchases.
+              </p>
+            </div>
 
-      <section className="mx-6 mb-20 overflow-hidden rounded-lg bg-[linear-gradient(135deg,#321024,#8f2854)] px-8 py-16 text-center lg:mx-auto lg:max-w-7xl">
-        <div className="mx-auto max-w-2xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#ffd6df]">
-            Need Clarification?
-          </p>
-          <h2 className="mb-6 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl">
-            Questions Before You Order?
-          </h2>
-          <p className="mx-auto mb-9 max-w-lg text-sm leading-7 text-white/72">
-            Our BeautyBliss team can help with product details, shade guidance,
-            delivery questions, returns, and after-sales support.
-          </p>
-          <Link
-            to="/contact"
-            className="inline-flex items-center justify-center rounded-full bg-white px-10 py-4 text-sm font-bold uppercase tracking-widest text-[#9f234f] shadow-xl shadow-black/10 transition hover:scale-[1.03] hover:bg-[#fff0f4]"
-          >
-            Contact BeautyBliss
-          </Link>
+            {/* Terms Sections */}
+            <div className="space-y-12">
+              {termsContent.map((section) => (
+                <div key={section.section} className="pb-8 border-b border-stone-200 last:border-b-0">
+                  <div className="mb-6 flex items-start gap-4">
+                    <span className="text-3xl font-bold text-rose-600">
+                      {section.section}.
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-bold text-stone-900 pt-1">
+                      {section.title}
+                    </h2>
+                  </div>
+
+                  <div className="space-y-6 ml-10">
+                    {section.subsections.map((subsection, idx) => (
+                      <div key={idx}>
+                        <h3 className="font-bold text-stone-900 mb-3">
+                          {subsection.subtitle}
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed text-sm">
+                          {subsection.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </div>
