@@ -13,6 +13,7 @@ const getTextValue = (value, fallback = '') => {
 };
 
 const getNumberValue = (value, fallback = 0) => {
+  if (value === undefined || value === null || value === '') return fallback;
   const numberValue = parsePrice(value);
   return Number.isFinite(numberValue) ? numberValue : fallback;
 };
@@ -164,34 +165,80 @@ const ProductDetailsPage = () => {
     }
   };
 
-  useEffect(() => {
-    const stateProduct = location.state?.product;
-    const localProduct = localProducts.find((item) => getProductSlug(item) === id);
-    const selectedProduct = stateProduct || localProduct;
-
-    if (selectedProduct) {
-      const productImages = selectedProduct.images?.length
-        ? selectedProduct.images
-        : [selectedProduct.image, ...imageSet.slice(0, 2)].filter(Boolean);
-
-      setProduct({ ...selectedProduct, images: productImages });
-      setActiveImage(selectedProduct.image || productImages[0] || '');
-      setActiveTab('description');
-      setQty(1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const fetchProductBySlug = async (fallbackProduct) => {
+    try {
+      setLoading(true);
       setError('');
+      const res = await fetch('/api/products');
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.message || 'Unable to load product details.');
+      }
+
+      const products = Array.isArray(data) ? data : data.products || [];
+      const apiProduct = products.find((item) => getProductSlug(item) === id);
+
+      if (!apiProduct) {
+        if (fallbackProduct) return fallbackProduct;
+        throw new Error('Unable to load product details.');
+      }
+
+      return fallbackProduct ? { ...fallbackProduct, ...apiProduct } : apiProduct;
+    } catch (err) {
+      if (fallbackProduct) return fallbackProduct;
+      setError(err.message || 'Unable to load product details.');
+      return null;
+    } finally {
       setLoading(false);
-      return;
     }
+  };
 
-    if (isObjectId(id)) {
-      fetchProduct();
-      return;
-    }
+  useEffect(() => {
+    let ignore = false;
 
-    setProduct(null);
-    setError('Unable to load product details.');
-    setLoading(false);
+    const loadProduct = async () => {
+      const stateProduct = location.state?.product;
+      const localProduct = localProducts.find((item) => getProductSlug(item) === id);
+      const fallbackProduct = localProduct && stateProduct
+        ? { ...localProduct, ...stateProduct }
+        : stateProduct || localProduct;
+      const selectedProduct = isObjectId(id)
+        ? fallbackProduct
+        : await fetchProductBySlug(fallbackProduct);
+
+      if (selectedProduct) {
+        const productImages = selectedProduct.images?.length
+          ? selectedProduct.images
+          : [selectedProduct.image, ...imageSet.slice(0, 2)].filter(Boolean);
+
+        if (ignore) return;
+        setProduct({ ...selectedProduct, images: productImages });
+        setActiveImage(selectedProduct.image || productImages[0] || '');
+        setActiveTab('description');
+        setQty(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setError('');
+        setLoading(false);
+        return;
+      }
+
+      if (isObjectId(id)) {
+        fetchProduct();
+        return;
+      }
+
+      if (ignore) return;
+      setProduct(null);
+      setError('Unable to load product details.');
+      setLoading(false);
+    };
+
+    loadProduct();
+
+    return () => {
+      ignore = true;
+    };
   }, [id, location.state]);
 
   if (loading) {
@@ -216,7 +263,7 @@ const ProductDetailsPage = () => {
   const oldPrice = getNumberValue(product.oldPrice, 0);
   const rating = getNumberValue(product.rating, 4.8);
   const reviewCount = getNumberValue(product.numReviews);
-  const stockCount = product.soldOut ? 0 : getNumberValue(product.countInStock || product.stock, 10);
+  const stockCount = product.soldOut ? 0 : getNumberValue(product.countInStock ?? product.stock, 10);
   const category = getTextValue(product.category);
   const sku = getTextValue(product.sku, product.name);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
