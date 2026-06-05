@@ -1,129 +1,172 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const policySections = [
+const policyContent = [
   {
-    icon: "01",
+    section: 1,
     title: "Information We Collect",
-    subtitle: "Account Details",
-    body: "We collect information you provide when creating an account, placing an order, contacting us, saving preferences, or joining BeautyBliss updates. This may include your name, email address, phone number, delivery address, order details, and beauty preference notes you choose to share.",
-    highlight: "Used for orders and support",
+    subsections: [
+      {
+        subtitle: "1.1 Personal Identification Information",
+        content:
+          "We may collect personal identification information from you when you visit our Website, register an account, place an order, subscribe to our newsletter, respond to a survey, or fill out a form. The personal identification information we collect may include your name, email address, mailing address, phone number, and payment details.",
+      },
+      {
+        subtitle: "1.2 Non-personal Identification Information",
+        content:
+          "We may collect non-personal identification information about you whenever you interact with our Website. This may include the browser name, type of computer or device, operating system, Internet service provider, and other similar information.",
+      },
+    ],
   },
   {
-    icon: "02",
-    title: "How We Use Your Information",
-    subtitle: "Beauty Service",
-    body: "Your details help us process purchases, arrange delivery, answer questions, recommend suitable products, improve our website, and send offers or beauty updates when you choose to subscribe.",
-    highlight: "Improves your shopping experience",
+    section: 2,
+    title: "How We Use Collected Information",
+    subsections: [
+      {
+        subtitle: "2.1 Purpose of Information",
+        content:
+          "We collect and use your personal identification information for the following purposes: To process and fulfill your orders; To communicate with you regarding your purchases and deliveries; To personalize your experience and provide you with personalized shopping recommendations; To improve our customer service and respond to your requests; To send periodic emails regarding your orders or to provide you with marketing and promotional materials.",
+      },
+      {
+        subtitle: "2.2 Non-personal Use",
+        content:
+          "We may use non-personal identification information for system administration, troubleshooting, statistical analysis, and to improve the overall functionality and performance of the Website.",
+      },
+    ],
   },
   {
-    icon: "03",
-    title: "Payments And Checkout",
-    subtitle: "Secure Payments",
-    body: "Payments are handled through secure payment services. BeautyBliss does not store full card numbers. We use reasonable safeguards to protect account, order, and communication information.",
-    highlight: "Card details are not stored",
+    section: 3,
+    title: "How We Protect Your Information",
+    subsections: [
+      {
+        subtitle: "3.1 Data Protection",
+        content:
+          "We adopt appropriate data collection, storage, and processing practices and security measures to protect against unauthorized access, alteration, disclosure, or destruction of your personal information, username, password, transaction information, and data stored on our Website.",
+      },
+      {
+        subtitle: "3.2 Encryption Technology",
+        content:
+          "We use industry-standard Secure Sockets Layer (SSL) technology to encrypt sensitive information transmitted between your browser and our Website.",
+      },
+    ],
   },
   {
-    icon: "04",
-    title: "Beauty Updates And Emails",
-    subtitle: "Newsletter Care",
-    body: "If you subscribe, we may use your email address to send product launches, skincare tips, makeup offers, and BeautyBliss news. You can ask us to remove your email from our list at any time.",
-    highlight: "Opt out anytime",
+    section: 4,
+    title: "Sharing Your Personal Information",
+    subsections: [
+      {
+        subtitle: "4.1 Information Sharing",
+        content:
+          "We do not sell, trade, or rent your personal identification information to others. We may share generic aggregated demographic information not linked to any personal identification information regarding visitors and users with our business partners, trusted affiliates, and advertisers.",
+      },
+      {
+        subtitle: "4.2 Disclosure in Specific Situations",
+        content:
+          "We may disclose your personal identification information in the following situations: To third-party service providers to assist us in operating our business and providing services to you; To comply with applicable laws, regulations, legal processes, or enforceable governmental requests.",
+      },
+    ],
   },
   {
-    icon: "05",
-    title: "Sharing Information",
-    subtitle: "Trusted Partners",
-    body: "We share information only when needed to complete a service, such as delivery, payment processing, order support, website protection, legal compliance, or fraud prevention.",
-    highlight: "Shared only when necessary",
+    section: 5,
+    title: "Third-Party Websites",
+    subsections: [
+      {
+        subtitle: "5.1 External Links",
+        content:
+          "You may find advertising or other content on our Website that links to the sites and services of our partners, suppliers, advertisers, sponsors, licensors, and other third parties. We do not control the content or links that appear on these sites and are not responsible for the practices employed by websites linked to or from our Website.",
+      },
+      {
+        subtitle: "5.2 Third-Party Policies",
+        content:
+          "Browsing and interaction on any other website, including websites that have a link to our Website, are subject to that website's own terms and policies. We encourage you to review the privacy policies of any third-party websites you visit.",
+      },
+    ],
   },
   {
-    icon: "06",
-    title: "Your Choices",
-    subtitle: "Your Control",
-    body: "You may request access, correction, or deletion of your personal information by contacting us. Some order records may be kept where required for business, tax, security, or legal reasons.",
-    highlight: "Request updates anytime",
+    section: 6,
+    title: "Changes to This Privacy Policy",
+    subsections: [
+      {
+        subtitle: "6.1 Policy Updates",
+        content:
+          "We reserve the right to update or change this Privacy Policy at any time. When we do, we will provide notice of the changes by updating the 'Last Updated' date of this Privacy Policy.",
+      },
+    ],
   },
 ];
 
 const PrivacyPolicyScreen = () => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[#fffaf8]">
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#321024_0%,#8f2854_58%,#f2a1b5_100%)] py-28 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,214,223,0.26),transparent_28%),radial-gradient(circle_at_82%_34%,rgba(255,244,232,0.18),transparent_26%)]" />
-        <div className="relative z-10 mx-auto max-w-4xl px-6">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.45em] text-[#ffd6df]">
-            Your Data, Cared For
-          </p>
-          <h1 className="mb-6 font-serif text-5xl font-bold tracking-tight md:text-7xl">
+    <div className="bg-white">
+      {/* Hero Banner */}
+      <section className="relative h-64 md:h-80 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85)",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold drop-shadow-lg mb-4">
             Privacy Policy
           </h1>
-          <p className="mx-auto max-w-xl text-sm leading-7 text-white/78">
-            We respect your privacy and handle your information carefully while
-            providing cosmetics, skincare, delivery, support, and BeautyBliss
-            update services.
-          </p>
-          <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.3em] text-white/50">
-            Last updated: May 2026
-          </p>
+          <div className="flex items-center gap-2">
+            <Link to="/" className="hover:text-rose-200 transition">
+              Home
+            </Link>
+            <span>/</span>
+            <span className="text-rose-200">Privacy Policy</span>
+          </div>
         </div>
       </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {policySections.map((section) => (
-            <article
-              key={section.title}
-              className="group relative overflow-hidden rounded-lg border border-rose-100 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-            >
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,#9f234f,#f2a1b5)] opacity-0 transition-opacity duration-300 group-hover:opacity-[0.04]" />
-              <div className="relative z-10">
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-lg border border-[#f4b7c8] bg-[#fff0f4] font-serif text-xl font-bold text-[#9f234f]">
-                  {section.icon}
-                </div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-[#c84772]">
-                  {section.subtitle}
-                </p>
-                <h2 className="mb-4 font-serif text-2xl font-bold text-gray-950 transition-colors group-hover:text-[#9f234f]">
-                  {section.title}
-                </h2>
-                <p className="mb-6 text-sm font-medium leading-7 text-gray-600">
-                  {section.body}
-                </p>
-                <div className="flex items-center gap-2 border-t border-rose-100 pt-4">
-                  <div className="h-2 w-2 flex-shrink-0 rounded-full bg-[#9f234f]" />
-                  <span className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                    {section.highlight}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </main>
+      {/* Main Content */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div>
+          {/* Main Content Area */}
+          <div>
+            {/* Introduction */}
+            <div className="mb-12 pb-8 border-b border-stone-200">
+              <p className="text-stone-600 leading-relaxed">
+                This Privacy Policy governs the manner in which BeautyBliss
+                collects, uses, maintains, and discloses information collected
+                from users ("you" or "your") of the BeautyBliss website (the
+                "Website"). This Privacy Policy applies to the Website and all
+                products and services offered by BeautyBliss.
+              </p>
+            </div>
 
-      <section className="mx-6 mb-20 overflow-hidden rounded-lg bg-[linear-gradient(135deg,#321024,#8f2854)] px-8 py-16 text-center lg:mx-auto lg:max-w-7xl">
-        <div className="mx-auto max-w-2xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.35em] text-[#ffd6df]">
-            Need Help?
-          </p>
-          <h2 className="mb-6 font-serif text-4xl font-bold tracking-tight text-white md:text-5xl">
-            Questions About Your Data?
-          </h2>
-          <p className="mx-auto mb-9 max-w-lg text-sm leading-7 text-white/72">
-            For privacy questions or data requests, contact BeautyBliss and we
-            will help you review, update, or understand your information.
-          </p>
-          <Link
-            to="/contact"
-            className="inline-flex items-center justify-center rounded-full bg-white px-10 py-4 text-sm font-bold uppercase tracking-widest text-[#9f234f] shadow-xl shadow-black/10 transition hover:scale-[1.03] hover:bg-[#fff0f4]"
-          >
-            Contact BeautyBliss
-          </Link>
+            {/* Policy Sections */}
+            <div className="space-y-12">
+              {policyContent.map((section) => (
+                <div key={section.section} className="pb-8 border-b border-stone-200 last:border-b-0">
+                  <div className="mb-6 flex items-start gap-4">
+                    <span className="text-3xl font-bold text-rose-600">
+                      {section.section}.
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-bold text-stone-900 pt-1">
+                      {section.title}
+                    </h2>
+                  </div>
+
+                  <div className="space-y-6 ml-10">
+                    {section.subsections.map((subsection, idx) => (
+                      <div key={idx}>
+                        <h3 className="font-bold text-stone-900 mb-3">
+                          {subsection.subtitle}
+                        </h3>
+                        <p className="text-stone-600 leading-relaxed text-sm">
+                          {subsection.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
     </div>
