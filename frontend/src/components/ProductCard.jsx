@@ -8,9 +8,9 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useContext(CartContext);
   const { wishlistItems, toggleWishlist } = useContext(WishlistContext);
   const navigate = useNavigate();
-  const productId = product._id || product.id;
+  const productId = product._id || product.id || product.name;
 
-  const isWishlisted = wishlistItems.some((x) => x._id === productId);
+  const isWishlisted = wishlistItems.some((x) => (x._id || x.id || x.name) === productId);
   const rating = product.rating || product.reviews?.average || 0;
   const discount = product.discount || '';
   const oldPrice = product.oldPrice || '';
@@ -52,10 +52,13 @@ const ProductCard = ({ product }) => {
           
           <button
             type="button"
-            onClick={() => toggleWishlist(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product);
+            }}
             className="p-3 bg-white rounded-full shadow-lg hover:scale-110 active:scale-95 transition-transform"
             aria-label="Toggle wishlist"
-            title="Add to wishlist"
+            title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart 
               size={22} 

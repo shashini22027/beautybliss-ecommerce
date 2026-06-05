@@ -26,6 +26,16 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
 
 const getProductId = (product) => product?._id || product?.id || product?.slug || product?.name;
 
+const getCategoryName = (category) => {
+  if (typeof category === "object" && category?.name) return category.name;
+  return typeof category === "string" ? category : null;
+};
+
+const getBrandName = (brand) => {
+  if (typeof brand === "object" && brand?.name) return brand.name;
+  return typeof brand === "string" ? brand : null;
+};
+
 const getProductPrice = (product) => {
   if (typeof product?.price === "number") return product.price;
   const price = String(product?.price || "0")
@@ -163,7 +173,7 @@ const WishlistPage = () => {
                           {product?.name || "Wishlist product"}
                         </Link>
                         <p className="mt-3 text-lg text-gray-400">
-                          {product?.category || product?.brand || "Beauty product"}
+                          {getCategoryName(product?.category) || getBrandName(product?.brand) || "Beauty product"}
                         </p>
                         <div className="mt-3 flex justify-center text-xl leading-none">
                           {[1, 2, 3, 4, 5].map((star) => (
