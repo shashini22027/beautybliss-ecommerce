@@ -109,11 +109,7 @@ const ServicePill = ({ text }) => (
 const HomePage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const heroImages = [
-    'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=1400&q=85',
-    'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1400&q=85',
-    'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1400&q=85',
-  ];
+  const heroImages = ['/images/banner.jpg'];
 
   const featuredProducts = [
     {

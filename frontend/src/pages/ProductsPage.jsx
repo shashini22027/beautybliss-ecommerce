@@ -404,7 +404,7 @@ const ProductsPage = () => {
         <main className="bb-products-page min-h-screen bg-white text-gray-950">
             <section className="relative min-h-[420px] overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1800&q=85"
+                    src="/images/banner.jpg"
                     alt="Beauty products"
                     className="absolute inset-0 h-full w-full object-cover"
                 />

@@ -325,7 +325,7 @@ const CartPage = ({ onClose }) => {
         <main className="min-h-screen bg-white text-gray-950">
             <section className="relative h-[62px] overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=1800&q=85"
+                    src="/images/banner.jpg"
                     alt="Beauty care"
                     className="absolute inset-0 h-full w-full object-cover object-center"
                 />

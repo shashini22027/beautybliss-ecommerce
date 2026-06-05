@@ -113,7 +113,7 @@ const RegisterPage = () => {
         <main className="min-h-screen bg-white text-gray-950">
             <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
                 <img
-                    src="https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&w=1800&q=85"
+                    src="/images/banner.jpg"
                     alt="Skincare products"
                     className="absolute inset-0 h-full w-full object-cover object-center"
                 />

@@ -139,8 +139,7 @@ const TermsConditionsScreen = () => {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage:
-              "url(https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85)",
+            backgroundImage: "url(/images/banner.jpg)",
           }}
         />
         <div className="absolute inset-0 bg-black/40" />

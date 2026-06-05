@@ -15,8 +15,7 @@ const Blog = () => {
       <section
         className="relative h-[300px] bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1497493292307-31c376b6e479?auto=format&fit=crop&w=1800&q=80')",
+          backgroundImage: "url('/images/banner.jpg')",
         }}
       >
         <div className="absolute inset-0 bg-black/40" />

@@ -102,7 +102,7 @@ const ProductListScreen = () => {
     <main className="min-h-screen bg-white text-gray-950">
       <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
         <img
-          src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1800&q=85"
+          src="/images/banner.jpg"
           alt="Beauty products arranged for product management"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />

@@ -10,7 +10,7 @@ const AboutPage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85)',
+            backgroundImage: 'url(/images/banner.jpg)',
           }}
         />
         <div className="relative z-10 h-full flex items-center justify-center">
@@ -26,7 +26,7 @@ const AboutPage = () => {
           {/* Image */}
           <div className="rounded-xl overflow-hidden shadow-lg h-96">
             <img
-              src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=85"
+              src="/images/banner.jpg"
               alt="BeautyBliss"
               className="w-full h-full object-cover"
             />

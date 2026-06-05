@@ -8,7 +8,7 @@ const ErrorPage = () => {
         <section className="relative hidden bg-[#1f1a17] p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 opacity-80">
             <img
-              src="https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80"
+              src="/images/banner.jpg"
               alt="Beauty background"
               className="h-full w-full object-cover"
             />

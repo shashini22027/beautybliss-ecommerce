@@ -10,7 +10,7 @@ const HeroBanner = () => {
         <a href="/products" className="bb-storefront-button">Shop Collection</a>
       </div>
       <div className="flex w-full justify-center md:w-1/2">
-        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80" alt="Cosmetics Banner" className="max-h-96 object-contain transition duration-500 hover:scale-105" />
+        <img src="/images/banner.jpg" alt="Cosmetics Banner" className="max-h-96 object-contain transition duration-500 hover:scale-105" />
       </div>
     </div>
   );
