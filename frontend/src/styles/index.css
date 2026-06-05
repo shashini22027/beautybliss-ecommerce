@@ -4,24 +4,34 @@
 
 @layer base {
   body {
-    @apply bg-[#faf7f5] text-stone-900 font-sans antialiased;
+    @apply bg-white text-gray-950 font-sans antialiased;
   }
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #faf7f5;
+    background: #ffffff;
   }
   ::-webkit-scrollbar-thumb {
-    background: #db7876;
+    background: #2b2b2b;
     border-radius: 3px;
   }
   input, select, textarea {
-    @apply focus:ring-2 focus:ring-primary-100/50 focus:border-primary-400 transition-all duration-200;
+    @apply transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100/70;
   }
 }
 
 .luxury-gradient {
-  background: linear-gradient(135deg, #fdf6f6 0%, #f4ece7 100%);
+  background: #f6f6f6;
+}
+
+@layer components {
+  .bb-storefront-button {
+    @apply inline-flex items-center justify-center bg-[#2b2b2b] px-8 py-3 text-xs font-extrabold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600;
+  }
+
+  .bb-storefront-panel {
+    @apply border border-gray-200 bg-white shadow-[0_1px_10px_rgba(0,0,0,0.08)];
+  }
 }

@@ -27,21 +27,21 @@ const MobileNavigation = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-pink-100 bg-white px-2 py-2 shadow-lg sm:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-gray-200 bg-white px-2 py-2 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] sm:hidden">
       {navItems.map(({ to, label, icon: Icon, count }) => (
         <NavLink
           key={to}
           to={to}
           end={to === '/'}
           className={({ isActive }) =>
-            `relative flex min-w-[3.75rem] flex-col items-center rounded-lg px-2 py-2 text-xs font-semibold transition ${
-              isActive ? 'bg-pink-50 text-pink-700' : 'text-stone-600 hover:text-pink-700'
+            `relative flex min-w-[3.75rem] flex-col items-center px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition ${
+              isActive ? 'bg-[#f2f2f2] text-gray-950' : 'text-gray-500 hover:text-pink-600'
             }`
           }
         >
           <Icon size={20} />
           {count > 0 && (
-            <span className="absolute right-2 top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-pink-700 px-1 text-[10px] font-bold leading-none text-white">
+            <span className="absolute right-2 top-1 inline-flex h-4 min-w-[1rem] items-center justify-center bg-pink-600 px-1 text-[10px] font-bold leading-none text-white">
               {count}
             </span>
           )}

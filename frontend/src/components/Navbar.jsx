@@ -71,39 +71,45 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky top-0 z-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
+    <div className="sticky top-0 z-50 bg-white">
+      <div className="border-b border-gray-100 bg-[#2b2b2b] px-4 py-2 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+        Islandwide delivery | Cash on delivery available | 100% genuine products
+      </div>
+      <header className="border-b border-gray-200 bg-white">
+        <div className="mx-auto max-w-[1540px] px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-5">
             {/* Logo - Left */}
             <Link
               to="/"
-              className="flex-shrink-0 font-bold text-lg md:text-xl tracking-tight text-gray-900"
+              className="flex-shrink-0 text-xl font-extrabold tracking-[0.16em] text-gray-950 md:text-2xl"
             >
               BEAUTYBLISS
             </Link>
 
             {/* Desktop Navigation - Center */}
-            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-700">
-              <Link to="/" className="hover:text-gray-900 transition">
+            <nav className="hidden items-center gap-9 text-[13px] font-extrabold uppercase tracking-[0.14em] text-gray-700 md:flex">
+              <Link to="/" className="transition hover:text-pink-600">
                 HOME
               </Link>
-              <Link to="/products" className="hover:text-gray-900 transition">
+              <Link to="/products" className="transition hover:text-pink-600">
                 SHOP
               </Link>
-              <Link to="/blog" className="hover:text-gray-900 transition">
+              <Link to="/offers" className="transition hover:text-pink-600">
+                OFFERS
+              </Link>
+              <Link to="/blog" className="transition hover:text-pink-600">
                 BLOG
               </Link>
-              <Link to="/about" className="hover:text-gray-900 transition">
+              <Link to="/about" className="transition hover:text-pink-600">
                 ABOUT US
               </Link>
-              <Link to="/contact" className="hover:text-gray-900 transition">
+              <Link to="/contact" className="transition hover:text-pink-600">
                 CONTACT US
               </Link>
             </nav>
 
             {/* Icons - Right */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-5">
               {/* Mobile Menu Button */}
               <button
                 type="button"
@@ -111,7 +117,7 @@ const Navbar = () => {
                   setMobileOpen((prev) => !prev);
                   setShowSearch(false);
                 }}
-                className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+                  className="p-2 text-gray-700 hover:text-pink-600 md:hidden"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -122,7 +128,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={handleSearchButtonClick}
-                  className="text-gray-600 hover:text-gray-900 transition"
+                  className="text-gray-700 transition hover:text-pink-600"
                   aria-label="Search"
                   aria-expanded={showSearch}
                 >
@@ -144,7 +150,7 @@ const Navbar = () => {
                         placeholder="Search products..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm shadow-lg focus:border-gray-400 focus:outline-none"
+                        className="w-full border border-gray-200 bg-white py-3 pl-10 pr-4 text-sm shadow-[0_12px_32px_rgba(0,0,0,0.14)] focus:border-gray-950 focus:outline-none"
                       />
                     </div>
                   </form>
@@ -154,11 +160,11 @@ const Navbar = () => {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="relative text-gray-600 hover:text-gray-900 transition"
+                className="relative text-gray-700 transition hover:text-pink-600"
               >
                 <Heart size={20} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center bg-pink-600 px-1 text-[10px] font-bold text-white">
                     {wishlistCount}
                   </span>
                 )}
@@ -172,58 +178,58 @@ const Navbar = () => {
                     setShowProfileMenu((prev) => !prev);
                     setShowSearch(false);
                   }}
-                  className="text-gray-600 hover:text-gray-900 transition"
+                  className="text-gray-700 transition hover:text-pink-600"
                   aria-label="Profile"
                 >
                   <User size={20} />
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <div className="absolute right-0 top-full mt-3 w-60 overflow-hidden border border-gray-200 bg-white shadow-[0_18px_42px_rgba(0,0,0,0.14)]">
                     {user ? (
                       <>
                         <div className="border-b border-gray-100 px-4 py-3">
-                          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">My Account</p>
+                          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">My Account</p>
                         </div>
                         <Link
                           to="/profile"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Dashboard
                         </Link>
                         <Link
                           to="/orders"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Orders
                         </Link>
                         <Link
                           to="/profile"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Downloads
                         </Link>
                         <Link
                           to="/profile"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Addresses
                         </Link>
                         <Link
                           to="/profile"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Account details
                         </Link>
                         <Link
                           to="/wishlist"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Wishlist
                         </Link>
@@ -233,7 +239,7 @@ const Navbar = () => {
                             <Link
                               to="/admin-dashboard"
                               onClick={() => setShowProfileMenu(false)}
-                              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                              className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                             >
                               Admin Dashboard
                             </Link>
@@ -247,7 +253,7 @@ const Navbar = () => {
                             setShowProfileMenu(false);
                             navigate('/login');
                           }}
-                          className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Logout
                         </button>
@@ -257,14 +263,14 @@ const Navbar = () => {
                         <Link
                           to="/login"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Login
                         </Link>
                         <Link
                           to="/register"
                           onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Create Account
                         </Link>
@@ -277,11 +283,11 @@ const Navbar = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative text-gray-600 hover:text-gray-900 transition"
+                className="relative text-gray-700 transition hover:text-pink-600"
               >
                 <ShoppingBag size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-pink-600 text-[10px] font-bold text-white">
+                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center bg-pink-600 px-1 text-[10px] font-bold text-white">
                     {cartCount}
                   </span>
                 )}
@@ -293,8 +299,8 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 space-y-3">
+        <div className="border-b border-gray-200 bg-white md:hidden">
+          <div className="mx-auto max-w-[1540px] space-y-3 px-4 py-4">
             {/* Search Form */}
             <form onSubmit={handleSearchSubmit} className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -305,7 +311,7 @@ const Navbar = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 py-2 pl-10 pr-4 text-sm focus:border-gray-400 focus:outline-none"
+                className="w-full border border-gray-200 py-2.5 pl-10 pr-4 text-sm focus:border-gray-950 focus:outline-none"
               />
             </form>
 
@@ -314,35 +320,42 @@ const Navbar = () => {
               <Link
                 to="/"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
               >
                 HOME
               </Link>
               <Link
                 to="/products"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
               >
                 SHOP
               </Link>
               <Link
+                to="/offers"
+                onClick={() => setMobileOpen(false)}
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
+              >
+                OFFERS
+              </Link>
+              <Link
                 to="/blog"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
               >
                 BLOG
               </Link>
               <Link
                 to="/about"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
               >
                 ABOUT US
               </Link>
               <Link
                 to="/contact"
                 onClick={() => setMobileOpen(false)}
-                className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
               >
                 CONTACT US
               </Link>
@@ -354,14 +367,14 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded px-4 py-2 text-sm font-medium text-pink-600 hover:bg-pink-50"
+                  className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-pink-600 hover:bg-pink-50"
                 >
                   Create Account
                 </Link>
