@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { WishlistContext } from "../context/WishlistContext";
-import { formatPrice } from "../utils/currency";
+import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -295,6 +295,7 @@ const ProductsPage = () => {
     const [error, setError] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
     const [currentPage, setCurrentPage] = useState(0);
+    const [sortOrder, setSortOrder] = useState("default");
     const productsPerPage = 6;
 
     const location = useLocation();
@@ -310,10 +311,12 @@ const ProductsPage = () => {
     };
 
     const categoryAliases = useMemo(() => ({
-        skincare: ["skincare", "skin"],
-        cosmetics: ["cosmetics", "cosmetic", "makeup"],
+        skincare: ["skincare", "skin", "cleansers", "suncare", "moisturizers"],
         haircare: ["haircare", "hair"],
+        makeup: ["cosmetics", "cosmetic", "makeup", "lips", "lipglow"],
         fragrances: ["fragrances", "fragrance", "perfume"],
+        "bath&body": ["bath&body", "bath", "body", "bodycare", "oralcare", "foot&hand", "nourishingoils"],
+        beautytools: ["beautytools", "tools", "brush", "roller", "beautysets"],
     }), []);
 
     useEffect(() => {
@@ -333,7 +336,7 @@ const ProductsPage = () => {
     }, []);
 
     const filteredProducts = useMemo(() => {
-        return products.filter((product) => {
+        const filtered = products.filter((product) => {
             const category = getTextValue(product.category);
             const categoryId = getCategoryId(product.category);
             const normalizedActiveCategory = activeCategory.toLowerCase().replace(/\s+/g, "");
@@ -356,7 +359,26 @@ const ProductsPage = () => {
 
             return matchesCategory;
         });
-    }, [activeCategory, categoryAliases, products]);
+
+        switch (sortOrder) {
+            case "rating":
+                filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                break;
+            case "price-low":
+                filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+                break;
+            case "price-high":
+                filtered.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+                break;
+            case "latest":
+                filtered.reverse(); // Simplified 'latest' logic based on array order
+                break;
+            default:
+                break;
+        }
+
+        return filtered;
+    }, [activeCategory, categoryAliases, products, sortOrder]);
 
     const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
     const visibleProducts = filteredProducts.slice(
@@ -375,9 +397,11 @@ const ProductsPage = () => {
     const categoryHeroItems = useMemo(() => {
         const featuredCategories = [
             { name: "SKINCARE", value: "skincare", icon: "bottle" },
-            { name: "COSMETICS", value: "cosmetics", icon: "makeup" },
             { name: "HAIRCARE", value: "haircare", icon: "hair" },
+            { name: "MAKEUP", value: "makeup", icon: "makeup" },
             { name: "FRAGRANCES", value: "fragrances", icon: "oil" },
+            { name: "BATH & BODY", value: "bath & body", icon: "face" },
+            { name: "BEAUTY TOOLS", value: "beauty tools", icon: "star" },
         ];
 
         return featuredCategories.map((category) => ({
@@ -387,7 +411,8 @@ const ProductsPage = () => {
                 const productCategoryId = getCategoryId(product.category);
                 const normalizedName = productCategory.toLowerCase().replace(/\s+/g, "");
                 const normalizedId = productCategoryId.toLowerCase().replace(/\s+/g, "");
-                const aliases = categoryAliases[category.value] || [category.value];
+                const normalizedValue = category.value.toLowerCase().replace(/\s+/g, "");
+                const aliases = categoryAliases[normalizedValue] || [normalizedValue];
 
                 return aliases.some(
                     (alias) =>
@@ -440,7 +465,62 @@ const ProductsPage = () => {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1540px] px-6 py-16 lg:py-20">
+            <section className="mx-auto grid max-w-[1540px] gap-10 px-6 py-16 lg:grid-cols-[270px_1fr] lg:py-20">
+                <aside className="h-fit border border-gray-200 bg-white px-6 py-7">
+                    <h2 className="border-b border-gray-200 pb-4 text-lg font-extrabold uppercase tracking-tight">
+                        Categories
+                    </h2>
+                    <div className="mt-5 space-y-1 text-base font-semibold text-gray-600">
+                        {[
+                            ["All", "All"],
+                            ["Skincare", "skincare"],
+                            ["Haircare", "haircare"],
+                            ["Makeup", "makeup"],
+                            ["Fragrances", "fragrances"],
+                            ["Bath & Body", "bath & body"],
+                            ["Beauty Tools", "beauty tools"],
+                        ].map(([label, value]) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setActiveCategory(value)}
+                                className={`block w-full border-b border-gray-100 px-1 py-3 text-left transition hover:text-pink-600 ${
+                                    activeCategory === value ? "text-gray-950" : ""
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="mt-8 border-t border-gray-200 pt-6">
+                        <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-gray-400">
+                            Delivery
+                        </p>
+                        <p className="mt-3 text-sm leading-6 text-gray-600">
+                            Free delivery above Rs. 6,000. Cash on delivery available.
+                        </p>
+                    </div>
+                </aside>
+
+                <div>
+                <div className="mb-10 flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
+                    <p className="text-sm font-semibold text-gray-500">
+                        Showing {visibleProducts.length} of {filteredProducts.length} products
+                    </p>
+                    <select
+                        className="h-11 w-full border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 outline-none focus:border-gray-950 md:w-64"
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        aria-label="Sort products"
+                    >
+                        <option value="default">Default sorting</option>
+                        <option value="rating">Sort by average rating</option>
+                        <option value="latest">Sort by latest</option>
+                        <option value="price-low">Sort by price: low to high</option>
+                        <option value="price-high">Sort by price: high to low</option>
+                    </select>
+                </div>
                 {loading ? (
                     <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
@@ -496,47 +576,46 @@ const ProductsPage = () => {
                                                     "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
                                                 }
                                                 alt={product.name || "Beauty product"}
-                                                className="h-[330px] w-full max-w-[360px] object-contain transition duration-500 group-hover:scale-105"
+                                                className="h-[330px] w-full max-w-[360px] object-cover transition duration-500 group-hover:scale-105"
                                             />
-                                        </Link>
 
-                                        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center opacity-0 transition duration-300 group-hover:opacity-100">
-                                            <div className="flex overflow-hidden rounded-lg bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]">
+                                            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                                                 <button
                                                     type="button"
-                                                    aria-label="Add to cart"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        addToCart(getCartProduct(product), 1);
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        addToCart(getCartProduct(product));
                                                     }}
-                                                    className="inline-flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
+                                                    className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                                                    aria-label="Add to cart"
                                                 >
                                                     <Icon name="bag" className="h-6 w-6" />
                                                 </button>
                                                 <button
                                                     type="button"
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        toggleWishlist(product);
+                                                    }}
+                                                    className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to wishlist"
-                                                    onClick={() => toggleWishlist(product)}
-                                                    className="inline-flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                                                 >
                                                     <Icon name="heart" className="h-6 w-6" />
                                                 </button>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </div>
 
                                     <Link to={productPath} state={{ product }}>
-                                        <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
-                                            {product.name || "Beauty Essential"}
+                                        <h3 className="text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+                                            {product.name}
                                         </h3>
                                     </Link>
 
-                                    <p className="mt-2 min-h-[24px] text-base text-gray-400">
-                                        {getTextValue(
-                                            product.category,
-                                            "BeautyBliss"
-                                        )}
+                                    <p className="mt-2 text-base text-gray-400">
+                                        {getTextValue(product.category)}
                                     </p>
 
                                     <div className="mt-3 flex justify-center text-xl leading-none">
@@ -559,11 +638,6 @@ const ProductsPage = () => {
                                         <span className="text-gray-950">
                                             {typeof product.price === "string" ? product.price : formatPrice(product.price)}
                                         </span>
-                                    </div>
-
-                                    <div className="mt-4 space-y-2 text-sm font-semibold text-gray-400">
-                                        <p>3 X Rs. 458.00 with</p>
-                                        <p>or 3 X Rs. 458.00 with KOKO</p>
                                     </div>
                                 </article>
                             );
@@ -609,6 +683,7 @@ const ProductsPage = () => {
                     )}
                     </>
                 )}
+                </div>
             </section>
         </main>
     );

@@ -90,7 +90,7 @@ const ProductCard = ({ product }) => (
       <img
         src={getProductImage(product)}
         alt={product.name}
-        className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+        className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
       />
 
       <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">

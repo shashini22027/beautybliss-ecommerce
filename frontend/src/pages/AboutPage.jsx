@@ -6,15 +6,15 @@ const AboutPage = () => {
   return (
     <main className="bg-white">
       {/* Header Banner */}
-      <section className="relative h-64 md:h-80 overflow-hidden bg-gradient-to-r from-rose-200 to-pink-200">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{
-            backgroundImage: 'url(/images/banner.jpg)',
-          }}
+      <section className="relative min-h-[420px] overflow-hidden">
+        <img
+          src="/images/banner.jpg"
+          alt="About Us"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="relative z-10 h-full flex items-center justify-center">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
+          <h1 className="text-6xl font-bold tracking-tight md:text-7xl">
             About us
           </h1>
         </div>
@@ -24,10 +24,10 @@ const AboutPage = () => {
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Image */}
-          <div className="rounded-xl overflow-hidden shadow-lg h-96">
+          <div className="overflow-hidden h-96 border border-gray-200">
             <img
               src="/images/banner.jpg"
-              alt="BeautyBliss"
+              alt="BeautyBliss beauty collection"
               className="w-full h-full object-cover"
             />
           </div>
@@ -37,21 +37,21 @@ const AboutPage = () => {
             <p className="text-rose-600 font-bold uppercase tracking-widest text-sm mb-4">
               Enhancing Beauty, Elevating Confidence
             </p>
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6">
               About BeautyBliss
             </h2>
             <p className="text-stone-600 leading-relaxed mb-4">
               Confidence begins with self-care, and we're here to help you shine.
             </p>
             <p className="text-stone-700 leading-relaxed mb-6">
-              BeautyBliss is your ultimate destination for premium beauty and personal care products. As a trusted e-commerce platform, we believe in the power of cosmetics and health products to enhance your natural beauty and well-being, boosting your confidence. Our business, offering a variety of high-quality, innovative beauty and health products, was launched with the vision of making premium beauty accessible to everyone.
+              BeautyBliss beauty care brings skincare, lip care, nourishing oils, makeup, and personal care essentials together in one clean shopping experience. Our store is built around quality, accessibility, and everyday confidence.
             </p>
             <p className="text-stone-700 leading-relaxed mb-6">
-              We understand that beauty is not just about looking good but also feeling good about yourself. That's why we are dedicated to providing a comprehensive range of cosmetics and health products that cater to diverse needs and preferences. Whether you're looking for skincare essentials, makeup, fragrances, or wellness products, we have curated a selection specifically chosen for quality and efficacy.
+              We understand that beauty is not just about looking good but also feeling good about yourself. Whether you're shopping for skincare essentials, makeup, fragrances, or wellness products, every collection is curated for practical routines and visible care.
             </p>
             <Link
               to="/products"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 hover:bg-rose-700 px-8 py-3 text-white font-bold transition"
+              className="inline-flex items-center justify-center gap-2 bg-[#2b2b2b] hover:bg-pink-600 px-8 py-3 text-white font-bold uppercase tracking-[0.14em] transition"
             >
               Shop Now →
             </Link>
@@ -62,7 +62,7 @@ const AboutPage = () => {
       {/* Our Commitment Section */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-stone-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-stone-900 mb-4">
             Our Commitment
           </h2>
           <p className="text-stone-600 text-lg">
@@ -72,8 +72,8 @@ const AboutPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Vision Card */}
-          <div className="flex flex-col items-center text-center">
-            <h3 className="text-3xl font-bold text-rose-700 mb-4 tracking-wide">VISION</h3>
+          <div className="flex flex-col items-center border border-gray-200 px-8 py-10 text-center">
+            <h3 className="text-3xl font-bold text-pink-600 mb-4 tracking-wide">VISION</h3>
             <p className="text-xl font-bold text-stone-900 mb-4">
               A World Where Beauty and Well-Being Thrive Together
             </p>
@@ -83,8 +83,8 @@ const AboutPage = () => {
           </div>
 
           {/* Mission Card */}
-          <div className="flex flex-col items-center text-center">
-            <h3 className="text-3xl font-bold text-rose-700 mb-4 tracking-wide">MISSION</h3>
+          <div className="flex flex-col items-center border border-gray-200 px-8 py-10 text-center">
+            <h3 className="text-3xl font-bold text-pink-600 mb-4 tracking-wide">MISSION</h3>
             <p className="text-xl font-bold text-stone-900 mb-4">
               Empowering Confidence Through Advanced Skincare Solutions
             </p>

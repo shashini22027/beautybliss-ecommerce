@@ -70,54 +70,46 @@ const Navbar = () => {
     setShowProfileMenu(false);
   };
 
+  const navLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'Shop', to: '/products' },
+    { label: 'Blog', to: '/blog' },
+    { label: 'About us', to: '/about' },
+    { label: 'Contact us', to: '/contact' },
+   
+  ];
+
   return (
-    <div className="sticky top-0 z-50 bg-white">
+    <div className="sticky top-0 z-50 bg-white shadow-[0_1px_0_rgba(0,0,0,0.06)]">
       <div className="border-b border-gray-100 bg-[#2b2b2b] px-4 py-2 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white">
         Islandwide delivery | Cash on delivery available | 100% genuine products
       </div>
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[1540px] px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-5">
-            {/* Logo - Left */}
+          <div className="grid min-h-[92px] grid-cols-[auto_1fr_auto] items-center gap-4 py-4">
             <Link
               to="/"
-              className="flex-shrink-0 text-xl font-extrabold tracking-[0.16em] text-gray-950 md:text-2xl"
+              className="text-3xl font-black tracking-[0.18em] text-gray-950 md:text-4xl"
             >
               BEAUTYBLISS
             </Link>
 
-            {/* Desktop Navigation - Center */}
-            <nav className="hidden items-center gap-9 text-[13px] font-extrabold uppercase tracking-[0.14em] text-gray-700 md:flex">
-              <Link to="/" className="transition hover:text-pink-600">
-                HOME
-              </Link>
-              <Link to="/products" className="transition hover:text-pink-600">
-                SHOP
-              </Link>
-              <Link to="/offers" className="transition hover:text-pink-600">
-                OFFERS
-              </Link>
-              <Link to="/blog" className="transition hover:text-pink-600">
-                BLOG
-              </Link>
-              <Link to="/about" className="transition hover:text-pink-600">
-                ABOUT US
-              </Link>
-              <Link to="/contact" className="transition hover:text-pink-600">
-                CONTACT US
-              </Link>
+            <nav className="hidden items-center justify-center gap-8 text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 lg:flex">
+              {navLinks.map((item) => (
+                <Link key={item.to} to={item.to} className="transition hover:text-pink-600">
+                  {item.label}
+                </Link>
+              ))}
             </nav>
 
-            {/* Icons - Right */}
-            <div className="flex items-center gap-5">
-              {/* Mobile Menu Button */}
+            <div className="flex items-center justify-end gap-4">
               <button
                 type="button"
                 onClick={() => {
                   setMobileOpen((prev) => !prev);
                   setShowSearch(false);
                 }}
-                  className="p-2 text-gray-700 hover:text-pink-600 md:hidden"
+                  className="p-2 text-gray-700 hover:text-pink-600 lg:hidden"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -160,7 +152,7 @@ const Navbar = () => {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="relative text-gray-700 transition hover:text-pink-600"
+                className="relative hidden items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600 sm:flex"
               >
                 <Heart size={20} />
                 {wishlistCount > 0 && (
@@ -204,6 +196,13 @@ const Navbar = () => {
                           className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >
                           Orders
+                        </Link>
+                        <Link
+                          to="/track-your-order"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
+                        >
+                          Track your order
                         </Link>
                         <Link
                           to="/profile"
@@ -283,7 +282,7 @@ const Navbar = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative text-gray-700 transition hover:text-pink-600"
+                className="relative flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600"
               >
                 <ShoppingBag size={20} />
                 {cartCount > 0 && (
@@ -299,7 +298,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="border-b border-gray-200 bg-white md:hidden">
+        <div className="border-b border-gray-200 bg-white lg:hidden">
           <div className="mx-auto max-w-[1540px] space-y-3 px-4 py-4">
             {/* Search Form */}
             <form onSubmit={handleSearchSubmit} className="relative">
@@ -317,48 +316,16 @@ const Navbar = () => {
 
             {/* Mobile Nav Links */}
             <div className="space-y-2 border-t border-gray-200 pt-3">
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                HOME
-              </Link>
-              <Link
-                to="/products"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                SHOP
-              </Link>
-              <Link
-                to="/offers"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                OFFERS
-              </Link>
-              <Link
-                to="/blog"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                BLOG
-              </Link>
-              <Link
-                to="/about"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                ABOUT US
-              </Link>
-              <Link
-                to="/contact"
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
-              >
-                CONTACT US
-              </Link>
+              {[...navLinks, { label: 'Offers', to: '/offers' }].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
 
             {/* Mobile Auth Links */}

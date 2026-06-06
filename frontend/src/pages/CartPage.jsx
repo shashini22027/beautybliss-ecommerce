@@ -323,16 +323,21 @@ const CartPage = ({ onClose }) => {
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
-            <section className="relative h-[62px] overflow-hidden">
+            <section className="relative min-h-[420px] overflow-hidden">
                 <img
                     src="/images/banner.jpg"
-                    alt="Beauty care"
-                    className="absolute inset-0 h-full w-full object-cover object-center"
+                    alt="Shopping Cart"
+                    className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-black/35" />
+                <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
+                    <h1 className="text-6xl font-bold tracking-tight md:text-7xl uppercase">
+                        Shopping Cart
+                    </h1>
+                </div>
             </section>
 
-            <section className="mx-auto max-w-[1535px] px-6 pt-[76px] pb-16">
+            <section className="mx-auto max-w-[1535px] px-6 py-16">
                 {removedItem && (
                     <div className="mx-auto mb-14 flex max-w-[1490px] items-center gap-6 rounded-xl bg-[#439447] px-8 py-7 text-white">
                         <span className="text-4xl font-light leading-none">✓</span>

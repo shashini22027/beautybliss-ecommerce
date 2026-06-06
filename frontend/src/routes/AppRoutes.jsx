@@ -25,6 +25,7 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
 import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
 import TermsConditionsScreen from '../pages/TermsConditionsScreen';
+import TrackOrderPage from '../pages/TrackOrderPage';
 import OrderListScreen from '../pages/admin/OrderListScreen';
 import ProductEditScreen from '../pages/admin/ProductEditScreen';
 import ProductListScreen from '../pages/admin/ProductListScreen';
@@ -71,6 +72,7 @@ const AppRoutes = () => {
           <Route path="/blog/:slug" element={<BlogPostDetail />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/contact" element={<ContactScreen />} />
+          <Route path="/track-your-order" element={<TrackOrderPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path='/account-support' element={<AccountSupportPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />

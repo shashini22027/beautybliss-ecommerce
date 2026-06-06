@@ -62,16 +62,15 @@ const ContactScreen = () => {
   return (
     <div className="bg-white">
       {/* Hero Banner */}
-      <section className="relative h-80 md:h-96 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url(/images/banner.jpg)",
-          }}
+      <section className="relative min-h-[420px] overflow-hidden">
+        <img
+          src="/images/banner.jpg"
+          alt="Contact Us"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 h-full flex items-center justify-center">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
+          <h1 className="text-6xl font-bold tracking-tight md:text-7xl uppercase">
             CONTACT US
           </h1>
         </div>

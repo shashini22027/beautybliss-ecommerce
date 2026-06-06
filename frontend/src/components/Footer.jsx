@@ -84,6 +84,7 @@ const Footer = () => {
                         <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Terms & Conditions</Link></li>
                         <li><Link to="/about" className="transition-colors hover:text-pink-600">About Us</Link></li>
                         <li><Link to="/contact" className="transition-colors hover:text-pink-600">Contact Support</Link></li>
+                        <li><Link to="/track-your-order" className="transition-colors hover:text-pink-600">Track Your Order</Link></li>
                     </ul>
                 </div>
 
@@ -123,6 +124,7 @@ const Footer = () => {
                     <Link to="/terms-conditions" className="transition-colors hover:text-gray-950">Terms & Conditions</Link>
                     <Link to="/about" className="transition-colors hover:text-gray-950">About Us</Link>
                     <Link to="/contact" className="transition-colors hover:text-gray-950">Contact</Link>
+                    <Link to="/track-your-order" className="transition-colors hover:text-gray-950">Track Order</Link>
                 </div>
             </div>
         </footer>

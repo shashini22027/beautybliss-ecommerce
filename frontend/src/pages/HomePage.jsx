@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CartContext } from '../context/CartContext';
+import { WishlistContext } from '../context/WishlistContext';
 import FeaturedProducts from '../components/FeaturedProducts';
 import ShopByCategories from '../components/ShopByCategories';
 import InfoBanner from '../components/InfoBanner';
@@ -107,6 +109,9 @@ const ServicePill = ({ text }) => (
 );
 
 const HomePage = () => {
+  const { addToCart } = useContext(CartContext);
+  const { toggleWishlist } = useContext(WishlistContext);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const heroImages = ['/images/banner.jpg'];
@@ -114,282 +119,258 @@ const HomePage = () => {
   const featuredProducts = [
     {
       name: 'Hydra Glow Serum',
-      category: 'Serums',
+      category: 'Skincare, Serums',
       price: 'Rs. 2,970.00',
-      image:
-        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
     },
     {
-      name: 'Velvet Repair Cream',
-      category: 'Moisturizers',
-      price: 'Rs. 3,450.00',
-      image:
-        'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+      name: 'Rose Quartz Face Roller',
+      category: 'Beauty Tools, Rollers',
+      price: 'Rs. 1,200.00',
+      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=700&q=85',
     },
     {
-      name: 'Rose Cloud Cleanser',
-      category: 'Cleansers',
-      price: 'Rs. 1,950.00',
-      image:
-        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
+      name: 'Argan Oil Hair Mask',
+      category: 'Haircare, Treatments',
+      price: 'Rs. 1,850.00',
+      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
     },
     {
-      name: 'Daily Silk Sunscreen',
-      category: 'Sun Care',
-      price: 'Rs. 2,520.00',
-      image:
-        'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
+      name: 'Midnight Orchid Perfume',
+      category: 'Fragrances, Perfumes',
+      price: 'Rs. 4,520.00',
+      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
     },
   ];
 
   const bestSellingProducts = [
-  {
-    name: 'Aliver Pumpkin Seed Oil 60ml',
-    category: 'Skin Care, Body Care, Hair Care, Nourishing Oils',
-    price: 'Rs. 1,434.00',
-    oldPrice: '',
-    rating: 5,
-    discount: '',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Aliver Luscious Lips Shimmer Lip Oil',
-    category: 'Lips',
-    price: 'From Rs. 834.00',
-    oldPrice: '',
-    rating: 4,
-    discount: '-34%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Aliver Teeth Whitening Foam Toothpaste Mint Flavour',
-    category: 'Oral Care',
-    price: 'Rs. 654.00',
-    oldPrice: 'Rs. 990.00',
-    rating: 3,
-    discount: '-34%',
-    soldOut: true,
-    image:
-      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set',
-    category: 'Lips, Lip glow',
-    price: 'Rs. 990.00',
-    oldPrice: 'Rs. 1,314.00',
-    rating: 4,
-    discount: '-25%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Brightening Vitamin C Serum',
-    category: 'Skin Care',
-    price: 'Rs. 1,710.00',
-    oldPrice: 'Rs. 1,950.00',
-    rating: 5,
-    discount: '-12%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Rose Cloud Cleanser',
-    category: 'Cleansers',
-    price: 'Rs. 1,950.00',
-    oldPrice: '',
-    rating: 4,
-    discount: '',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Daily Silk Sunscreen',
-    category: 'Sun Care',
-    price: 'Rs. 2,520.00',
-    oldPrice: 'Rs. 2,940.00',
-    rating: 5,
-    discount: '-14%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Velvet Repair Cream',
-    category: 'Moisturizers',
-    price: 'Rs. 3,450.00',
-    oldPrice: '',
-    rating: 4,
-    discount: '',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-  },
-];
+    {
+      name: 'Aliver Pumpkin Seed Oil 60ml',
+      category: 'Haircare, Hair Oils',
+      price: 'Rs. 1,434.00',
+      oldPrice: '',
+      rating: 5,
+      discount: '',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Aliver Luscious Lips Shimmer Lip Oil',
+      category: 'Makeup, Lips',
+      price: 'From Rs. 834.00',
+      oldPrice: '',
+      rating: 4,
+      discount: '-34%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Vanilla Shea Body Butter',
+      category: 'Bath & Body, Lotions',
+      price: 'Rs. 1,650.00',
+      oldPrice: 'Rs. 2,100.00',
+      rating: 5,
+      discount: '-21%',
+      soldOut: true,
+      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Flawless Finish Foundation Brush',
+      category: 'Beauty Tools, Brushes',
+      price: 'Rs. 990.00',
+      oldPrice: 'Rs. 1,314.00',
+      rating: 4,
+      discount: '-25%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Brightening Vitamin C Serum',
+      category: 'Skincare, Serums',
+      price: 'Rs. 1,710.00',
+      oldPrice: 'Rs. 1,950.00',
+      rating: 5,
+      discount: '-12%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Rose Cloud Cleanser',
+      category: 'Skincare, Cleansers',
+      price: 'Rs. 1,950.00',
+      oldPrice: '',
+      rating: 4,
+      discount: '',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Ocean Breeze Body Wash',
+      category: 'Bath & Body, Cleansers',
+      price: 'Rs. 1,220.00',
+      oldPrice: 'Rs. 1,500.00',
+      rating: 4,
+      discount: '-18%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Velvet Repair Cream',
+      category: 'Skincare, Moisturizers',
+      price: 'Rs. 3,450.00',
+      oldPrice: '',
+      rating: 4,
+      discount: '',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+    },
+  ];
 
-const [bestSellerPage, setBestSellerPage] = useState(0);
-const productsPerPage = 4;
-const bestSellerPageCount = Math.ceil(bestSellingProducts.length / productsPerPage);
-const visibleBestSellers = bestSellingProducts.slice(
-  bestSellerPage * productsPerPage,
-  bestSellerPage * productsPerPage + productsPerPage
-);
-
-const goToPrevBestSellers = () => {
-  setBestSellerPage((page) =>
-    page === 0 ? bestSellerPageCount - 1 : page - 1
+  const [bestSellerPage, setBestSellerPage] = useState(0);
+  const productsPerPage = 4;
+  const bestSellerPageCount = Math.ceil(bestSellingProducts.length / productsPerPage);
+  const visibleBestSellers = bestSellingProducts.slice(
+    bestSellerPage * productsPerPage,
+    bestSellerPage * productsPerPage + productsPerPage
   );
-};
 
-const goToNextBestSellers = () => {
-  setBestSellerPage((page) =>
-    page === bestSellerPageCount - 1 ? 0 : page + 1
-  );
-};
+  const goToPrevBestSellers = () => {
+    setBestSellerPage((page) =>
+      page === 0 ? bestSellerPageCount - 1 : page - 1
+    );
+  };
 
-const newArrivalProducts = [
-  {
-    name: 'Glow Boost Vitamin C Drops',
-    category: 'Skin Care',
-    price: 'Rs. 1,770.00',
-    oldPrice: '',
-    rating: 5,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Soft Matte Lip Tint',
-    category: 'Cosmetics',
-    price: 'Rs. 1,050.00',
-    oldPrice: '',
-    rating: 4,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Hydra Dew Face Cream',
-    category: 'Moisturizers',
-    price: 'Rs. 2,190.00',
-    oldPrice: '',
-    rating: 5,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Fresh Bloom Body Mist',
-    category: 'Fragrances',
-    price: 'Rs. 1,494.00',
-    oldPrice: '',
-    rating: 4,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Rose Cloud Gentle Cleanser',
-    category: 'Cleansers',
-    price: 'Rs. 1,710.00',
-    oldPrice: '',
-    rating: 4,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Silk Repair Hair Serum',
-    category: 'Hair Care',
-    price: 'Rs. 1,890.00',
-    oldPrice: '',
-    rating: 5,
-    discount: 'New',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
-  },
-];
+  const goToNextBestSellers = () => {
+    setBestSellerPage((page) =>
+      page === bestSellerPageCount - 1 ? 0 : page + 1
+    );
+  };
 
-const hotDealProducts = [
-  {
-    name: 'Daily Silk Sunscreen',
-    category: 'Sun Care',
-    price: 'Rs. 2,520.00',
-    oldPrice: 'Rs. 2,940.00',
-    rating: 5,
-    discount: '-14%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Velvet Repair Cream',
-    category: 'Moisturizers',
-    price: 'Rs. 2,994.00',
-    oldPrice: 'Rs. 3,450.00',
-    rating: 4,
-    discount: '-13%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Brightening Vitamin C Serum',
-    category: 'Skin Care',
-    price: 'Rs. 1,710.00',
-    oldPrice: 'Rs. 1,950.00',
-    rating: 5,
-    discount: '-12%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Lip Plumper Gloss Set',
-    category: 'Lips',
-    price: 'Rs. 990.00',
-    oldPrice: 'Rs. 1,314.00',
-    rating: 4,
-    discount: '-25%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Glow Routine Bundle',
-    category: 'Beauty Sets',
-    price: 'Rs. 4,194.00',
-    oldPrice: 'Rs. 4,920.00',
-    rating: 5,
-    discount: '-15%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-  },
-  {
-    name: 'Luscious Lip Oil',
-    category: 'Lips',
-    price: 'Rs. 834.00',
-    oldPrice: 'Rs. 1,188.00',
-    rating: 4,
-    discount: '-30%',
-    soldOut: false,
-    image:
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
-  },
-];
+  const newArrivalProducts = [
+    {
+      name: 'Glow Boost Vitamin C Drops',
+      category: 'Skincare, Serums',
+      price: 'Rs. 1,770.00',
+      oldPrice: '',
+      rating: 5,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Soft Matte Lip Tint',
+      category: 'Makeup, Lips',
+      price: 'Rs. 1,050.00',
+      oldPrice: '',
+      rating: 4,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Hydrating Face Mist',
+      category: 'Skincare, Toners',
+      price: 'Rs. 1,190.00',
+      oldPrice: '',
+      rating: 5,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Fresh Bloom Body Mist',
+      category: 'Fragrances, Body Mists',
+      price: 'Rs. 1,494.00',
+      oldPrice: '',
+      rating: 4,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Exfoliating Sugar Scrub',
+      category: 'Bath & Body, Scrubs',
+      price: 'Rs. 1,410.00',
+      oldPrice: '',
+      rating: 4,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Silk Repair Hair Serum',
+      category: 'Haircare, Serums',
+      price: 'Rs. 1,890.00',
+      oldPrice: '',
+      rating: 5,
+      discount: 'New',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
+    },
+  ];
+
+  const hotDealProducts = [
+    {
+      name: 'Daily Silk Sunscreen',
+      category: 'Skincare, Sun Care',
+      price: 'Rs. 2,520.00',
+      oldPrice: 'Rs. 2,940.00',
+      rating: 5,
+      discount: '-14%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Revitalizing Shampoo',
+      category: 'Haircare, Shampoos',
+      price: 'Rs. 1,994.00',
+      oldPrice: 'Rs. 2,450.00',
+      rating: 4,
+      discount: '-18%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Citrus Splash Perfume',
+      category: 'Fragrances, Perfumes',
+      price: 'Rs. 3,710.00',
+      oldPrice: 'Rs. 4,550.00',
+      rating: 5,
+      discount: '-18%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Lip Plumper Gloss Set',
+      category: 'Makeup, Lips',
+      price: 'Rs. 990.00',
+      oldPrice: 'Rs. 1,314.00',
+      rating: 4,
+      discount: '-25%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Jade Gua Sha Tool',
+      category: 'Beauty Tools, Facial Tools',
+      price: 'Rs. 890.00',
+      oldPrice: 'Rs. 1,220.00',
+      rating: 5,
+      discount: '-27%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=700&q=85',
+    },
+    {
+      name: 'Lavender Bath Salts',
+      category: 'Bath & Body, Salts',
+      price: 'Rs. 834.00',
+      oldPrice: 'Rs. 1,188.00',
+      rating: 4,
+      discount: '-30%',
+      soldOut: false,
+      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
+    },
+  ];
 
 const [newArrivalPage, setNewArrivalPage] = useState(0);
 const [hotDealPage, setHotDealPage] = useState(0);
@@ -431,13 +412,38 @@ const goToNextHotDeals = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
-      <section
-        className="relative flex min-h-[92vh] items-center overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(120deg, #fff9f4 0%, #fdecef 52%, #f6d7df 100%)',
-        }}
-      >
+      <section className="relative flex min-h-[92vh] items-center overflow-hidden bg-white">
+        {/* Background Image Container - Full Width */}
+        <div className="absolute inset-0 h-full w-full select-none z-0">
+          {heroImages.map((src, index) => (
+            <img
+              key={src}
+              src={src}
+              alt="BeautyBliss skincare ritual"
+              className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${
+                index === currentImageIndex ? 'z-0 opacity-100' : '-z-10 opacity-0'
+              }`}
+              style={{ filter: 'brightness(1.02) contrast(1.02)' }}
+            />
+          ))}
+
+          {/* Gradient Overlay for Text Readability */}
+          <div
+            className="absolute inset-0 z-10 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(to right, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 40%, transparent 100%)',
+            }}
+          />
+          <div
+            className="absolute bottom-0 left-0 right-0 z-10 h-32 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top, #ffffff 0%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        {/* Text Content */}
         <div className="relative z-20 flex w-full flex-col justify-center px-8 py-24 md:w-1/2 md:px-16 lg:px-24">
           <div className="mb-8 flex items-center gap-3">
             <div className="h-[1px] w-8 bg-rose-300" />
@@ -486,51 +492,21 @@ const goToNextHotDeals = () => {
           </div>
         </div>
 
-        <div className="absolute right-0 top-0 h-full w-full select-none md:w-[58%]">
-          <div className="absolute inset-0 h-full w-full bg-[radial-gradient(circle_at_top,right,_rgba(250,215,227,0.45),_transparent_35%)]" />
-          <div className="absolute inset-0">
-            {heroImages.map((src, index) => (
-              <img
-                key={src}
-                src={src}
-                alt="BeautyBliss skincare ritual"
-                className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${
-                  index === currentImageIndex ? 'z-0 opacity-100' : '-z-10 opacity-0'
-                }`}
-                style={{ filter: 'brightness(1.02) contrast(1.02)' }}
-              />
-            ))}
-          </div>
-
-          <div
-            className="absolute inset-0 z-10 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(to right, #fff9f4 0%, rgba(255,249,244,0.72) 28%, transparent 44%)',
-            }}
-          />
-          <div
-            className="absolute bottom-0 left-0 right-0 z-10 h-32 pointer-events-none"
-            style={{
-              background: 'linear-gradient(to top, #fff9f4 0%, transparent 100%)',
-            }}
-          />
-
-          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-3">
-            {heroImages.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setCurrentImageIndex(idx)}
-                className={`h-3 w-3 rounded-full border transition-all duration-300 ${
-                  idx === currentImageIndex
-                    ? 'scale-125 border-transparent bg-rose-200 shadow-[0_0_10px_rgba(244,214,204,0.65)]'
-                    : 'border-rose-200/60 bg-transparent hover:bg-white/10'
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+        {/* Slider Controls */}
+        <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-3">
+          {heroImages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrentImageIndex(idx)}
+              className={`h-3 w-3 rounded-full border transition-all duration-300 ${
+                idx === currentImageIndex
+                  ? 'scale-125 border-transparent bg-rose-400 shadow-[0_0_10px_rgba(244,214,204,0.65)]'
+                  : 'border-rose-400/60 bg-transparent hover:bg-white/50'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 
@@ -634,7 +610,8 @@ const goToNextHotDeals = () => {
         {visibleBestSellers.map((product) => (
           <Link
             key={product.name}
-            to="/products"
+            to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
+            state={{ product }}
             className="group relative block text-center"
           >
             <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
@@ -653,11 +630,17 @@ const goToNextHotDeals = () => {
               <img
                 src={product.image}
                 alt={product.name}
-                className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+                className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
               />
 
               <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
-                <span
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToCart(product, 1);
+                  }}
                   className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                   aria-label="View cart"
                   title="View cart"
@@ -675,8 +658,14 @@ const goToNextHotDeals = () => {
                     <path d="M6 7h12l-1 13H7L6 7Z" />
                     <path d="M9 7a3 3 0 0 1 6 0" />
                   </svg>
-                </span>
-                <span
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleWishlist(product);
+                  }}
                   className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                   aria-label="View wishlist"
                   title="View wishlist"
@@ -693,7 +682,7 @@ const goToNextHotDeals = () => {
                   >
                     <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
                   </svg>
-                </span>
+                </button>
               </div>
             </div>
 
@@ -781,7 +770,8 @@ const goToNextHotDeals = () => {
               {visibleNewArrivals.map((product) => (
                 <Link
                   key={product.name}
-                  to="/products"
+                  to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
+                  state={{ product }}
                   className="group relative block text-center"
                 >
                   <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
@@ -792,8 +782,60 @@ const goToNextHotDeals = () => {
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+                      className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
                     />
+
+                    <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToCart(product, 1);
+                        }}
+                        className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                        aria-label="View cart"
+                        title="View cart"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="h-6 w-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M6 7h12l-1 13H7L6 7Z" />
+                          <path d="M9 7a3 3 0 0 1 6 0" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleWishlist(product);
+                        }}
+                        className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                        aria-label="View wishlist"
+                        title="View wishlist"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="h-6 w-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
@@ -875,7 +917,8 @@ const goToNextHotDeals = () => {
               {visibleHotDeals.map((product) => (
                 <Link
                   key={product.name}
-                  to="/products"
+                  to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
+                  state={{ product }}
                   className="group relative block text-center"
                 >
                   <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
@@ -886,8 +929,60 @@ const goToNextHotDeals = () => {
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
+                      className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
                     />
+
+                    <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToCart(product, 1);
+                        }}
+                        className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                        aria-label="View cart"
+                        title="View cart"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="h-6 w-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M6 7h12l-1 13H7L6 7Z" />
+                          <path d="M9 7a3 3 0 0 1 6 0" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleWishlist(product);
+                        }}
+                        className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                        aria-label="View wishlist"
+                        title="View wishlist"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          className="h-6 w-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
