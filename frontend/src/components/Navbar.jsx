@@ -250,7 +250,7 @@ const Navbar = () => {
                           onClick={() => {
                             logout();
                             setShowProfileMenu(false);
-                            navigate('/login');
+                            window.location.href = '/login';
                           }}
                           className="block w-full px-4 py-2.5 text-left text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
                         >

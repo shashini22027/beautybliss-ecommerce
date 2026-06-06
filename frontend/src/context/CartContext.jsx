@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 export const CartContext = createContext();
 
@@ -8,37 +9,67 @@ const getProductId = (item) =>
 const getCartItemQty = (item) => Number(item?.qty || item?.quantity || 1);
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const local = localStorage.getItem('cartItems');
-      const parsedItems = local ? JSON.parse(local) : [];
-      return Array.isArray(parsedItems)
-        ? parsedItems.filter((item) => item && typeof item === 'object')
-        : [];
-    } catch {
-      localStorage.removeItem('cartItems');
-      return [];
-    }
-  });
+  const { user } = useContext(AuthContext);
+  const [cartItems, setCartItems] = useState([]);
 
+  // Initialize and Sync Cart depending on auth state
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (user) {
+      // User is logged in, grab their specific cart
+      const userCartKey = `cartItems_${user.email}`;
+      const savedUserCart = localStorage.getItem(userCartKey);
+      
+      if (savedUserCart) {
+        setCartItems(JSON.parse(savedUserCart));
+      } else {
+        // First time logging in or no saved cart, see if they had guest items
+        const guestCart = localStorage.getItem('cartItems');
+        if (guestCart) {
+          const parsedGuest = JSON.parse(guestCart);
+          setCartItems(parsedGuest);
+          localStorage.setItem(userCartKey, guestCart);
+        } else {
+          setCartItems([]);
+        }
+      }
+    } else {
+      // Guest user
+      const guestCart = localStorage.getItem('cartItems');
+      setCartItems(guestCart ? JSON.parse(guestCart) : []);
+    }
+  }, [user]);
+
+  // Save to appropriate localStorage key whenever cartItems change
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`cartItems_${user.email}`, JSON.stringify(cartItems));
+    } else {
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    }
+  }, [cartItems, user]);
 
   const addToCart = (product, qty) => {
     if (!product || typeof product !== 'object') return;
     const finalQty = Math.max(1, Number(qty));
     const productId = product._id || product.id || product.name;
-    const existItem = cartItems.find((x) => getProductId(x) === productId);
-    if (existItem) {
-      setCartItems(cartItems.map((x) => getProductId(x) === productId ? { ...x, qty: finalQty } : x));
-    } else {
-      setCartItems([...cartItems, { product, qty: finalQty }]);
-    }
+
+    setCartItems((prevItems) => {
+      const existItem = prevItems.find((x) => getProductId(x) === productId);
+      if (existItem) {
+        const updatedTargetQty = Number(existItem.qty || existItem.quantity || 1) + finalQty;
+        return prevItems.map((x) => 
+          getProductId(x) === productId 
+            ? { ...x, qty: updatedTargetQty } 
+            : x
+        );
+      } else {
+        return [...prevItems, { ...product, product, qty: finalQty }];
+      }
+    });
   };
 
   const removeFromCart = (id) => {
-    setCartItems(cartItems.filter((x) => getProductId(x) !== id));
+    setCartItems((prevItems) => prevItems.filter((x) => getProductId(x) !== id));
   };
 
   const clearCart = () => {

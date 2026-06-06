@@ -1,33 +1,60 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { AuthContext } from './AuthContext';
 
 export const WishlistContext = createContext();
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlistItems, setWishlistItems] = useState(() => {
-    try {
-      const local = localStorage.getItem('wishlistItems');
-      const parsedItems = local ? JSON.parse(local) : [];
-      return Array.isArray(parsedItems)
-        ? parsedItems.filter((item) => item && typeof item === 'object')
-        : [];
-    } catch {
-      return [];
-    }
-  });
+  const { user } = useContext(AuthContext);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
+  // Initialize and Sync Wishlist depending on auth state
   useEffect(() => {
-    localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
-  }, [wishlistItems]);
+    if (user) {
+      // User is logged in, grab their specific wishlist
+      const userWishlistKey = `wishlistItems_${user.email}`;
+      const savedUserWishlist = localStorage.getItem(userWishlistKey);
+      
+      if (savedUserWishlist) {
+        setWishlistItems(JSON.parse(savedUserWishlist));
+      } else {
+        // First time logging in or no saved wishlist, see if they had guest items
+        const guestWishlist = localStorage.getItem('wishlistItems');
+        if (guestWishlist) {
+          const parsedGuest = JSON.parse(guestWishlist);
+          setWishlistItems(parsedGuest);
+          localStorage.setItem(userWishlistKey, guestWishlist);
+        } else {
+          setWishlistItems([]);
+        }
+      }
+    } else {
+      // Guest user
+      const guestWishlist = localStorage.getItem('wishlistItems');
+      setWishlistItems(guestWishlist ? JSON.parse(guestWishlist) : []);
+    }
+  }, [user]);
+
+  // Save to appropriate localStorage key whenever wishlistItems change
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`wishlistItems_${user.email}`, JSON.stringify(wishlistItems));
+    } else {
+      localStorage.setItem('wishlistItems', JSON.stringify(wishlistItems));
+    }
+  }, [wishlistItems, user]);
 
   const toggleWishlist = (product) => {
     if (!product || typeof product !== 'object') return;
     const productId = product?._id || product?.id || product?.name;
-    const exist = wishlistItems.find(x => (x._id || x.id || x.name) === productId);
-    if (exist) {
-      setWishlistItems(wishlistItems.filter(x => (x._id || x.id || x.name) !== productId));
-    } else {
-      setWishlistItems([...wishlistItems, product]);
-    }
+    
+    setWishlistItems((prevItems) => {
+      const exist = prevItems.find(x => (x._id || x.id || x.name) === productId);
+      if (exist) {
+        return prevItems.filter(x => (x._id || x.id || x.name) !== productId);
+      } else {
+        return [...prevItems, product];
+      }
+    });
   };
 
   return (

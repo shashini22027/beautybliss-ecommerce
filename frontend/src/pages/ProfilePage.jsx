@@ -132,8 +132,12 @@ const ProfilePage = () => {
     }, [navigate, storedUser]);
 
     const logoutHandler = () => {
-        localStorage.removeItem("userInfo");
-        navigate("/login");
+        const keysToRemove = [
+            'userInfo', 'cartItems', 'cart', 'checkoutOrders', 
+            'pendingPaymentOrder', 'wishlistItems', 'billingAddress', 'shippingAddress'
+        ];
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        window.location.href = '/login';
     };
 
     const menuItems = [

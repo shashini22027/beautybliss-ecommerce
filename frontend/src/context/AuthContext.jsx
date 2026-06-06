@@ -25,7 +25,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('userInfo');
+    const keysToRemove = [
+      'userInfo', 'cartItems', 'cart', 'checkoutOrders', 
+      'pendingPaymentOrder', 'wishlistItems', 'billingAddress', 'shippingAddress'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   };
 
   return (
