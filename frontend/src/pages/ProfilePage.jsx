@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -112,6 +112,8 @@ const getInitialAccountDetails = (storedUser) => {
 
 const ProfilePage = () => {
     const navigate = useNavigate();
+    const { search } = useLocation();
+    const passwordReset = new URLSearchParams(search).get("password_reset") === "true";
     const storedUser = getStoredUser();
     const displayName = storedUser?.name || storedUser?.email?.split("@")[0] || "customer";
     const [activeView, setActiveView] = useState("dashboard");
@@ -517,6 +519,14 @@ const ProfilePage = () => {
                             renderAccountDetailsForm()
                         ) : (
                             <>
+                                {passwordReset && (
+                                    <div className="mb-8 flex items-center gap-4 rounded bg-[#54a155] px-6 py-4 text-[15px] font-medium text-white shadow-sm">
+                                        <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Your password has been reset successfully.
+                                    </div>
+                                )}
                                 <p className="text-lg leading-8 text-gray-600">
                                     Hello <strong>{displayName}</strong> (not <strong>{displayName}</strong>?{" "}
                                     <button

@@ -22,6 +22,7 @@ import Blog from '../pages/Blog';
 import BlogPostDetail from '../pages/BlogPostDetail';
 import ContactScreen from "../pages/ContactScreen";
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import ResetPasswordPage from '../pages/ResetPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
 import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
 import TermsConditionsScreen from '../pages/TermsConditionsScreen';
@@ -74,6 +75,7 @@ const AppRoutes = () => {
           <Route path="/contact" element={<ContactScreen />} />
           <Route path="/track-your-order" element={<TrackOrderPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path='/account-support' element={<AccountSupportPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
           <Route path="/terms-conditions" element={<TermsConditionsScreen />} />
