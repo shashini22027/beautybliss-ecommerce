@@ -308,8 +308,17 @@ const CheckoutPage = () => {
             source: "checkout",
         };
 
-        localStorage.setItem("checkoutOrders", JSON.stringify([checkoutOrder, ...savedOrders]));
-        navigate("/orders");
+        if (paymentMethod === "card") {
+            // Save pending order for payment page
+            localStorage.setItem("pendingPaymentOrder", JSON.stringify(checkoutOrder));
+            navigate("/payment");
+        } else {
+            // COD: save order, clear cart, go to order complete
+            localStorage.setItem("checkoutOrders", JSON.stringify([checkoutOrder, ...savedOrders]));
+            localStorage.setItem("cartItems", JSON.stringify([]));
+            localStorage.setItem("cart", JSON.stringify([]));
+            navigate("/order-complete", { state: { order: checkoutOrder } });
+        }
     };
 
     const getFieldClassName = (fieldName, extraClasses = "") =>

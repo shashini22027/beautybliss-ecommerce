@@ -33,6 +33,8 @@ import ProductListScreen from '../pages/admin/ProductListScreen';
 import ReviewListScreen from '../pages/admin/ReviewListScreen';
 import SalesReportScreen from '../pages/admin/SalesReportScreen';
 import UserListScreen from '../pages/admin/UserListScreen';
+import PaymentPage from '../pages/PaymentPage';
+import OrderCompletePage from '../pages/OrderCompletePage';
 
 const AppRoutes = () => {
   return (
@@ -76,6 +78,8 @@ const AppRoutes = () => {
           <Route path="/track-your-order" element={<TrackOrderPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/order-complete" element={<OrderCompletePage />} />
           <Route path='/account-support' element={<AccountSupportPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
           <Route path="/terms-conditions" element={<TermsConditionsScreen />} />
