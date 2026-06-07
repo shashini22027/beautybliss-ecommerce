@@ -616,7 +616,7 @@ const CheckoutPage = () => {
 
                         <div className="mt-8 space-y-5 text-lg">
                             {[
-                                ["card", "Pay by Visa, MasterCard, AMEX,Lanka QR"],
+                                ["card", "Pay by Credit card, Debit card"],
                                 ["cod", "Cash on delivery"],
                             ].map(([value, label]) => (
                                 <label key={value} className="flex items-center gap-3">
