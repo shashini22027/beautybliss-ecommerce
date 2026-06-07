@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import {
   fetchAdminDashboardData,
   selectAdminDashboardStats,
-} from "../store/adminDashboardSlice";
+} from "../redux/slices/adminDashboardSlice";
 import { formatPrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {

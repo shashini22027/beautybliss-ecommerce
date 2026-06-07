@@ -4,7 +4,7 @@ import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
-import { store } from './store/store';
+import { store } from './redux/store';
 
 function App() {
   return (

@@ -1,13 +1,14 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { WishlistContext } from '../context/WishlistContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectWishlistItems, toggleWishlist } from '../redux/slices/wishlistSlice';
+import { addToCart } from '../redux/slices/cartSlice';
 import { formatPrice } from '../utils/currency';
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useContext(CartContext);
-  const { wishlistItems, toggleWishlist } = useContext(WishlistContext);
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector(selectWishlistItems);
   const navigate = useNavigate();
   const productId = product._id || product.id || product.name;
 
@@ -43,7 +44,7 @@ const ProductCard = ({ product }) => {
         <div className="absolute inset-0 z-10 flex items-center justify-center gap-4 bg-black/35 opacity-0 transition duration-300 group-hover:opacity-100">
           <button
             type="button"
-            onClick={() => addToCart(product, 1)}
+            onClick={() => dispatch(addToCart({ product, qty: 1 }))}
             className="bg-white p-3 text-gray-950 shadow-lg transition-transform hover:scale-110 hover:text-pink-600 active:scale-95"
             aria-label="Add to cart"
             title="Add to cart"
@@ -55,7 +56,7 @@ const ProductCard = ({ product }) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              toggleWishlist(product);
+              dispatch(toggleWishlist(product));
             }}
             className="bg-white p-3 shadow-lg transition-transform hover:scale-110 active:scale-95"
             aria-label="Toggle wishlist"
@@ -112,7 +113,7 @@ const ProductCard = ({ product }) => {
           {/* Add to Cart Button */}
           <button
             type="button"
-            onClick={() => addToCart(product, 1)}
+            onClick={() => dispatch(addToCart({ product, qty: 1 }))}
             className="flex w-full items-center justify-center gap-2 bg-[#2b2b2b] p-2 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
             aria-label="Add to cart"
             title="Add to cart"

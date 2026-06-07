@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Heart, User, Search, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { WishlistContext } from '../context/WishlistContext';
-import { AuthContext } from '../context/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCartItems } from '../redux/slices/cartSlice';
+import { selectWishlistItems } from '../redux/slices/wishlistSlice';
+import { selectUser, logoutUser } from '../redux/slices/authSlice';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,9 +17,10 @@ const Navbar = () => {
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const { cartItems } = useContext(CartContext);
-  const { wishlistItems } = useContext(WishlistContext);
-  const { user, logout } = useContext(AuthContext);
+  const cartItems = useSelector(selectCartItems);
+  const wishlistItems = useSelector(selectWishlistItems);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
@@ -248,7 +250,7 @@ const Navbar = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            logout();
+                            dispatch(logoutUser());
                             setShowProfileMenu(false);
                             window.location.href = '/login';
                           }}

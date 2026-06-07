@@ -9,6 +9,184 @@ import connectDB from '../config/db.js';
 dotenv.config();
 connectDB();
 
+// Verified Unsplash Beauty Images
+const IMAGES = {
+  cleanser: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&q=80',
+  toner: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80',
+  cream: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
+  serum: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80',
+  tube: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=80',
+  lipstick: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&q=80',
+  foundation: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80',
+  eye: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=80',
+  palette: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80',
+  shampoo: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500&q=80',
+  hairMask: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=500&q=80',
+  oil: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500&q=80',
+  perfume: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80',
+  bodyMist: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&q=80',
+  brushes: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=80'
+};
+
+const catalog = {
+  'Skincare': {
+    desc: 'Luxury skincare formulations for radiant, healthy skin',
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80',
+    subcategories: {
+      'Cleansers': [
+        { name: 'Gel Cleanser', img: IMAGES.cleanser },
+        { name: 'Foam Cleanser', img: IMAGES.cleanser },
+        { name: 'Cream Cleanser', img: IMAGES.tube }
+      ],
+      'Toners': [
+        { name: 'Hydrating Toner', img: IMAGES.toner },
+        { name: 'Brightening Toner', img: IMAGES.toner },
+        { name: 'Exfoliating Toner', img: IMAGES.toner }
+      ],
+      'Moisturizers': [
+        { name: 'Day Cream', img: IMAGES.cream },
+        { name: 'Night Cream', img: IMAGES.cream },
+        { name: 'Gel Moisturizer', img: IMAGES.cream }
+      ],
+      'Serums': [
+        { name: 'Vitamin C Serum', img: IMAGES.serum },
+        { name: 'Hyaluronic Acid Serum', img: IMAGES.serum },
+        { name: 'Retinol Serum', img: IMAGES.serum }
+      ],
+      'Sunscreens': [
+        { name: 'SPF 30 Sunscreen', img: IMAGES.tube },
+        { name: 'SPF 50 Sunscreen', img: IMAGES.tube },
+        { name: 'Tinted Sunscreen', img: IMAGES.tube }
+      ]
+    }
+  },
+  'Haircare': {
+    desc: 'Nourishing treatments for healthy, shiny hair',
+    image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=80',
+    subcategories: {
+      'Shampoo': [
+        { name: 'Anti-Dandruff Shampoo', img: IMAGES.shampoo },
+        { name: 'Repair Shampoo', img: IMAGES.shampoo },
+        { name: 'Color Protection Shampoo', img: IMAGES.shampoo }
+      ],
+      'Conditioner': [
+        { name: 'Moisturizing Conditioner', img: IMAGES.shampoo },
+        { name: 'Smoothening Conditioner', img: IMAGES.shampoo },
+        { name: 'Volumizing Conditioner', img: IMAGES.shampoo }
+      ],
+      'Hair Masks': [
+        { name: 'Keratin Mask', img: IMAGES.hairMask },
+        { name: 'Repair Mask', img: IMAGES.hairMask },
+        { name: 'Hydrating Mask', img: IMAGES.hairMask }
+      ],
+      'Hair Oils': [
+        { name: 'Coconut Hair Oil', img: IMAGES.oil },
+        { name: 'Argan Hair Oil', img: IMAGES.oil },
+        { name: 'Castor Hair Oil', img: IMAGES.oil }
+      ]
+    }
+  },
+  'Makeup': {
+    desc: 'Professional cosmetics for flawless looks',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80',
+    subcategories: {
+      'Foundation': [
+        { name: 'Ivory Foundation', img: IMAGES.foundation, color: 'Ivory' },
+        { name: 'Beige Foundation', img: IMAGES.foundation, color: 'Beige' },
+        { name: 'Sand Foundation', img: IMAGES.foundation, color: 'Sand' },
+        { name: 'Honey Foundation', img: IMAGES.foundation, color: 'Honey' },
+        { name: 'Caramel Foundation', img: IMAGES.foundation, color: 'Caramel' }
+      ],
+      'Lipstick': [
+        { name: 'Red Lipstick', img: IMAGES.lipstick, color: 'Red' },
+        { name: 'Pink Lipstick', img: IMAGES.lipstick, color: 'Pink' },
+        { name: 'Nude Lipstick', img: IMAGES.lipstick, color: 'Nude' },
+        { name: 'Orange Lipstick', img: IMAGES.lipstick, color: 'Orange' },
+        { name: 'Brown Lipstick', img: IMAGES.lipstick, color: 'Brown' },
+        { name: 'Purple Lipstick', img: IMAGES.lipstick, color: 'Purple' },
+        { name: 'Coral Lipstick', img: IMAGES.lipstick, color: 'Coral' },
+        { name: 'Burgundy Lipstick', img: IMAGES.lipstick, color: 'Burgundy' }
+      ],
+      'Mascara': [
+        { name: 'Black Mascara', img: IMAGES.eye },
+        { name: 'Brown Mascara', img: IMAGES.eye },
+        { name: 'Waterproof Mascara', img: IMAGES.eye },
+        { name: 'Volume Boost Mascara', img: IMAGES.eye }
+      ],
+      'Eyeshadow': [
+        { name: 'Nude Palette', img: IMAGES.palette },
+        { name: 'Pink Palette', img: IMAGES.palette },
+        { name: 'Smokey Palette', img: IMAGES.palette },
+        { name: 'Glitter Palette', img: IMAGES.palette }
+      ]
+    }
+  },
+  'Fragrances': {
+    desc: 'Exquisite, long-lasting luxury perfumes',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&q=80',
+    subcategories: {
+      'Perfumes': [
+        { name: 'Floral Perfume', img: IMAGES.perfume },
+        { name: 'Fruity Perfume', img: IMAGES.perfume },
+        { name: 'Woody Perfume', img: IMAGES.perfume },
+        { name: 'Oriental Perfume', img: IMAGES.perfume }
+      ],
+      'Body Mist': [
+        { name: 'Rose Body Mist', img: IMAGES.bodyMist },
+        { name: 'Vanilla Body Mist', img: IMAGES.bodyMist },
+        { name: 'Lavender Body Mist', img: IMAGES.bodyMist },
+        { name: 'Coconut Body Mist', img: IMAGES.bodyMist }
+      ],
+      'Deodorants': [
+        { name: 'Fresh Deodorant', img: IMAGES.tube },
+        { name: 'Floral Deodorant', img: IMAGES.tube },
+        { name: 'Sport Deodorant', img: IMAGES.tube },
+        { name: 'Sensitive Deodorant', img: IMAGES.tube }
+      ]
+    }
+  },
+  'Bath & Body': {
+    desc: 'Soothing essentials for bath and body care',
+    image: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
+    subcategories: {
+      'Body Wash': [
+        { name: 'Rose Body Wash', img: IMAGES.cleanser },
+        { name: 'Aloe Vera Body Wash', img: IMAGES.cleanser },
+        { name: 'Coconut Body Wash', img: IMAGES.cleanser }
+      ],
+      'Body Lotion': [
+        { name: 'Shea Butter Lotion', img: IMAGES.cream },
+        { name: 'Cocoa Butter Lotion', img: IMAGES.cream },
+        { name: 'Vitamin E Lotion', img: IMAGES.tube }
+      ],
+      'Scrubs': [
+        { name: 'Coffee Scrub', img: IMAGES.cream },
+        { name: 'Sugar Scrub', img: IMAGES.cream },
+        { name: 'Salt Scrub', img: IMAGES.cream }
+      ]
+    }
+  },
+  'Beauty Tools': {
+    desc: 'Essential accessories and tools for beauty routines',
+    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80',
+    subcategories: {
+      'Makeup Brushes': [
+        { name: 'Foundation Brush', img: IMAGES.brushes },
+        { name: 'Powder Brush', img: IMAGES.brushes },
+        { name: 'Blush Brush', img: IMAGES.brushes }
+      ],
+      'Sponges': [
+        { name: 'Beauty Blender', img: IMAGES.brushes },
+        { name: 'Mini Sponge', img: IMAGES.brushes }
+      ],
+      'Facial Rollers': [
+        { name: 'Jade Roller', img: IMAGES.brushes },
+        { name: 'Rose Quartz Roller', img: IMAGES.brushes }
+      ]
+    }
+  }
+};
+
 const seedData = async () => {
   try {
     await User.deleteMany();
@@ -17,27 +195,9 @@ const seedData = async () => {
     await Coupon.deleteMany();
 
     await Coupon.create([
-      {
-        code: 'BEAUTY10',
-        discountType: 'percentage',
-        discountAmount: 10,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        isActive: true
-      },
-      {
-        code: 'BLISS20',
-        discountType: 'percentage',
-        discountAmount: 20,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        isActive: true
-      },
-      {
-        code: 'SAVE5',
-        discountType: 'fixed',
-        discountAmount: 5,
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        isActive: true
-      }
+      { code: 'BEAUTY10', discountType: 'percentage', discountAmount: 10, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
+      { code: 'BLISS20', discountType: 'percentage', discountAmount: 20, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true },
+      { code: 'SAVE5', discountType: 'fixed', discountAmount: 5, expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), isActive: true }
     ]);
 
     const adminUser = await User.create({
@@ -47,236 +207,40 @@ const seedData = async () => {
       isAdmin: true
     });
 
-    const catSkincare = await Category.create({
-      name: 'Skincare',
-      description: 'Luxury skincare formulations for radiant, healthy skin',
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80'
-    });
+    const productsToInsert = [];
 
-    const catCosmetics = await Category.create({
-      name: 'Cosmetics',
-      description: 'Professional color cosmetics for perfect touchups',
-      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80'
-    });
+    // Loop through catalog and construct items
+    for (const [catName, catData] of Object.entries(catalog)) {
+      const categoryDoc = await Category.create({
+        name: catName,
+        description: catData.desc,
+        image: catData.image
+      });
 
-    const catHaircare = await Category.create({
-      name: 'Haircare',
-      description: 'Nourishing oils, shampoos, and deep conditioning treatments',
-      image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=80'
-    });
-
-    const catFragrance = await Category.create({
-      name: 'Fragrances',
-      description: 'Exquisite, long-lasting floral and woody luxury perfumes',
-      image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&q=80'
-    });
-
-    await Product.create([
-      // Skincare Products
-      {
-        name: 'Glow Boosting Serum',
-        image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80',
-        images: [
-          'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
-          'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80'
-        ],
-        description: 'Enriched with Vitamin C and Hyaluronic Acid for a radiant, youthful finish.',
-        brand: 'Aura Glow',
-        category: catSkincare._id,
-        subcategory: 'Serum',
-        country: 'Korean',
-        price: 1550,
-        countInStock: 25,
-        rating: 5.0,
-        numReviews: 1,
-        reviews: [
-          {
-            name: 'Aria Song',
-            rating: 5,
-            comment: 'My skin has never glowed like this before. Pure magic!',
-            user: adminUser._id
-          }
-        ]
-      },
-      {
-        name: 'Hyaluronic Hydration Cream',
-        image: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
-        images: [
-          'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80'
-        ],
-        description: 'Intense 24-hour hydration barrier boost cream with ceramides and marine extracts.',
-        brand: 'HydroPure',
-        category: catSkincare._id,
-        subcategory: 'Cream',
-        country: 'USA',
-        price: 885,
-        countInStock: 15,
-        rating: 4.7,
-        numReviews: 0,
-        reviews: []
-      },
-      {
-        name: 'Retinol Renew Night Serum',
-        image: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80',
-        images: [],
-        description: 'Advanced 0.5% pure clinical retinol serum that targets fine lines and hyperpigmentation.',
-        brand: 'Dermalift',
-        category: catSkincare._id,
-        subcategory: 'Serum',
-        country: 'Korean',
-        price: 595,
-        countInStock: 10,
-        rating: 4.9,
-        numReviews: 0,
-        reviews: []
-      },
-      {
-        name: 'Mineral Shield SPF 50+',
-        image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=80',
-        images: [],
-        description: 'Ultra-lightweight zinc oxide mineral sunscreen with no white cast and a dewy glow.',
-        brand: 'Solis',
-        category: catSkincare._id,
-        subcategory: 'Sunscreen',
-        country: 'Japan',
-        price: 840,
-        countInStock: 30,
-        rating: 4.6,
-        numReviews: 0,
-        reviews: []
-      },
-
-      // Cosmetics Products
-      {
-        name: 'Velvet Lip Stain',
-        image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&q=80',
-        images: [
-          'https://images.unsplash.com/photo-1625093742435-6fa192b6fb10?w=500&q=80',
-          'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80'
-        ],
-        description: 'Long-lasting luxury matte tint that stays all day without drying the lips.',
-        brand: 'Luxe Color',
-        category: catCosmetics._id,
-        subcategory: 'Lipstick',
-        color: 'Red',
-        country: 'Korean',
-        price: 795,
-        countInStock: 50,
-        rating: 4.5,
-        numReviews: 2,
-        reviews: [
-          {
-            name: 'Chloe Kim',
-            rating: 5,
-            comment: 'Gorgeous velvet texture! The red shade is extremely pigmented and lasts all day.',
-            user: adminUser._id
-          },
-          {
-            name: 'Sarah Miller',
-            rating: 4,
-            comment: 'Very moisturizing but still matte. Highly recommend the shade.',
-            user: adminUser._id
-          }
-        ]
-      },
-      {
-        name: 'Perfect Canvas Foundation',
-        image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&q=80',
-        images: [],
-        description: 'Medium to full coverage buildable foundation with soft matte oil-control technology.',
-        brand: 'BaseGlow',
-        category: catCosmetics._id,
-        subcategory: 'Foundation',
-        country: 'USA',
-        price: 960,
-        countInStock: 20,
-        rating: 4.4,
-        numReviews: 0,
-        reviews: []
-      },
-      {
-        name: 'Infinity Length Mascara',
-        image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=80',
-        images: [],
-        description: 'Clump-free, volumizing, waterproof silk fiber mascara for extreme lash length.',
-        brand: 'LashLift',
-        category: catCosmetics._id,
-        subcategory: 'Mascara',
-        country: 'Korean',
-        price: 565,
-        countInStock: 40,
-        rating: 4.7,
-        numReviews: 0,
-        reviews: []
-      },
-      {
-        name: 'Sunset Glow Blush Palette',
-        image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80',
-        images: [],
-        description: 'Four highly pigmented, blendable powder blushes spanning coral, peach, and soft rose.',
-        brand: 'Luxe Color',
-        category: catCosmetics._id,
-        subcategory: 'Blush',
-        color: 'Peach',
-        country: 'French',
-        price: 735,
-        countInStock: 12,
-        rating: 4.6,
-        numReviews: 0,
-        reviews: []
-      },
-
-      // Haircare Products
-      {
-        name: 'Argan Oil Restoring Shampoo',
-        image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500&q=80',
-        images: [],
-        description: 'Deeply nourishing Moroccan argan oil shampoo that restores shine and strengthens roots.',
-        brand: 'SilkySleek',
-        category: catHaircare._id,
-        subcategory: 'Shampoo',
-        country: 'USA',
-        price: 660,
-        countInStock: 35,
-        rating: 4.8,
-        numReviews: 0,
-        reviews: []
-      },
-      {
-        name: 'Keratin Deep Repair Mask',
-        image: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?w=500&q=80',
-        images: [],
-        description: 'Intense damage-reversing conditioning treatment mask for frizzy or color-treated hair.',
-        brand: 'SilkySleek',
-        category: catHaircare._id,
-        subcategory: 'Conditioner',
-        country: 'Japan',
-        price: 825,
-        countInStock: 18,
-        rating: 4.9,
-        numReviews: 0,
-        reviews: []
-      },
-
-      // Fragrance Products
-      {
-        name: 'Jasmine Nectar Eau De Parfum',
-        image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80',
-        images: [],
-        description: 'Luxury scent blending fresh white jasmine petals, sandalwood, and sweet citrus nectar.',
-        brand: 'Aroma Bliss',
-        category: catFragrance._id,
-        subcategory: 'Perfume',
-        country: 'French',
-        price: 1350,
-        countInStock: 8,
-        rating: 5.0,
-        numReviews: 0,
-        reviews: []
+      for (const [subCatName, products] of Object.entries(catData.subcategories)) {
+        for (const prod of products) {
+          productsToInsert.push({
+            name: prod.name,
+            image: prod.img,
+            description: `High quality ${prod.name} from our ${catName} collection. Perfect for your daily routine.`,
+            brand: 'BeautyBliss Signature',
+            category: categoryDoc._id,
+            subcategory: subCatName,
+            color: prod.color || '',
+            country: 'USA',
+            price: Math.floor(Math.random() * 1500) + 500, // Random price between 500-2000
+            countInStock: Math.floor(Math.random() * 50) + 10, // Random stock 10-60
+            rating: (Math.random() * 1 + 4).toFixed(1), // Random rating 4.0 - 5.0
+            numReviews: Math.floor(Math.random() * 50),
+            reviews: []
+          });
+        }
       }
-    ]);
+    }
 
-    console.log('Data Seeded Successfully!');
+    await Product.create(productsToInsert);
+
+    console.log(`Successfully seeded ${productsToInsert.length} products across ${Object.keys(catalog).length} categories!`);
     process.exit();
   } catch (error) {
     console.error(`Seeding failed: ${error.message}`);
