@@ -4,7 +4,7 @@ import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
 import FeaturedProducts from '../components/FeaturedProducts';
 import ShopByCategories from '../components/ShopByCategories';
-import InfoBanner from '../components/InfoBanner';
+
 import ProductSection from '../components/ProductSection';
 import Testimonials from '../components/Testimonials';
 
@@ -1033,8 +1033,7 @@ const goToNextHotDeals = () => {
         </div>
       </section>
 
-      {/* Info Banner Section */}
-      <InfoBanner />
+
 
       {/* Testimonials Section */}
       <Testimonials />

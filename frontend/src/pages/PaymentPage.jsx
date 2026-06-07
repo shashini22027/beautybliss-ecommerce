@@ -1,20 +1,121 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { formatPrice } from "../utils/currency";
+import API from "../services/api";
 
+let stripePromise = null;
+
+const getStripePromise = async () => {
+    if (!stripePromise) {
+        try {
+            const { data } = await API.get("/payment/config");
+            stripePromise = loadStripe(data.publishableKey);
+        } catch {
+            console.error("Failed to load Stripe config");
+            throw new Error("Config load failed");
+        }
+    }
+    return stripePromise;
+};
+
+/* ─── Checkout Form (inside Elements) ─── */
+const StripeCheckoutForm = ({ order, onSuccess }) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const [processing, setProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!stripe || !elements) return;
+
+        setProcessing(true);
+        setErrorMessage("");
+
+        // confirmPayment uses the PaymentElement's built-in validation
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: window.location.origin + "/order-complete",
+            },
+            // We use 'if_required' so we can handle the success right here without a page reload 
+            // for standard cards (most common scenario).
+            redirect: "if_required",
+        });
+
+        if (error) {
+            setErrorMessage(error.message);
+            setProcessing(false);
+        } else if (paymentIntent && paymentIntent.status === "succeeded") {
+            onSuccess(paymentIntent.id);
+        } else {
+            setErrorMessage("Payment failed. Please try again.");
+            setProcessing(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <PaymentElement 
+                id="payment-element" 
+                options={{
+                    layout: "tabs", // Creates the modern tabbed layout
+                }}
+            />
+            
+            {errorMessage && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
+                    <div className="flex items-center gap-2">
+                        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        {errorMessage}
+                    </div>
+                </div>
+            )}
+            
+            <button
+                type="submit"
+                disabled={!stripe || processing}
+                className="mt-6 flex h-[54px] w-full items-center justify-center gap-2 rounded bg-[#1f2937] text-[15px] font-bold uppercase tracking-wider text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                {processing ? (
+                    <>
+                        <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Processing...
+                    </>
+                ) : (
+                    <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Pay {formatPrice(order.totalPrice)}
+                    </>
+                )}
+            </button>
+        </form>
+    );
+};
+
+/* ─── Main Payment Page ─── */
 const PaymentPage = () => {
     const navigate = useNavigate();
     const [order, setOrder] = useState(null);
-    const [cardNumber, setCardNumber] = useState("");
-    const [cardName, setCardName] = useState("");
-    const [expiryDate, setExpiryDate] = useState("");
-    const [cvv, setCvv] = useState("");
-    const [processing, setProcessing] = useState(false);
-    const [errors, setErrors] = useState({});
+    const [stripe, setStripe] = useState(null);
+    const [clientSecret, setClientSecret] = useState("");
+    const [loadError, setLoadError] = useState("");
 
     useEffect(() => {
+        // Load pending order
+        let pendingOrder;
         try {
-            const pendingOrder = JSON.parse(localStorage.getItem("pendingPaymentOrder"));
+            pendingOrder = JSON.parse(localStorage.getItem("pendingPaymentOrder"));
             if (!pendingOrder) {
                 navigate("/checkout");
                 return;
@@ -22,74 +123,81 @@ const PaymentPage = () => {
             setOrder(pendingOrder);
         } catch {
             navigate("/checkout");
+            return;
         }
+
+        // Initialize Stripe and create PaymentIntent
+        const initializePayment = async () => {
+            try {
+                // 1. Get stripe promise
+                const sp = await getStripePromise();
+                setStripe(sp);
+
+                // 2. Create Payment Intent
+                const { data } = await API.post("/payment/create-payment-intent", {
+                    amount: pendingOrder.totalPrice,
+                    currency: "lkr",
+                    metadata: {
+                        orderId: pendingOrder._id,
+                        orderNo: pendingOrder.orderNo,
+                        customerEmail: pendingOrder.customer?.email || "",
+                    },
+                });
+
+                setClientSecret(data.clientSecret);
+            } catch (err) {
+                console.error(err);
+                setLoadError("Failed to initialize payment. Please refresh the page and try again.");
+            }
+        };
+
+        initializePayment();
     }, [navigate]);
 
-    const formatCardNumber = (value) => {
-        const digits = value.replace(/\D/g, "").slice(0, 16);
-        return digits.replace(/(.{4})/g, "$1 ").trim();
-    };
+    const handlePaymentSuccess = (paymentIntentId) => {
+        const updatedOrder = {
+            ...order,
+            isPaid: true,
+            paidAt: new Date().toISOString(),
+            paymentResult: {
+                id: paymentIntentId,
+                status: "succeeded",
+                provider: "stripe",
+            },
+        };
 
-    const formatExpiry = (value) => {
-        const digits = value.replace(/\D/g, "").slice(0, 4);
-        if (digits.length >= 3) {
-            return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        // Save to checkout orders
+        try {
+            const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+            savedOrders.unshift(updatedOrder);
+            localStorage.setItem("checkoutOrders", JSON.stringify(savedOrders));
+        } catch {
+            localStorage.setItem("checkoutOrders", JSON.stringify([updatedOrder]));
         }
-        return digits;
+
+        // Clear pending order and cart
+        localStorage.removeItem("pendingPaymentOrder");
+        localStorage.setItem("cartItems", JSON.stringify([]));
+        localStorage.setItem("cart", JSON.stringify([]));
+
+        navigate("/order-complete", { state: { order: updatedOrder } });
     };
-
-    const validate = () => {
-        const nextErrors = {};
-        const rawCard = cardNumber.replace(/\s/g, "");
-
-        if (!rawCard || rawCard.length < 13) nextErrors.cardNumber = "Enter a valid card number.";
-        if (!cardName.trim()) nextErrors.cardName = "Cardholder name is required.";
-        if (!expiryDate || expiryDate.length < 5) nextErrors.expiryDate = "Enter a valid expiry date (MM/YY).";
-        if (!cvv || cvv.length < 3) nextErrors.cvv = "Enter a valid CVV.";
-
-        setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
-    };
-
-    const handlePayment = () => {
-        if (!validate()) return;
-
-        setProcessing(true);
-
-        setTimeout(() => {
-            // Mark order as paid
-            const updatedOrder = { ...order, isPaid: true, paidAt: new Date().toISOString() };
-
-            // Save to checkout orders
-            try {
-                const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
-                savedOrders.unshift(updatedOrder);
-                localStorage.setItem("checkoutOrders", JSON.stringify(savedOrders));
-            } catch {
-                localStorage.setItem("checkoutOrders", JSON.stringify([updatedOrder]));
-            }
-
-            // Clear pending order and cart
-            localStorage.removeItem("pendingPaymentOrder");
-            localStorage.setItem("cartItems", JSON.stringify([]));
-            localStorage.setItem("cart", JSON.stringify([]));
-
-            setProcessing(false);
-            navigate("/order-complete", { state: { order: updatedOrder } });
-        }, 2000);
-    };
-
-    const getCardType = () => {
-        const raw = cardNumber.replace(/\s/g, "");
-        if (raw.startsWith("4")) return "visa";
-        if (/^5[1-5]/.test(raw) || /^2[2-7]/.test(raw)) return "mastercard";
-        if (raw.startsWith("3")) return "amex";
-        return null;
-    };
-
-    const cardType = getCardType();
 
     if (!order) return null;
+
+    // Optional customization for the Elements provider
+    const appearance = {
+        theme: 'stripe',
+        variables: {
+            colorPrimary: '#000000',
+            colorBackground: '#ffffff',
+            colorText: '#30313d',
+            colorDanger: '#df1b41',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            spacingUnit: '4px',
+            borderRadius: '6px',
+        },
+    };
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
@@ -115,155 +223,90 @@ const PaymentPage = () => {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1460px] px-6 py-12">
-                <div className="grid gap-20 lg:grid-cols-[1fr_0.85fr]">
-                    {/* Payment Form */}
+            <section className="mx-auto max-w-[1200px] px-6 py-16">
+                <div className="grid gap-16 lg:grid-cols-2">
+                    {/* Left: Payment Form */}
                     <section>
-                        <h1 className="mb-8 text-3xl font-extrabold uppercase">Payment Details</h1>
+                        <h1 className="mb-2 text-3xl font-extrabold uppercase">Payment Details</h1>
+                        <p className="mb-8 text-gray-500">Pay securely with your credit or debit card</p>
 
-                        <div className="mb-8 flex items-center gap-4">
-                            <div className={`flex h-10 w-16 items-center justify-center rounded border-2 text-xs font-bold transition ${cardType === "visa" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-400"}`}>
-                                VISA
+                        {loadError ? (
+                            <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-red-700">
+                                <strong>Error:</strong> {loadError}
                             </div>
-                            <div className={`flex h-10 w-16 items-center justify-center rounded border-2 text-xs font-bold transition ${cardType === "mastercard" ? "border-red-500 bg-red-50 text-red-600" : "border-gray-200 text-gray-400"}`}>
-                                MC
+                        ) : (!stripe || !clientSecret) ? (
+                            <div className="flex flex-col items-center justify-center py-20">
+                                <svg className="h-10 w-10 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                <p className="mt-4 text-sm text-gray-500 font-medium">Loading secure checkout...</p>
                             </div>
-                            <div className={`flex h-10 w-16 items-center justify-center rounded border-2 text-xs font-bold transition ${cardType === "amex" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-400"}`}>
-                                AMEX
+                        ) : (
+                            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+                                <Elements stripe={stripe} options={{ clientSecret, appearance }}>
+                                    <StripeCheckoutForm order={order} onSuccess={handlePaymentSuccess} />
+                                </Elements>
                             </div>
-                        </div>
-
-                        <form className="space-y-7" onSubmit={(e) => e.preventDefault()}>
-                            <label className="block text-lg">
-                                Card Number <span className="text-red-500">*</span>
-                                <input
-                                    value={cardNumber}
-                                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                                    placeholder="1234 5678 9012 3456"
-                                    maxLength={19}
-                                    className={`mt-3 h-[52px] w-full border ${errors.cardNumber ? "border-red-400" : "border-gray-200"} px-4 outline-none focus:border-pink-300`}
-                                />
-                                {errors.cardNumber && <p className="mt-2 text-sm font-semibold text-red-600">{errors.cardNumber}</p>}
-                            </label>
-
-                            <label className="block text-lg">
-                                Cardholder Name <span className="text-red-500">*</span>
-                                <input
-                                    value={cardName}
-                                    onChange={(e) => setCardName(e.target.value)}
-                                    placeholder="Name on card"
-                                    className={`mt-3 h-[52px] w-full border ${errors.cardName ? "border-red-400" : "border-gray-200"} px-4 outline-none focus:border-pink-300`}
-                                />
-                                {errors.cardName && <p className="mt-2 text-sm font-semibold text-red-600">{errors.cardName}</p>}
-                            </label>
-
-                            <div className="grid gap-7 md:grid-cols-2">
-                                <label className="block text-lg">
-                                    Expiry Date <span className="text-red-500">*</span>
-                                    <input
-                                        value={expiryDate}
-                                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                                        placeholder="MM/YY"
-                                        maxLength={5}
-                                        className={`mt-3 h-[52px] w-full border ${errors.expiryDate ? "border-red-400" : "border-gray-200"} px-4 outline-none focus:border-pink-300`}
-                                    />
-                                    {errors.expiryDate && <p className="mt-2 text-sm font-semibold text-red-600">{errors.expiryDate}</p>}
-                                </label>
-                                <label className="block text-lg">
-                                    CVV <span className="text-red-500">*</span>
-                                    <input
-                                        type="password"
-                                        value={cvv}
-                                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                                        placeholder="•••"
-                                        maxLength={4}
-                                        className={`mt-3 h-[52px] w-full border ${errors.cvv ? "border-red-400" : "border-gray-200"} px-4 outline-none focus:border-pink-300`}
-                                    />
-                                    {errors.cvv && <p className="mt-2 text-sm font-semibold text-red-600">{errors.cvv}</p>}
-                                </label>
-                            </div>
-
-                            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-                                <strong>🔒 Secure Payment:</strong> Your card details are encrypted and processed securely. We do not store your card information.
-                            </div>
-                        </form>
+                        )}
                     </section>
 
-                    {/* Order Summary */}
-                    <aside className="bg-[#f6f6f6] px-9 pb-10 pt-12">
-                        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase">Order Summary</h2>
+                    {/* Right: Order Summary */}
+                    <aside className="lg:pl-8">
+                        <div className="rounded-xl bg-[#f8f9fa] px-8 py-8">
+                            <h2 className="mb-6 text-2xl font-extrabold uppercase tracking-tight">Order Summary</h2>
 
-                        <div className="rounded-xl bg-white px-8 py-7 shadow-sm">
-                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 pb-5 text-xl font-extrabold uppercase">
+                            <div className="grid grid-cols-[1fr_auto] border-b border-gray-200 pb-4 text-sm font-bold uppercase tracking-wider text-gray-500">
                                 <span>Product</span>
-                                <span className="text-right">Subtotal</span>
+                                <span>Subtotal</span>
                             </div>
 
-                            {order.orderItems.map((item) => (
-                                <div key={item._id} className="border-b border-gray-200 py-5">
-                                    <div className="grid grid-cols-[1fr_140px] gap-4">
-                                        <p className="text-lg leading-6 text-gray-600">
-                                            {item.name} <span className="text-gray-400">× {item.qty}</span>
-                                        </p>
-                                        <p className="text-right text-lg text-gray-600">{formatPrice(item.lineTotal)}</p>
+                            <div className="py-2">
+                                {order.orderItems.map((item) => (
+                                    <div key={item._id} className="border-b border-gray-100 py-4">
+                                        <div className="grid grid-cols-[1fr_auto] gap-4">
+                                            <p className="text-base text-gray-700">
+                                                {item.name} <span className="text-gray-400">× {item.qty}</span>
+                                            </p>
+                                            <p className="text-base font-medium text-gray-900">{formatPrice(item.lineTotal)}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
 
-                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-5 text-lg">
-                                <span className="font-bold">Subtotal</span>
-                                <span className="text-right">{formatPrice(order.subtotal)}</span>
-                            </div>
-                            <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-5 text-lg">
-                                <span className="font-bold">Shipping</span>
-                                <span className="text-right">Free Shipping</span>
-                            </div>
-                            <div className="grid grid-cols-[1fr_140px] py-5 text-xl font-bold">
-                                <span>Total</span>
-                                <span className="text-right">{formatPrice(order.totalPrice)}</span>
+                            <div className="mt-4 space-y-3 text-base">
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-600">Subtotal</span>
+                                    <span className="font-medium">{formatPrice(order.subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-600">Shipping</span>
+                                    <span className="font-medium">Free Shipping</span>
+                                </div>
+                                <div className="mt-4 flex justify-between border-t border-gray-200 pt-4 text-xl font-extrabold">
+                                    <span>Total</span>
+                                    <span>{formatPrice(order.totalPrice)}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="mt-6 rounded-xl bg-white px-8 py-7 shadow-sm">
-                            <h3 className="mb-4 text-lg font-extrabold">Billing Details</h3>
-                            <div className="space-y-1 text-base text-gray-600">
-                                <p className="font-semibold text-gray-950">{order.customer.name}</p>
+                        <div className="mt-6 rounded-xl border border-gray-100 bg-white px-8 py-6 shadow-sm">
+                            <h3 className="mb-3 text-base font-extrabold uppercase tracking-tight text-gray-900">Billing Information</h3>
+                            <div className="space-y-1 text-sm text-gray-600">
+                                <p className="font-medium text-gray-900">{order.customer.name}</p>
                                 <p>{order.customer.email}</p>
-                                <p>{order.customer.phone}</p>
                             </div>
 
                             {order.shippingAddress && (
                                 <>
-                                    <h3 className="mb-4 mt-6 text-lg font-extrabold">Shipping Address</h3>
-                                    <div className="space-y-1 text-base text-gray-600">
-                                        <p className="font-semibold text-gray-950">{order.shippingAddress.fullName}</p>
-                                        <p>{order.shippingAddress.address}</p>
-                                        <p>{order.shippingAddress.city}{order.shippingAddress.district ? `, ${order.shippingAddress.district}` : ""}</p>
-                                        <p>{order.shippingAddress.country}</p>
-                                        <p>{order.shippingAddress.phone}</p>
+                                    <h3 className="mb-3 mt-6 text-base font-extrabold uppercase tracking-tight text-gray-900">Shipping Address</h3>
+                                    <div className="space-y-1 text-sm text-gray-600">
+                                        <p className="font-medium text-gray-900">{order.shippingAddress.fullName}</p>
+                                        <p>{order.shippingAddress.address}, {order.shippingAddress.city}</p>
                                     </div>
                                 </>
                             )}
                         </div>
-
-                        <button
-                            type="button"
-                            onClick={handlePayment}
-                            disabled={processing}
-                            className="mt-7 h-[60px] w-full bg-[#2b2b2b] text-lg font-bold uppercase text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                            {processing ? (
-                                <span className="flex items-center justify-center gap-3">
-                                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                    </svg>
-                                    Processing Payment...
-                                </span>
-                            ) : (
-                                `Pay ${formatPrice(order.totalPrice)}`
-                            )}
-                        </button>
                     </aside>
                 </div>
             </section>
