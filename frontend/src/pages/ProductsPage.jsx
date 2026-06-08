@@ -335,6 +335,11 @@ const ProductsPage = () => {
         setError("");
     }, []);
 
+    // Scroll to top whenever the page changes
+    useEffect(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [currentPage]);
+
     const filteredProducts = useMemo(() => {
         const filtered = products.filter((product) => {
             const category = getTextValue(product.category);
