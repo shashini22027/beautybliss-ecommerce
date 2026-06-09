@@ -1,5 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
+import Category from '../models/Category.js';
+import mongoose from 'mongoose';
 
 const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category;
@@ -36,7 +38,21 @@ const getProductById = asyncHandler(async (req, res) => {
 
 const createProduct = asyncHandler(async (req, res) => {
   const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description } = req.body;
-  const product = new Product({ name, price, image, images, brand, category, subcategory, color, country, countInStock, description });
+  // Resolve category name to ObjectId if a string is provided
+  let categoryId = category;
+  if (category && typeof category === 'string' && !mongoose.isValidObjectId(category)) {
+    // Case-insensitive lookup by category name
+    const catDoc = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+    if (catDoc) {
+      categoryId = catDoc._id;
+    } else {
+      res.status(400);
+      throw new Error(`Category "${category}" not found. Please select a valid category.`);
+    }
+  }
+  // Fallback for image – use first image from images array if none supplied
+  const finalImage = image || (Array.isArray(images) && images.length ? images[0] : '');
+  const product = new Product({ name, price, image: finalImage, images, brand, category: categoryId, subcategory, color, country, countInStock, description });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
 });
@@ -77,12 +93,24 @@ const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
+    // Resolve category name to ObjectId if a string is provided
+    let categoryId = category;
+    if (category && typeof category === 'string' && !mongoose.isValidObjectId(category)) {
+      const catDoc = await Category.findOne({ name: { $regex: new RegExp(`^${category}$`, 'i') } });
+      if (catDoc) {
+        categoryId = catDoc._id;
+      } else {
+        res.status(400);
+        throw new Error(`Category "${category}" not found. Please select a valid category.`);
+      }
+    }
+
     product.name = name || product.name;
     product.price = price === undefined ? product.price : price;
     product.image = image || product.image;
     product.images = images || product.images;
     product.brand = brand || product.brand;
-    product.category = category || product.category;
+    product.category = categoryId || product.category;
     product.subcategory = subcategory || product.subcategory;
     product.color = color || product.color;
     product.country = country || product.country;

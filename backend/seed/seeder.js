@@ -11,7 +11,8 @@ connectDB();
 
 // Verified Unsplash Beauty Images
 const IMAGES = {
-  cleanser: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&q=80',
+  cleanserPrimary: '/assets/images/skincare/cleansers/cleanser_image1.1.jpg',
+  cleanserSecondary: '/assets/images/skincare/cleansers/cleanser_image1.2.jpg',
   toner: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80',
   cream: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
   serum: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80',
@@ -34,9 +35,7 @@ const catalog = {
     image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=80',
     subcategories: {
       'Cleansers': [
-        { name: 'Gel Cleanser', img: IMAGES.cleanser },
-        { name: 'Foam Cleanser', img: IMAGES.cleanser },
-        { name: 'Cream Cleanser', img: IMAGES.tube }
+        { name: 'Ultimate Cleanser', img: IMAGES.cleanserPrimary, secondaryImg: IMAGES.cleanserSecondary }
       ],
       'Toners': [
         { name: 'Hydrating Toner', img: IMAGES.toner },
@@ -188,9 +187,11 @@ const catalog = {
 };
 
 const seedData = async () => {
+  // Ensure DB connection is established
+  await connectDB();
   try {
     await User.deleteMany();
-    await Product.deleteMany();
+    await Product.deleteMany({ subcategory: 'Cleansers' });
     await Category.deleteMany();
     await Coupon.deleteMany();
 
@@ -222,7 +223,7 @@ const seedData = async () => {
           productsToInsert.push({
             name: prod.name,
             image: prod.img,
-            description: `High quality ${prod.name} from our ${catName} collection. Perfect for your daily routine.`,
+            images: [prod.img, prod.secondaryImg].filter(Boolean),
             brand: 'BeautyBliss Signature',
             category: categoryDoc._id,
             subcategory: subCatName,

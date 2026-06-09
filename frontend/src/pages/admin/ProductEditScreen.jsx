@@ -50,6 +50,7 @@ const ProductEditScreen = () => {
   const [updating, setUpdating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   const sidebarItems = [
     {
@@ -74,6 +75,21 @@ const ProductEditScreen = () => {
       link: "/admin/orderlist",
     },
   ];
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get("/categories");
+        // data may be an array directly or { categories: [...] }
+        const cats = Array.isArray(data) ? data : data.categories || [];
+        setCategories(cats);
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     setImageError(false);
@@ -100,7 +116,7 @@ const ProductEditScreen = () => {
 
         setCategory(
           typeof product.category === "object"
-            ? product.category?._id || product.category?.name || ""
+            ? product.category?._id || ""
             : product.category || ""
         );
 
@@ -136,6 +152,7 @@ const ProductEditScreen = () => {
       setImage(data.url);
     } catch (err) {
       console.error("Image upload failed", err);
+      setError("Image upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -495,13 +512,35 @@ const ProductEditScreen = () => {
                         required
                       />
 
-                      <Field
-                        icon={Tag}
-                        label="Category"
-                        value={category}
-                        onChange={setCategory}
-                        required
-                      />
+                      {/* Category Dropdown */}
+                      <div>
+                        <label className="mb-3 block text-sm font-bold uppercase tracking-widest text-gray-500">
+                          Category
+                        </label>
+
+                        <div className="relative">
+                          <Tag
+                            size={18}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
+                          />
+
+                          <select
+                            value={category}
+                            required
+                            onChange={(event) =>
+                              setCategory(event.target.value)
+                            }
+                            className="w-full appearance-none border border-gray-300 bg-white py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
+                          >
+                            <option value="">Select a category</option>
+                            {categories.map((cat) => (
+                              <option key={cat._id} value={cat._id}>
+                                {cat.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
                     <div>
@@ -587,4 +626,3 @@ const Field = ({
 };
 
 export default ProductEditScreen;
-

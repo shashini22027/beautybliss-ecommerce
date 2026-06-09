@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, createSelector } from "@reduxjs/toolkit";
 import api from "../../services/api";
 
 const PROFIT_MARGIN = 0.35;
@@ -138,31 +138,35 @@ const adminDashboardSlice = createSlice({
   },
 });
 
-export const selectAdminDashboardStats = (state) => {
-  const { products, orders, users } = state.adminDashboard;
-  const sales = orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
-  const paidIncome = orders
-    .filter((order) => order.isPaid || order.paidAt)
-    .reduce((sum, order) => sum + getOrderTotal(order), 0);
-  const deliveredIncome = orders
-    .filter((order) => order.isDelivered || order.deliveredAt)
-    .reduce((sum, order) => sum + getOrderTotal(order), 0);
-  const profit = sales * PROFIT_MARGIN;
-  const soldItems = orders.reduce(
-    (sum, order) => sum + getOrderItems(order).reduce((itemSum, item) => itemSum + getItemQty(item), 0),
-    0
-  );
+export const selectAdminDashboardStats = createSelector(
+  (state) => state.adminDashboard,
+  ({ products, orders, users }) => {
+    const sales = orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
+    const paidIncome = orders
+      .filter((order) => order.isPaid || order.paidAt)
+      .reduce((sum, order) => sum + getOrderTotal(order), 0);
+    const deliveredIncome = orders
+      .filter((order) => order.isDelivered || order.deliveredAt)
+      .reduce((sum, order) => sum + getOrderTotal(order), 0);
+    const profit = sales * PROFIT_MARGIN;
+    const soldItems = orders.reduce(
+      (sum, order) =>
+        sum + getOrderItems(order).reduce((itemSum, item) => itemSum + getItemQty(item), 0),
+      0
+    );
 
-  return {
-    users,
-    products: products.length,
-    orders: orders.length,
-    sales,
-    paidIncome,
-    deliveredIncome,
-    profit,
-    soldItems,
-  };
-};
+    return {
+      users,
+      products: products.length,
+      orders: orders.length,
+      sales,
+      paidIncome,
+      deliveredIncome,
+      profit,
+      soldItems,
+    };
+  }
+);
+
 
 export default adminDashboardSlice.reducer;

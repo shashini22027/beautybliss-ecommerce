@@ -1,4 +1,10 @@
+import fs from 'fs';
 import path from 'path';
+// Ensure uploads directory exists
+const uploadsDir = path.resolve('uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 import express from 'express';
 import multer from 'multer';
 
@@ -39,10 +45,9 @@ router.post('/', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  res.send({
-    message: 'Image uploaded successfully',
-    image: `/${req.file.path.replace(/\\/g, '/')}`,
-  });
+  // Return the public URL for the uploaded image
+  const url = `/uploads/${req.file.filename}`;
+  res.status(200).json({ url, message: 'Image uploaded successfully' });
 });
 
 export default router;
