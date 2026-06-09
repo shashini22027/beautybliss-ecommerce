@@ -143,11 +143,7 @@ const ProductEditScreen = () => {
     try {
       setUploading(true);
 
-      const { data } = await api.post("/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const { data } = await api.post("/upload", formData);
 
       setImage(data.url);
     } catch (err) {
