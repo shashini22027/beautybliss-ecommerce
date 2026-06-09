@@ -250,6 +250,11 @@ const AdminDashboardPage = () => {
                       icon: "plus",
                     },
                     {
+                      to: "/admin/homepage-merchandising",
+                      label: "Homepage Merchandising",
+                      icon: "sparkle",
+                    },
+                    {
                       to: "/admin/reviews",
                       label: "Review Accounts",
                       icon: "users",

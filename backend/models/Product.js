@@ -18,9 +18,14 @@ const productSchema = new mongoose.Schema({
   color: { type: String },
   country: { type: String },
   price: { type: Number, required: true, default: 0 },
+  compareAtPrice: { type: Number, default: null },
   countInStock: { type: Number, required: true, default: 0 },
   rating: { type: Number, required: true, default: 0 },
   numReviews: { type: Number, required: true, default: 0 },
+  discountLabel: { type: String, default: '' },
+  isBestSeller: { type: Boolean, default: false },
+  isNewArrival: { type: Boolean, default: false },
+  isHotDeal: { type: Boolean, default: false },
   reviews: [reviewSchema],
 }, { timestamps: true });
 

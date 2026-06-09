@@ -73,12 +73,16 @@ const ProductListScreen = () => {
         sum + Number(product.price || 0) * Number(product.countInStock || 0),
       0
     );
+    const featured = products.filter(
+      (product) => product.isBestSeller || product.isNewArrival || product.isHotDeal
+    ).length;
 
     return {
       total: products.length,
       lowStock,
       outOfStock,
       totalValue,
+      featured,
     };
   }, [products]);
 
@@ -202,12 +206,13 @@ const ProductListScreen = () => {
               </button>
             </div>
 
-            <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 xl:grid-cols-5">
               {[
                 ["Items", stats.total],
                 ["Low Stock", stats.lowStock],
                 ["Out of Stock", stats.outOfStock],
                 ["Stock Value", formatPrice(stats.totalValue)],
+                ["Featured", stats.featured],
               ].map(([label, value]) => (
                 <div
                   key={label}
@@ -280,6 +285,9 @@ const ProductListScreen = () => {
                           <th className="w-[110px] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                             Brand
                           </th>
+                          <th className="w-[120px] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                            Homepage
+                          </th>
                           <th className="w-[92px] px-4 py-5 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                             Actions
                           </th>
@@ -348,6 +356,30 @@ const ProductListScreen = () => {
                               </td>
                               <td className="truncate px-4 py-4 text-sm text-gray-500">
                                 {getTextValue(product.brand, "BeautyBliss")}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex flex-wrap gap-2">
+                                  {product.isBestSeller && (
+                                    <span className="inline-flex items-center border border-amber-100 bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                                      Best Seller
+                                    </span>
+                                  )}
+                                  {product.isNewArrival && (
+                                    <span className="inline-flex items-center border border-sky-100 bg-sky-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-sky-700">
+                                      New
+                                    </span>
+                                  )}
+                                  {product.isHotDeal && (
+                                    <span className="inline-flex items-center border border-rose-100 bg-rose-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                                      Hot Deal
+                                    </span>
+                                  )}
+                                  {!product.isBestSeller && !product.isNewArrival && !product.isHotDeal && (
+                                    <span className="text-xs text-gray-400">
+                                      Not featured
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="whitespace-nowrap px-4 py-4 text-right">
                                 <Link

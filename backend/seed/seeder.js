@@ -11,8 +11,8 @@ connectDB();
 
 // Verified Unsplash Beauty Images
 const IMAGES = {
-  cleanserPrimary: '/assets/images/skincare/cleansers/cleanser_image1.1.jpg',
-  cleanserSecondary: '/assets/images/skincare/cleansers/cleanser_image1.2.jpg',
+  cleanserPrimary: '/assets/images/skincare/cleansers/cleansers_image1.1.jpg',
+  cleanserSecondary: '/assets/images/skincare/cleansers/cleansers_image1.2.jpg',
   toner: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=500&q=80',
   cream: 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=500&q=80',
   serum: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=80',
@@ -209,6 +209,7 @@ const seedData = async () => {
     });
 
     const productsToInsert = [];
+    let productIndex = 0;
 
     // Loop through catalog and construct items
     for (const [catName, catData] of Object.entries(catalog)) {
@@ -220,6 +221,12 @@ const seedData = async () => {
 
       for (const [subCatName, products] of Object.entries(catData.subcategories)) {
         for (const prod of products) {
+          const isBestSeller = productIndex < 8;
+          const isNewArrival = productIndex >= 8 && productIndex < 16;
+          const isHotDeal = productIndex >= 16 && productIndex < 24;
+          const price = Math.floor(Math.random() * 1500) + 500; // Random price between 500-2000
+          const compareAtPrice = isHotDeal ? Math.round(price * 1.25) : null;
+
           productsToInsert.push({
             name: prod.name,
             image: prod.img,
@@ -229,12 +236,19 @@ const seedData = async () => {
             subcategory: subCatName,
             color: prod.color || '',
             country: 'USA',
-            price: Math.floor(Math.random() * 1500) + 500, // Random price between 500-2000
+            price,
+            compareAtPrice,
+            discountLabel: isNewArrival ? 'New' : isHotDeal ? '-20%' : '',
+            isBestSeller,
+            isNewArrival,
+            isHotDeal,
             countInStock: Math.floor(Math.random() * 50) + 10, // Random stock 10-60
             rating: (Math.random() * 1 + 4).toFixed(1), // Random rating 4.0 - 5.0
             numReviews: Math.floor(Math.random() * 50),
             reviews: []
           });
+
+          productIndex += 1;
         }
       }
     }

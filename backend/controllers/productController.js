@@ -8,6 +8,8 @@ const getProducts = asyncHandler(async (req, res) => {
   const subcategory = req.query.subcategory;
   const color = req.query.color;
   const country = req.query.country;
+  const section = req.query.section;
+  const limit = Number(req.query.limit);
 
   const keyword = req.query.keyword ? {
     $or: [
@@ -22,8 +24,25 @@ const getProducts = asyncHandler(async (req, res) => {
   if (subcategory) query.subcategory = subcategory;
   if (color) query.color = color;
   if (country) query.country = country;
+  if (section === 'bestSeller') query.isBestSeller = true;
+  if (section === 'newArrival') query.isNewArrival = true;
+  if (section === 'hotDeal') query.isHotDeal = true;
 
-  const products = await Product.find(query).populate('category');
+  let productQuery = Product.find(query).populate('category');
+
+  if (section === 'bestSeller') {
+    productQuery = productQuery.sort({ rating: -1, createdAt: -1 });
+  } else if (section === 'newArrival') {
+    productQuery = productQuery.sort({ createdAt: -1 });
+  } else if (section === 'hotDeal') {
+    productQuery = productQuery.sort({ compareAtPrice: -1, createdAt: -1 });
+  }
+
+  if (!Number.isNaN(limit) && limit > 0) {
+    productQuery = productQuery.limit(limit);
+  }
+
+  const products = await productQuery;
   res.json(products);
 });
 
@@ -37,7 +56,7 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description } = req.body;
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal } = req.body;
   // Resolve category name to ObjectId if a string is provided
   let categoryId = category;
   if (category && typeof category === 'string' && !mongoose.isValidObjectId(category)) {
@@ -52,7 +71,24 @@ const createProduct = asyncHandler(async (req, res) => {
   }
   // Fallback for image – use first image from images array if none supplied
   const finalImage = image || (Array.isArray(images) && images.length ? images[0] : '');
-  const product = new Product({ name, price, image: finalImage, images, brand, category: categoryId, subcategory, color, country, countInStock, description });
+  const product = new Product({
+    name,
+    price,
+    image: finalImage,
+    images,
+    brand,
+    category: categoryId,
+    subcategory,
+    color,
+    country,
+    countInStock,
+    description,
+    compareAtPrice,
+    discountLabel,
+    isBestSeller,
+    isNewArrival,
+    isHotDeal,
+  });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
 });
@@ -89,7 +125,7 @@ const createProductReview = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description } = req.body;
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal } = req.body;
   const product = await Product.findById(req.params.id);
 
   if (product) {
@@ -116,6 +152,11 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.country = country || product.country;
     product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
     product.description = description || product.description;
+    product.compareAtPrice = compareAtPrice === undefined ? product.compareAtPrice : compareAtPrice;
+    product.discountLabel = discountLabel === undefined ? product.discountLabel : discountLabel;
+    product.isBestSeller = isBestSeller === undefined ? product.isBestSeller : isBestSeller;
+    product.isNewArrival = isNewArrival === undefined ? product.isNewArrival : isNewArrival;
+    product.isHotDeal = isHotDeal === undefined ? product.isHotDeal : isHotDeal;
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);

@@ -30,6 +30,7 @@ import TrackOrderPage from '../pages/TrackOrderPage';
 import OrderListScreen from '../pages/admin/OrderListScreen';
 import ProductEditScreen from '../pages/admin/ProductEditScreen';
 import ProductListScreen from '../pages/admin/ProductListScreen';
+import HomepageMerchandisingScreen from '../pages/admin/HomepageMerchandisingScreen';
 import ReviewListScreen from '../pages/admin/ReviewListScreen';
 import SalesReportScreen from '../pages/admin/SalesReportScreen';
 import UserListScreen from '../pages/admin/UserListScreen';
@@ -68,6 +69,7 @@ const AppRoutes = () => {
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
           <Route path="/admin/sales" element={<SalesReportScreen />} />
           <Route path="/admin/productlist" element={<ProductListScreen />} />
+          <Route path="/admin/homepage-merchandising" element={<HomepageMerchandisingScreen />} />
           <Route path="/admin/product/create" element={<ProductEditScreen />} />
           <Route path="/admin/product/:id/edit" element={<ProductEditScreen />} />
           <Route path="/admin/reviews" element={<ReviewListScreen />} />

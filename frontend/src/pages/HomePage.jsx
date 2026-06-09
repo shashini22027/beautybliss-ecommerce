@@ -4,9 +4,10 @@ import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
 import FeaturedProducts from '../components/FeaturedProducts';
 import ShopByCategories from '../components/ShopByCategories';
-
 import ProductSection from '../components/ProductSection';
 import Testimonials from '../components/Testimonials';
+import api from '../services/api';
+import { formatPrice } from '../utils/currency';
 
 const StatBadge = ({ value, label }) => (
   <div className="text-center">
@@ -108,6 +109,64 @@ const ServicePill = ({ text }) => (
   </div>
 );
 
+const getProductImage = (product) =>
+  product.image ||
+  (Array.isArray(product.images) ? product.images[0] : '') ||
+  '/images/banner.jpg';
+
+const getProductCategoryLabel = (product) => {
+  const categoryName =
+    typeof product.category === 'object'
+      ? product.category?.name || ''
+      : product.category || '';
+  const subcategory = product.subcategory || '';
+
+  if (categoryName && subcategory) {
+    return `${categoryName}, ${subcategory}`;
+  }
+
+  return categoryName || subcategory || '';
+};
+
+const getDiscountLabel = (product) => {
+  if (product.discountLabel) {
+    return product.discountLabel;
+  }
+
+  const price = Number(product.price || 0);
+  const compareAtPrice = Number(product.compareAtPrice || 0);
+
+  if (compareAtPrice > price && compareAtPrice > 0) {
+    const discount = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
+    return `-${discount}%`;
+  }
+
+  return '';
+};
+
+const getDisplayPrice = (value) =>
+  typeof value === 'number' ? formatPrice(value) : value || 'View Product';
+
+const mapHomepageProduct = (product, section) => ({
+  _id: product._id,
+  name: product.name,
+  category: getProductCategoryLabel(product),
+  price: getDisplayPrice(product.price),
+  oldPrice:
+    section === 'hotDeal' && product.compareAtPrice
+      ? getDisplayPrice(product.compareAtPrice)
+      : '',
+  rating: Math.round(Number(product.rating || 0)),
+  discount:
+    section === 'newArrival'
+      ? 'New'
+      : section === 'hotDeal'
+        ? getDiscountLabel(product)
+        : product.discountLabel || getDiscountLabel(product),
+  soldOut: Number(product.countInStock || 0) === 0,
+  image: getProductImage(product),
+});
+
 const HomePage = () => {
   const { addToCart } = useContext(CartContext);
   const { toggleWishlist } = useContext(WishlistContext);
@@ -143,7 +202,7 @@ const HomePage = () => {
     },
   ];
 
-  const bestSellingProducts = [
+  const fallbackBestSellingProducts = [
     {
       name: 'Aliver Pumpkin Seed Oil 60ml',
       category: 'Haircare, Hair Oils',
@@ -226,6 +285,7 @@ const HomePage = () => {
     },
   ];
 
+  const [bestSellingProducts, setBestSellingProducts] = useState(fallbackBestSellingProducts);
   const [bestSellerPage, setBestSellerPage] = useState(0);
   const productsPerPage = 4;
   const bestSellerPageCount = Math.ceil(bestSellingProducts.length / productsPerPage);
@@ -246,7 +306,7 @@ const HomePage = () => {
     );
   };
 
-  const newArrivalProducts = [
+  const fallbackNewArrivalProducts = [
     {
       name: 'Glow Boost Vitamin C Drops',
       category: 'Skincare, Serums',
@@ -309,7 +369,7 @@ const HomePage = () => {
     },
   ];
 
-  const hotDealProducts = [
+  const fallbackHotDealProducts = [
     {
       name: 'Daily Silk Sunscreen',
       category: 'Skincare, Sun Care',
@@ -372,6 +432,8 @@ const HomePage = () => {
     },
   ];
 
+const [newArrivalProducts, setNewArrivalProducts] = useState(fallbackNewArrivalProducts);
+const [hotDealProducts, setHotDealProducts] = useState(fallbackHotDealProducts);
 const [newArrivalPage, setNewArrivalPage] = useState(0);
 const [hotDealPage, setHotDealPage] = useState(0);
 const promoProductsPerPage = 4;
@@ -401,6 +463,48 @@ const goToPrevHotDeals = () => {
 const goToNextHotDeals = () => {
   setHotDealPage((page) => (page === hotDealPageCount - 1 ? 0 : page + 1));
 };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHomepageSections = async () => {
+      try {
+        const [bestSellerRes, newArrivalRes, hotDealRes] = await Promise.all([
+          api.get('/products?section=bestSeller&limit=8'),
+          api.get('/products?section=newArrival&limit=8'),
+          api.get('/products?section=hotDeal&limit=8'),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        const bestSellerItems = Array.isArray(bestSellerRes.data) ? bestSellerRes.data : [];
+        const newArrivalItems = Array.isArray(newArrivalRes.data) ? newArrivalRes.data : [];
+        const hotDealItems = Array.isArray(hotDealRes.data) ? hotDealRes.data : [];
+
+        if (bestSellerItems.length > 0) {
+          setBestSellingProducts(bestSellerItems.map((product) => mapHomepageProduct(product, 'bestSeller')));
+        }
+
+        if (newArrivalItems.length > 0) {
+          setNewArrivalProducts(newArrivalItems.map((product) => mapHomepageProduct(product, 'newArrival')));
+        }
+
+        if (hotDealItems.length > 0) {
+          setHotDealProducts(hotDealItems.map((product) => mapHomepageProduct(product, 'hotDeal')));
+        }
+      } catch (error) {
+        console.error('Failed to load homepage sections', error);
+      }
+    };
+
+    loadHomepageSections();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

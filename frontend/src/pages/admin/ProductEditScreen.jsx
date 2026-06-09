@@ -45,6 +45,11 @@ const ProductEditScreen = () => {
   const [category, setCategory] = useState("");
   const [countInStock, setCountInStock] = useState(0);
   const [description, setDescription] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [discountLabel, setDiscountLabel] = useState("");
+  const [isBestSeller, setIsBestSeller] = useState(false);
+  const [isNewArrival, setIsNewArrival] = useState(false);
+  const [isHotDeal, setIsHotDeal] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -122,6 +127,11 @@ const ProductEditScreen = () => {
 
         setCountInStock(product.countInStock || 0);
         setDescription(product.description || "");
+        setCompareAtPrice(product.compareAtPrice ?? "");
+        setDiscountLabel(product.discountLabel || "");
+        setIsBestSeller(Boolean(product.isBestSeller));
+        setIsNewArrival(Boolean(product.isNewArrival));
+        setIsHotDeal(Boolean(product.isHotDeal));
       } catch (err) {
         setError(err?.response?.data?.message || err.message);
       } finally {
@@ -161,6 +171,11 @@ const ProductEditScreen = () => {
       setUpdating(true);
       setError(null);
 
+      const parsedCompareAtPrice =
+        compareAtPrice === "" || Number.isNaN(Number(compareAtPrice))
+          ? null
+          : Number(compareAtPrice);
+
       const payload = {
         name,
         price,
@@ -169,6 +184,11 @@ const ProductEditScreen = () => {
         category,
         countInStock,
         description,
+        compareAtPrice: parsedCompareAtPrice,
+        discountLabel,
+        isBestSeller,
+        isNewArrival,
+        isHotDeal,
       };
 
       if (isCreate) {
@@ -562,6 +582,55 @@ const ProductEditScreen = () => {
                       </div>
                     </div>
 
+                    <div className="space-y-5 border border-gray-200 bg-white p-5">
+                      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-4">
+                        <div>
+                          <h4 className="text-sm font-bold uppercase tracking-widest text-gray-500">
+                            Homepage Merchandising
+                          </h4>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Control where this product appears on the homepage.
+                          </p>
+                        </div>
+                      </div>
+
+                      <Field
+                        icon={DollarSign}
+                        label="Compare At Price (optional)"
+                        type="number"
+                        step="0.01"
+                        value={compareAtPrice}
+                        onChange={setCompareAtPrice}
+                      />
+
+                      <Field
+                        icon={Tag}
+                        label="Discount Label (optional)"
+                        value={discountLabel}
+                        onChange={setDiscountLabel}
+                      />
+
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        <ToggleField
+                          label="Best Selling"
+                          checked={isBestSeller}
+                          onChange={setIsBestSeller}
+                        />
+
+                        <ToggleField
+                          label="New Arrival"
+                          checked={isNewArrival}
+                          onChange={setIsNewArrival}
+                        />
+
+                        <ToggleField
+                          label="Hot Deal"
+                          checked={isHotDeal}
+                          onChange={setIsHotDeal}
+                        />
+                      </div>
+                    </div>
+
                     <button
                       type="submit"
                       disabled={updating || uploading}
@@ -618,6 +687,23 @@ const Field = ({
         />
       </div>
     </div>
+  );
+};
+
+const ToggleField = ({ label, checked, onChange }) => {
+  return (
+    <label className="flex items-center justify-between gap-4 border border-gray-300 bg-white px-4 py-4">
+      <span className="text-sm font-bold uppercase tracking-widest text-gray-500">
+        {label}
+      </span>
+
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-5 w-5 accent-pink-600"
+      />
+    </label>
   );
 };
 
