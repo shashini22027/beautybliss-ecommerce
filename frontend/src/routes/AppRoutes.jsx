@@ -35,6 +35,7 @@ import SalesReportScreen from '../pages/admin/SalesReportScreen';
 import UserListScreen from '../pages/admin/UserListScreen';
 import PaymentPage from '../pages/PaymentPage';
 import OrderCompletePage from '../pages/OrderCompletePage';
+import ScrollToTop from '../components/ScrollToTop';
 
 const AppRoutes = () => {
   return (
@@ -44,6 +45,7 @@ const AppRoutes = () => {
         v7_relativeSplatPath: true,
       }}
     >
+      <ScrollToTop />
       <MainLayout>
         <Routes>
       <Route path="/" element={<HomePage />} />
