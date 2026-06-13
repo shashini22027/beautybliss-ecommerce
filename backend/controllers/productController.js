@@ -56,7 +56,7 @@ const getProductById = asyncHandler(async (req, res) => {
 });
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal } = req.body;
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal, rating } = req.body;
   // Resolve category name to ObjectId if a string is provided
   let categoryId = category;
   if (category && typeof category === 'string' && !mongoose.isValidObjectId(category)) {
@@ -88,6 +88,7 @@ const createProduct = asyncHandler(async (req, res) => {
     isBestSeller,
     isNewArrival,
     isHotDeal,
+    rating: rating === undefined || rating === null || rating === '' ? undefined : Number(rating),
   });
   const createdProduct = await product.save();
   res.status(201).json(createdProduct);
@@ -125,7 +126,7 @@ const createProductReview = asyncHandler(async (req, res) => {
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
-  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal } = req.body;
+  const { name, price, image, images, brand, category, subcategory, color, country, countInStock, description, compareAtPrice, discountLabel, isBestSeller, isNewArrival, isHotDeal, rating } = req.body;
   const product = await Product.findById(req.params.id);
 
   if (product) {
@@ -157,6 +158,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.isBestSeller = isBestSeller === undefined ? product.isBestSeller : isBestSeller;
     product.isNewArrival = isNewArrival === undefined ? product.isNewArrival : isNewArrival;
     product.isHotDeal = isHotDeal === undefined ? product.isHotDeal : isHotDeal;
+    product.rating = rating === undefined || rating === null || rating === '' ? product.rating : Number(rating);
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);

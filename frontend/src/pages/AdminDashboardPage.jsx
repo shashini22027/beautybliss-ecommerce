@@ -250,6 +250,12 @@ const AdminDashboardPage = () => {
                       icon: "plus",
                     },
                     {
+                      to: "/admin/product/create",
+                      label: "Create Floral Bloom Perfume",
+                      icon: "sparkle",
+                      state: { template: "floralBloom" },
+                    },
+                    {
                       to: "/admin/homepage-merchandising",
                       label: "Homepage Merchandising",
                       icon: "sparkle",
@@ -263,6 +269,7 @@ const AdminDashboardPage = () => {
                     <Link
                       key={item.label}
                       to={item.to}
+                      state={item.state}
                       className="group flex min-h-[132px] items-center gap-5 border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition hover:border-gray-300 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
                     >
                       <Icon

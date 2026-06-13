@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   AlignLeft,
   ArrowLeft,
@@ -8,6 +8,7 @@ import {
   Hash,
   Image as ImageIcon,
   Package,
+  Star,
   Tag,
   Upload,
   X,
@@ -30,26 +31,46 @@ const getStoredUser = () => {
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
   const isCreate = !productId;
+  const location = useLocation();
+  const useFloralBloomTemplate = isCreate && location.state?.template === "floralBloom";
 
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [userInfo] = useState(getStoredUser);
 
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState(0);
-  const [image, setImage] = useState("");
+  const [name, setName] = useState(
+    useFloralBloomTemplate ? "BeautyBliss Floral Bloom Perfume" : ""
+  );
+  const [price, setPrice] = useState(useFloralBloomTemplate ? 13200 : 0);
+  const [image, setImage] = useState(
+    useFloralBloomTemplate
+      ? "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80"
+      : ""
+  );
   const [imageError, setImageError] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [brand, setBrand] = useState("");
+  const [brand, setBrand] = useState(useFloralBloomTemplate ? "BeautyBliss" : "");
+  const [subcategory, setSubcategory] = useState(
+    useFloralBloomTemplate ? "Perfumes" : ""
+  );
   const [category, setCategory] = useState("");
-  const [countInStock, setCountInStock] = useState(0);
-  const [description, setDescription] = useState("");
-  const [compareAtPrice, setCompareAtPrice] = useState("");
-  const [discountLabel, setDiscountLabel] = useState("");
-  const [isBestSeller, setIsBestSeller] = useState(false);
-  const [isNewArrival, setIsNewArrival] = useState(false);
-  const [isHotDeal, setIsHotDeal] = useState(false);
+  const [countInStock, setCountInStock] = useState(useFloralBloomTemplate ? 24 : 0);
+  const [description, setDescription] = useState(
+    useFloralBloomTemplate
+      ? "Immerse yourself in a blooming paradise with this enchanting eau de parfum. Featuring a sophisticated blend of fresh jasmine, delicate white rose, and a subtle touch of warm musk, it delivers a captivating, romantic, and long-lasting scent trail perfect for the modern, elegant woman."
+      : ""
+  );
+  const [compareAtPrice, setCompareAtPrice] = useState(
+    useFloralBloomTemplate ? 16500 : ""
+  );
+  const [discountLabel, setDiscountLabel] = useState(
+    useFloralBloomTemplate ? "20% OFF" : ""
+  );
+  const [rating, setRating] = useState(useFloralBloomTemplate ? 4.9 : "");
+  const [isBestSeller, setIsBestSeller] = useState(useFloralBloomTemplate);
+  const [isNewArrival, setIsNewArrival] = useState(useFloralBloomTemplate);
+  const [isHotDeal, setIsHotDeal] = useState(useFloralBloomTemplate);
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -97,6 +118,20 @@ const ProductEditScreen = () => {
   }, []);
 
   useEffect(() => {
+    if (!useFloralBloomTemplate || categories.length === 0 || category) {
+      return;
+    }
+
+    const fragrancesCategory = categories.find(
+      (cat) => (cat.name || "").toLowerCase() === "fragrances"
+    );
+
+    if (fragrancesCategory?._id) {
+      setCategory(fragrancesCategory._id);
+    }
+  }, [categories, category, useFloralBloomTemplate]);
+
+  useEffect(() => {
     setImageError(false);
   }, [image]);
 
@@ -118,6 +153,7 @@ const ProductEditScreen = () => {
         setPrice(product.price || 0);
         setImage(product.image || "");
         setBrand(product.brand || "");
+        setSubcategory(product.subcategory || "");
 
         setCategory(
           typeof product.category === "object"
@@ -129,6 +165,7 @@ const ProductEditScreen = () => {
         setDescription(product.description || "");
         setCompareAtPrice(product.compareAtPrice ?? "");
         setDiscountLabel(product.discountLabel || "");
+        setRating(product.rating ?? "");
         setIsBestSeller(Boolean(product.isBestSeller));
         setIsNewArrival(Boolean(product.isNewArrival));
         setIsHotDeal(Boolean(product.isHotDeal));
@@ -181,11 +218,13 @@ const ProductEditScreen = () => {
         price,
         image,
         brand,
+        subcategory,
         category,
         countInStock,
         description,
         compareAtPrice: parsedCompareAtPrice,
         discountLabel,
+        rating: rating === "" ? undefined : Number(rating),
         isBestSeller,
         isNewArrival,
         isHotDeal,
@@ -528,6 +567,16 @@ const ProductEditScreen = () => {
                         required
                       />
 
+                      <Field
+                        icon={Package}
+                        label="Subcategory"
+                        value={subcategory}
+                        onChange={setSubcategory}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid gap-6 sm:grid-cols-2">
                       {/* Category Dropdown */}
                       <div>
                         <label className="mb-3 block text-sm font-bold uppercase tracking-widest text-gray-500">
@@ -557,6 +606,18 @@ const ProductEditScreen = () => {
                           </select>
                         </div>
                       </div>
+
+                      <Field
+                        icon={Star}
+                        label="Rating"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="5"
+                        value={rating}
+                        onChange={setRating}
+                        required
+                      />
                     </div>
 
                     <div>
@@ -664,6 +725,8 @@ const Field = ({
   type = "text",
   required = false,
   step,
+  min,
+  max,
 }) => {
   return (
     <div>
@@ -680,6 +743,8 @@ const Field = ({
         <input
           type={type}
           step={step}
+          min={min}
+          max={max}
           value={value}
           required={required}
           onChange={(event) => onChange(event.target.value)}

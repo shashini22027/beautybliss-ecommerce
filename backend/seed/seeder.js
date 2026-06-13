@@ -125,6 +125,20 @@ const catalog = {
     image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&q=80',
     subcategories: {
       'Perfumes': [
+        {
+          name: 'BeautyBliss Floral Bloom Perfume',
+          img: IMAGES.perfume,
+          description: 'Immerse yourself in a blooming paradise with this enchanting eau de parfum. Featuring a sophisticated blend of fresh jasmine, delicate white rose, and a subtle touch of warm musk, it delivers a captivating, romantic, and long-lasting scent trail perfect for the modern, elegant woman.',
+          price: 13200,
+          compareAtPrice: 16500,
+          discountLabel: '20% OFF',
+          rating: 4.9,
+          countInStock: 24,
+          brand: 'BeautyBliss',
+          isBestSeller: true,
+          isNewArrival: true,
+          isHotDeal: true
+        },
         { name: 'Floral Perfume', img: IMAGES.perfume },
         { name: 'Fruity Perfume', img: IMAGES.perfume },
         { name: 'Woody Perfume', img: IMAGES.perfume },
@@ -224,27 +238,32 @@ const seedData = async () => {
           const isBestSeller = productIndex < 8;
           const isNewArrival = productIndex >= 8 && productIndex < 16;
           const isHotDeal = productIndex >= 16 && productIndex < 24;
-          const price = Math.floor(Math.random() * 1500) + 500; // Random price between 500-2000
-          const compareAtPrice = isHotDeal ? Math.round(price * 1.25) : null;
+          const price = prod.price ?? (Math.floor(Math.random() * 1500) + 500); // Random price between 500-2000
+          const compareAtPrice =
+            prod.compareAtPrice ?? (isHotDeal ? Math.round(price * 1.25) : null);
+          const countInStock =
+            prod.countInStock ?? (Math.floor(Math.random() * 50) + 10); // Random stock 10-60
+          const rating = prod.rating ?? (Math.random() * 1 + 4).toFixed(1); // Random rating 4.0 - 5.0
 
           productsToInsert.push({
             name: prod.name,
             image: prod.img,
             images: [prod.img, prod.secondaryImg].filter(Boolean),
-            brand: 'BeautyBliss Signature',
+            brand: prod.brand || 'BeautyBliss Signature',
             category: categoryDoc._id,
             subcategory: subCatName,
             color: prod.color || '',
-            country: 'USA',
+            country: prod.country || 'USA',
             price,
             compareAtPrice,
-            discountLabel: isNewArrival ? 'New' : isHotDeal ? '-20%' : '',
-            isBestSeller,
-            isNewArrival,
-            isHotDeal,
-            countInStock: Math.floor(Math.random() * 50) + 10, // Random stock 10-60
-            rating: (Math.random() * 1 + 4).toFixed(1), // Random rating 4.0 - 5.0
+            discountLabel: prod.discountLabel ?? (isNewArrival ? 'New' : isHotDeal ? '-20%' : ''),
+            isBestSeller: prod.isBestSeller ?? isBestSeller,
+            isNewArrival: prod.isNewArrival ?? isNewArrival,
+            isHotDeal: prod.isHotDeal ?? isHotDeal,
+            countInStock,
+            rating,
             numReviews: Math.floor(Math.random() * 50),
+            description: prod.description || `${prod.name} is a BeautyBliss ${subCatName.toLowerCase()} crafted for everyday luxury.`,
             reviews: []
           });
 

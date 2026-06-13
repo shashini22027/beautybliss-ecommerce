@@ -332,11 +332,26 @@ const ProductListScreen = () => {
                                     <p className="mt-1 truncate text-xs font-medium text-gray-400">
                                       {getTextValue(product.subcategory, "BeautyBliss catalog item")}
                                     </p>
+                                    <p className="mt-1 text-xs font-bold text-amber-600">
+                                      {Number(product.rating || 0).toFixed(1)} / 5
+                                    </p>
                                   </div>
                                 </div>
                               </td>
                               <td className="whitespace-nowrap px-4 py-4 text-sm font-bold text-gray-950">
-                                {formatPrice(product.price)}
+                                <div className="flex flex-col">
+                                  <span>{formatPrice(product.price)}</span>
+                                  {product.compareAtPrice ? (
+                                    <span className="text-xs font-medium text-gray-400 line-through">
+                                      {formatPrice(product.compareAtPrice)}
+                                    </span>
+                                  ) : null}
+                                  {product.discountLabel ? (
+                                    <span className="text-xs font-bold uppercase tracking-wide text-rose-600">
+                                      {product.discountLabel}
+                                    </span>
+                                  ) : null}
+                                </div>
                               </td>
                               <td className="whitespace-nowrap px-4 py-4 text-sm font-bold">
                                 <span
