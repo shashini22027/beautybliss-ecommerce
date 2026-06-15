@@ -1,12 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, PenTool } from "lucide-react";
-import { blogPosts } from "../data/blogPosts";
 
 const Blog = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
     document.title = "Beauty Blog | BeautyBliss";
+    fetchBlogs();
   }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/blogs");
+      if (!res.ok) throw new Error("Failed to load blogs");
+      const data = await res.json();
+      setBlogs(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fallbackImage = "/images/banner.jpg";
 
   return (
     <main className="min-h-screen bg-white">
@@ -24,92 +44,91 @@ const Blog = () => {
         </div>
       </section>
 
-      {/* Featured Posts */}
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="mb-6 text-2xl font-bold text-gray-800">
-          Featured Articles
-        </h2>
+      {loading ? (
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-[360px] animate-pulse rounded-xl bg-gray-100"></div>
+            ))}
+          </div>
+        </div>
+      ) : error ? (
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center text-red-600">
+          <p>{error}</p>
+        </div>
+      ) : blogs.length === 0 ? (
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h2 className="text-2xl font-bold text-gray-800">No Articles Found</h2>
+          <p className="mt-4 text-gray-500">Check back later for new beauty tips and stories!</p>
+        </div>
+      ) : (
+        <>
+          {/* All Posts */}
+          <section className="mx-auto max-w-6xl px-4 py-12">
+            <h2 className="mb-6 text-2xl font-bold text-gray-800">
+              Articles
+            </h2>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {blogPosts.slice(0, 3).map((post) => (
-            <article
-              key={post.id}
-              className="group overflow-hidden rounded-xl border border-pink-200 bg-pink-50/30 backdrop-blur-sm transition-shadow hover:shadow-xl"
-            >
-              <img
-                src={post.image}
-                alt={post.title}
-                className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-
-              <div className="p-4">
-                <h3 className="mb-2 text-lg font-semibold text-gray-800 group-hover:text-pink-600">
-                  {post.title}
-                </h3>
-
-                <p className="mb-3 text-sm text-gray-600 line-clamp-2">
-                  {post.excerpt || post.title}
-                </p>
-
-                <Link
-                  to={`/blog/${post.slug}`}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-pink-600"
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {blogs.map((post) => (
+                <article
+                  key={post._id}
+                  className="group flex flex-col rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg overflow-hidden border border-gray-100"
                 >
-                  Read more
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+                  <div className="relative">
+                    <img
+                      src={post.image || fallbackImage}
+                      alt={post.title}
+                      onError={(e) => { e.target.src = fallbackImage }}
+                      className="h-64 w-full object-cover"
+                    />
+                    
+                    {/* Date Badge */}
+                    <div className="absolute left-4 top-4 flex flex-col items-center justify-center rounded-lg bg-white px-3 py-2 shadow-md">
+                      <span className="text-xl font-bold leading-none text-gray-900">
+                        {new Date(post.date).getDate()}
+                      </span>
+                      <span className="text-xs font-semibold uppercase text-gray-600 mt-1">
+                        {new Date(post.date).toLocaleString('default', { month: 'short' })}
+                      </span>
+                    </div>
 
-      {/* All Posts */}
-      <section className="mx-auto max-w-6xl px-4 pb-16">
-        <h2 className="mb-6 text-2xl font-bold text-gray-800">
-          All Articles
-        </h2>
+                    {/* Category Overlay */}
+                    <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-black px-4 py-1.5 shadow-lg">
+                      <span className="text-xs font-bold tracking-widest text-white uppercase">
+                        BEAUTY & SKINCARE
+                      </span>
+                    </div>
+                  </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {blogPosts.map((post) => (
-            <article
-              key={post.id}
-              className="group flex flex-col rounded-xl border border-pink-200 bg-white/80 backdrop-blur-sm shadow-sm transition-shadow hover:shadow-md"
-            >
-              <img
-                src={post.image}
-                alt={post.title}
-                className="h-48 w-full rounded-t-xl object-cover"
-              />
+                  <div className="flex flex-1 flex-col items-center p-8 pt-10 text-center">
+                    <Link to={`/blog/${post.slug}`}>
+                      <h3 className="mb-4 text-2xl font-medium text-[#1c2c39] hover:text-pink-600 transition-colors leading-tight">
+                        {post.title}
+                      </h3>
+                    </Link>
 
-              <div className="flex flex-1 flex-col p-4">
-                <h3 className="mb-2 text-lg font-semibold text-gray-800 group-hover:text-pink-600">
-                  {post.title}
-                </h3>
 
-                <p className="mb-3 text-sm text-gray-600 line-clamp-3">
-                  {post.excerpt || post.title}
-                </p>
 
-                <div className="mt-auto flex items-center justify-between">
-                  <Link
-                    to={`/blog/${post.slug}`}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-pink-600"
-                  >
-                    Read more
-                    <PenTool size={14} />
-                  </Link>
+                    <p className="mb-6 text-[15px] leading-relaxed text-gray-500 line-clamp-3">
+                      {post.excerpt || post.title}
+                    </p>
 
-                  <span className="text-xs text-gray-500">
-                    {post.date || "No date"}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
+                    <div className="mt-auto">
+                      <Link
+                        to={`/blog/${post.slug}`}
+                        className="text-sm font-bold uppercase tracking-widest text-black hover:text-pink-600 transition-colors"
+                      >
+                        Continue Reading
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
     </main>
   );
 };
