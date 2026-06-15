@@ -102,68 +102,7 @@ const mergeCartItems = (items) => {
     return [...itemMap.values()];
 };
 
-const suggestedProducts = [
-    {
-        name: "Aliver Rosemary Oil for Hair Growth",
-        category: "Hair Care, Nourishing Oils",
-        price: "From Rs. 1,410.00",
-        rating: 5,
-        discount: "-11%",
-        label: "HOT",
-        image:
-            "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-        name: "Wine Lip Tint, 06 Colors (Stock Clearance Sale)",
-        category: "Lips, Lip glow",
-        price: "From Rs. 294.00",
-        rating: 4,
-        discount: "-51%",
-        label: "",
-        image:
-            "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-        name: "Aliver Face Cream Liquid Blush (Stock Clearance Sale)",
-        category: "Makeup",
-        price: "From Rs. 534.00",
-        rating: 5,
-        discount: "-44%",
-        label: "",
-        image:
-            "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-        name: "Aliver Amla Oil 60ml",
-        category: "Hair Care, Nourishing Oils",
-        price: "Rs. 1,350.00",
-        rating: 5,
-        discount: "",
-        label: "",
-        image:
-            "https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-        name: "Aliver Argan Oil 60ml",
-        category: "Hair Care, Nourishing Oils",
-        price: "Rs. 990.00",
-        rating: 5,
-        discount: "-20%",
-        label: "",
-        image:
-            "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-        name: "Aliver Batana Oil",
-        category: "Hair Care, Nourishing Oils",
-        price: "From Rs. 1,710.00",
-        rating: 5,
-        discount: "",
-        label: "NEW",
-        image:
-            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85",
-    },
-];
+
 
 const CartPage = ({ onClose }) => {
     const dispatch = useDispatch();
@@ -174,8 +113,23 @@ const CartPage = ({ onClose }) => {
     }, [reduxCartItems]);
     const [coupon, setCoupon] = useState("");
     const [removedItem, setRemovedItem] = useState(null);
+    const [suggestedProducts, setSuggestedProducts] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        const fetchSuggestedProducts = async () => {
+            try {
+                const res = await fetch('/api/products?limit=6');
+                const data = await res.json();
+                const products = Array.isArray(data) ? data : data.products || [];
+                setSuggestedProducts(products);
+            } catch {
+                setSuggestedProducts([]);
+            }
+        };
+        fetchSuggestedProducts();
+    }, []);
 
     useEffect(() => {
         if (location.state?.cartItem) {
@@ -401,30 +355,30 @@ const CartPage = ({ onClose }) => {
                     </h2>
 
                     <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-                        {suggestedProducts.map((product) => (
-                            <article key={product.name} className="group relative text-center">
-                                {/*
-                                  Suggested products are local products, so use the same slug pattern
-                                  as the product/detail pages.
-                                */}
-                                {(() => {
-                                    const productSlug = getSlug(product);
+                        {suggestedProducts.map((product) => {
+                            const productSlug = product._id || getSlug(product);
+                            const productImage = product.image || product.images?.[0] || '';
+                            const categoryName = typeof product.category === 'object' ? product.category?.name : product.category || '';
+                            const discountPercent = product.compareAtPrice && product.compareAtPrice > product.price
+                                ? `-${Math.round((1 - product.price / product.compareAtPrice) * 100)}%`
+                                : '';
+                            const label = product.isNewArrival ? 'NEW' : product.isHotDeal ? 'HOT' : product.isBestSeller ? 'BEST' : '';
 
-                                    return (
-                                        <>
+                            return (
+                            <article key={product._id || product.name} className="group relative text-center">
                                 <div className="relative mx-auto mb-4 flex h-[430px] w-full items-center justify-center overflow-hidden bg-white">
-                                    {product.discount && (
+                                    {discountPercent && (
                                         <span className="absolute left-2 top-2 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
-                                            {product.discount}
+                                            {discountPercent}
                                         </span>
                                     )}
-                                    {product.label && (
+                                    {label && (
                                         <span className="absolute left-2 top-12 z-10 rounded-full bg-red-500 px-4 py-1.5 text-sm font-bold text-white">
-                                            {product.label}
+                                            {label}
                                         </span>
                                     )}
                                     <img
-                                        src={product.image}
+                                        src={productImage}
                                         alt={product.name}
                                         className="h-full w-full object-contain transition duration-500 group-hover:scale-105"
                                     />
@@ -458,7 +412,7 @@ const CartPage = ({ onClose }) => {
                                         {product.name}
                                     </h3>
                                 </Link>
-                                <p className="mt-2 text-base text-gray-400">{product.category}</p>
+                                <p className="mt-2 text-base text-gray-400">{categoryName}</p>
                                 <div className="mt-3 flex justify-center text-xl leading-none">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <span
@@ -469,12 +423,15 @@ const CartPage = ({ onClose }) => {
                                         </span>
                                     ))}
                                 </div>
-                                <p className="mt-3 text-lg font-bold text-gray-950">{product.price}</p>
-                                        </>
-                                    );
-                                })()}
+                                <div className="mt-3 flex items-center justify-center gap-2">
+                                    <p className="text-lg font-bold text-gray-950">{formatPrice(product.price)}</p>
+                                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                        <p className="text-sm text-gray-400 line-through">{formatPrice(product.compareAtPrice)}</p>
+                                    )}
+                                </div>
                             </article>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
             </section>
