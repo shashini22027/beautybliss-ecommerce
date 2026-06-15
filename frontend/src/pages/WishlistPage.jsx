@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { WishlistContext } from "../context/WishlistContext";
+import { useSelector, useDispatch } from "react-redux";
+import { selectWishlistItems, toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -42,14 +43,12 @@ const getProductPrice = (product) => {
 };
 
 const WishlistPage = () => {
-  const wishlistContext = useContext(WishlistContext) || {};
-  const rawWishlistItems = Array.isArray(wishlistContext.wishlistItems)
-    ? wishlistContext.wishlistItems
+  const dispatch = useDispatch();
+  const rawWishlistItems = useSelector(selectWishlistItems);
+  const wishlistItems = Array.isArray(rawWishlistItems)
+    ? rawWishlistItems.filter((item) => item && typeof item === "object")
     : [];
-  const wishlistItems = rawWishlistItems.filter(
-    (item) => item && typeof item === "object"
-  );
-  const toggleWishlist = wishlistContext.toggleWishlist || (() => {});
+  const toggleWishlist = (product) => dispatch(reduxToggleWishlist(product));
   const navigate = useNavigate();
 
   const logoutHandler = () => {

@@ -1,7 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CartContext } from "../context/CartContext";
-import { WishlistContext } from "../context/WishlistContext";
+import { useSelector, useDispatch } from "react-redux";
+import { selectCartItems, addToCart as reduxAddToCart, removeFromCart as reduxRemoveFromCart, setCart } from "../redux/slices/cartSlice";
+import { toggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -165,89 +166,43 @@ const suggestedProducts = [
 ];
 
 const CartPage = ({ onClose }) => {
-    const cartContext = useContext(CartContext);
-    const { toggleWishlist } = useContext(WishlistContext);
-    const rawContextCartItems = cartContext?.cartItems || cartContext?.cart;
-    const contextCartItems = useMemo(() => {
-        if (Array.isArray(rawContextCartItems)) return rawContextCartItems;
-        if (Array.isArray(rawContextCartItems?.cartItems)) return rawContextCartItems.cartItems;
-        return [];
-    }, [rawContextCartItems]);
-
-    const [cartItems, setCartItems] = useState(() => mergeCartItems(getCartItems()));
+    const dispatch = useDispatch();
+    const reduxCartItems = useSelector(selectCartItems);
+    const cartItems = useMemo(() => {
+        const items = Array.isArray(reduxCartItems) ? reduxCartItems : [];
+        return mergeCartItems(items);
+    }, [reduxCartItems]);
     const [coupon, setCoupon] = useState("");
     const [removedItem, setRemovedItem] = useState(null);
     const navigate = useNavigate();
     const location = useLocation();
 
-    const saveCart = (items) => {
-        const nextItems = mergeCartItems(items);
-        setCartItems(nextItems);
-        localStorage.setItem("cartItems", JSON.stringify(nextItems));
-        localStorage.setItem("cart", JSON.stringify(nextItems));
-    };
-
     useEffect(() => {
-        if (onClose) {
-            setCartItems(mergeCartItems(getCartItems()));
-            return;
-        }
-
         if (location.state?.cartItem) {
-            saveCart([...getCartItems(), location.state.cartItem]);
-            return;
+            dispatch(reduxAddToCart({ product: location.state.cartItem, qty: 1 }));
         }
-
-        const storedItems = mergeCartItems(getCartItems());
-        const contextItems = mergeCartItems(contextCartItems);
-        const nextItems = hasStoredCart() ? storedItems : contextItems;
-        setCartItems(nextItems);
-    }, [contextCartItems, location.key, onClose]);
+    }, [location.key]);
 
     const removeItem = (item) => {
         const id = getItemId(item);
         setRemovedItem(normalizeCartItem(item));
-        saveCart(cartItems.filter((cartItem) => getItemId(cartItem) !== id));
+        dispatch(reduxRemoveFromCart(id));
     };
 
     const undoRemove = () => {
         if (!removedItem) return;
-        saveCart([...cartItems, removedItem]);
+        dispatch(reduxAddToCart({ product: removedItem, qty: removedItem.qty || 1 }));
         setRemovedItem(null);
     };
 
     const updateQuantity = (item, nextQty) => {
-        const id = getItemId(item);
         const qty = Math.max(1, Number(nextQty || 1));
-        saveCart(cartItems.map((cartItem) => (getItemId(cartItem) === id ? { ...cartItem, qty, quantity: qty } : cartItem)));
+        const updatedItems = cartItems.map((cartItem) => (getItemId(cartItem) === getItemId(item) ? { ...cartItem, qty, quantity: qty } : cartItem));
+        dispatch(setCart(updatedItems));
     };
 
     const addSuggestedToCart = (product) => {
-        const id = getSlug(product);
-        const savedItems = mergeCartItems(getCartItems());
-        const baseItems = savedItems.length ? savedItems : cartItems;
-        const existingItem = baseItems.find((item) => getItemId(item) === id);
-        const nextItems = existingItem
-            ? baseItems.map((item) => {
-                if (getItemId(item) !== id) return item;
-                const qty = getItemQty(item) + 1;
-                return { ...item, qty, quantity: qty };
-            })
-            : [
-                ...baseItems,
-                {
-                    ...product,
-                    _id: id,
-                    id,
-                    product: id,
-                    qty: 1,
-                    quantity: 1,
-                },
-            ];
-
-        setCartItems(nextItems);
-        localStorage.setItem("cartItems", JSON.stringify(nextItems));
-        localStorage.setItem("cart", JSON.stringify(nextItems));
+        dispatch(reduxAddToCart({ product, qty: 1 }));
     };
 
     const subtotal = useMemo(
@@ -490,7 +445,7 @@ const CartPage = ({ onClose }) => {
                                         <button
                                             type="button"
                                             aria-label="Add to wishlist"
-                                            onClick={() => toggleWishlist(product)}
+                                            onClick={() => dispatch(toggleWishlist(product))}
                                             className="inline-flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                                         >
                                             <Icon name="heart" className="h-6 w-6" />

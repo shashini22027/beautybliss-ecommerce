@@ -1,10 +1,12 @@
-import React, { useContext } from 'react';
-import { CartContext } from '../context/CartContext';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCartItems, removeFromCart } from '../redux/slices/cartSlice';
 import { X, Trash2 } from 'lucide-react';
 import { formatPrice } from '../utils/currency';
 
 const CartDrawer = ({ isOpen, onClose }) => {
-  const { cartItems, removeFromCart } = useContext(CartContext);
+  const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems);
 
   if (!isOpen) return null;
 
@@ -28,7 +30,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                   <p className="text-xs text-stone-400 mt-1">Qty: {item.qty}</p>
                   <p className="text-xs text-stone-900 font-bold mt-1">{formatPrice(item.product.price * item.qty)}</p>
                 </div>
-                <button onClick={() => removeFromCart(item.product._id)} className="text-stone-400 hover:text-red-500 self-center"><Trash2 size={16} /></button>
+                <button onClick={() => dispatch(removeFromCart(item.product._id))} className="text-stone-400 hover:text-red-500 self-center"><Trash2 size={16} /></button>
               </div>
             ))
           )}

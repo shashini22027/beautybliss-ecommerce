@@ -1,7 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CartContext } from "../context/CartContext";
-import { WishlistContext } from "../context/WishlistContext";
+import { useDispatch } from "react-redux";
+import { addToCart as reduxAddToCart } from "../redux/slices/cartSlice";
+import { toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 import api from "../services/api";
 
@@ -67,8 +68,7 @@ const getCartProduct = (product) => {
 };
 
 const ProductsPage = () => {
-    const { addToCart } = useContext(CartContext);
-    const { toggleWishlist } = useContext(WishlistContext);
+    const dispatch = useDispatch();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -385,7 +385,7 @@ const ProductsPage = () => {
                                                     onClick={(event) => {
                                                         event.preventDefault();
                                                         event.stopPropagation();
-                                                        addToCart(getCartProduct(product));
+                                                        dispatch(reduxAddToCart({ product: getCartProduct(product), qty: 1 }));
                                                     }}
                                                     className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to cart"
@@ -397,7 +397,7 @@ const ProductsPage = () => {
                                                     onClick={(event) => {
                                                         event.preventDefault();
                                                         event.stopPropagation();
-                                                        toggleWishlist(product);
+                                                        dispatch(reduxToggleWishlist(product));
                                                     }}
                                                     className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to wishlist"

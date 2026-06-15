@@ -1,13 +1,14 @@
 import React, { useContext } from 'react';
 import { Home, ShoppingBag, Heart, User, ShoppingCart } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { WishlistContext } from '../context/WishlistContext';
+import { useSelector } from 'react-redux';
+import { selectCartItems } from '../redux/slices/cartSlice';
+import { selectWishlistItems } from '../redux/slices/wishlistSlice';
 import { AuthContext } from '../context/AuthContext';
 
 const MobileNavigation = () => {
-  const { cartItems } = useContext(CartContext);
-  const { wishlistItems } = useContext(WishlistContext);
+  const cartItems = useSelector(selectCartItems);
+  const wishlistItems = useSelector(selectWishlistItems);
   const { user } = useContext(AuthContext);
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];

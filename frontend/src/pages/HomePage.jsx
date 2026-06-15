@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CartContext } from '../context/CartContext';
-import { WishlistContext } from '../context/WishlistContext';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../redux/slices/cartSlice';
+import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import FeaturedProducts from '../components/FeaturedProducts';
 import ShopByCategories from '../components/ShopByCategories';
 import ProductSection from '../components/ProductSection';
@@ -153,7 +154,7 @@ const mapHomepageProduct = (product, section) => ({
   category: getProductCategoryLabel(product),
   price: getDisplayPrice(product.price),
   oldPrice:
-    section === 'hotDeal' && product.compareAtPrice
+    product.compareAtPrice && product.compareAtPrice > product.price
       ? getDisplayPrice(product.compareAtPrice)
       : '',
   rating: Math.round(Number(product.rating || 0)),
@@ -165,11 +166,11 @@ const mapHomepageProduct = (product, section) => ({
         : product.discountLabel || getDiscountLabel(product),
   soldOut: Number(product.countInStock || 0) === 0,
   image: getProductImage(product),
+  originalProduct: product,
 });
 
 const HomePage = () => {
-  const { addToCart } = useContext(CartContext);
-  const { toggleWishlist } = useContext(WishlistContext);
+  const dispatch = useDispatch();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -202,90 +203,7 @@ const HomePage = () => {
     },
   ];
 
-  const fallbackBestSellingProducts = [
-    {
-      name: 'Aliver Pumpkin Seed Oil 60ml',
-      category: 'Haircare, Hair Oils',
-      price: 'Rs. 1,434.00',
-      oldPrice: '',
-      rating: 5,
-      discount: '',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Aliver Luscious Lips Shimmer Lip Oil',
-      category: 'Makeup, Lips',
-      price: 'From Rs. 834.00',
-      oldPrice: '',
-      rating: 4,
-      discount: '-34%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Vanilla Shea Body Butter',
-      category: 'Bath & Body, Lotions',
-      price: 'Rs. 1,650.00',
-      oldPrice: 'Rs. 2,100.00',
-      rating: 5,
-      discount: '-21%',
-      soldOut: true,
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Flawless Finish Foundation Brush',
-      category: 'Beauty Tools, Brushes',
-      price: 'Rs. 990.00',
-      oldPrice: 'Rs. 1,314.00',
-      rating: 4,
-      discount: '-25%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Brightening Vitamin C Serum',
-      category: 'Skincare, Serums',
-      price: 'Rs. 1,710.00',
-      oldPrice: 'Rs. 1,950.00',
-      rating: 5,
-      discount: '-12%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Rose Cloud Cleanser',
-      category: 'Skincare, Cleansers',
-      price: 'Rs. 1,950.00',
-      oldPrice: '',
-      rating: 4,
-      discount: '',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Ocean Breeze Body Wash',
-      category: 'Bath & Body, Cleansers',
-      price: 'Rs. 1,220.00',
-      oldPrice: 'Rs. 1,500.00',
-      rating: 4,
-      discount: '-18%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Velvet Repair Cream',
-      category: 'Skincare, Moisturizers',
-      price: 'Rs. 3,450.00',
-      oldPrice: '',
-      rating: 4,
-      discount: '',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-    },
-  ];
-
-  const [bestSellingProducts, setBestSellingProducts] = useState(fallbackBestSellingProducts);
+  const [bestSellingProducts, setBestSellingProducts] = useState([]);
   const [bestSellerPage, setBestSellerPage] = useState(0);
   const productsPerPage = 4;
   const bestSellerPageCount = Math.ceil(bestSellingProducts.length / productsPerPage);
@@ -306,134 +224,8 @@ const HomePage = () => {
     );
   };
 
-  const fallbackNewArrivalProducts = [
-    {
-      name: 'Glow Boost Vitamin C Drops',
-      category: 'Skincare, Serums',
-      price: 'Rs. 1,770.00',
-      oldPrice: '',
-      rating: 5,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Soft Matte Lip Tint',
-      category: 'Makeup, Lips',
-      price: 'Rs. 1,050.00',
-      oldPrice: '',
-      rating: 4,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Hydrating Face Mist',
-      category: 'Skincare, Toners',
-      price: 'Rs. 1,190.00',
-      oldPrice: '',
-      rating: 5,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Fresh Bloom Body Mist',
-      category: 'Fragrances, Body Mists',
-      price: 'Rs. 1,494.00',
-      oldPrice: '',
-      rating: 4,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Exfoliating Sugar Scrub',
-      category: 'Bath & Body, Scrubs',
-      price: 'Rs. 1,410.00',
-      oldPrice: '',
-      rating: 4,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Silk Repair Hair Serum',
-      category: 'Haircare, Serums',
-      price: 'Rs. 1,890.00',
-      oldPrice: '',
-      rating: 5,
-      discount: 'New',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
-    },
-  ];
-
-  const fallbackHotDealProducts = [
-    {
-      name: 'Daily Silk Sunscreen',
-      category: 'Skincare, Sun Care',
-      price: 'Rs. 2,520.00',
-      oldPrice: 'Rs. 2,940.00',
-      rating: 5,
-      discount: '-14%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Revitalizing Shampoo',
-      category: 'Haircare, Shampoos',
-      price: 'Rs. 1,994.00',
-      oldPrice: 'Rs. 2,450.00',
-      rating: 4,
-      discount: '-18%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Citrus Splash Perfume',
-      category: 'Fragrances, Perfumes',
-      price: 'Rs. 3,710.00',
-      oldPrice: 'Rs. 4,550.00',
-      rating: 5,
-      discount: '-18%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Lip Plumper Gloss Set',
-      category: 'Makeup, Lips',
-      price: 'Rs. 990.00',
-      oldPrice: 'Rs. 1,314.00',
-      rating: 4,
-      discount: '-25%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Jade Gua Sha Tool',
-      category: 'Beauty Tools, Facial Tools',
-      price: 'Rs. 890.00',
-      oldPrice: 'Rs. 1,220.00',
-      rating: 5,
-      discount: '-27%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=700&q=85',
-    },
-    {
-      name: 'Lavender Bath Salts',
-      category: 'Bath & Body, Salts',
-      price: 'Rs. 834.00',
-      oldPrice: 'Rs. 1,188.00',
-      rating: 4,
-      discount: '-30%',
-      soldOut: false,
-      image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85',
-    },
-  ];
-
-const [newArrivalProducts, setNewArrivalProducts] = useState(fallbackNewArrivalProducts);
-const [hotDealProducts, setHotDealProducts] = useState(fallbackHotDealProducts);
+const [newArrivalProducts, setNewArrivalProducts] = useState([]);
+const [hotDealProducts, setHotDealProducts] = useState([]);
 const [newArrivalPage, setNewArrivalPage] = useState(0);
 const [hotDealPage, setHotDealPage] = useState(0);
 const promoProductsPerPage = 4;
@@ -665,7 +457,7 @@ const goToNextHotDeals = () => {
     <HomeCategoryTile
       title="Fragrances"
       to="/category/fragrances"
-      image="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85"
+      image="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85"
     />
     <HomeCategoryTile
       title="Bath & Body"
@@ -680,6 +472,7 @@ const goToNextHotDeals = () => {
   </div>
 </section>
 
+{bestSellingProducts.length > 0 && (
 <section className="bg-white py-20">
   <div className="mx-auto max-w-[1540px] px-6">
     <div className="mb-14 text-center">
@@ -712,10 +505,8 @@ const goToNextHotDeals = () => {
 
       <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
         {visibleBestSellers.map((product) => (
-          <Link
-            key={product.name}
-            to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
-            state={{ product }}
+          <div
+            key={product._id}
             className="group relative block text-center"
           >
             <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
@@ -731,19 +522,25 @@ const goToNextHotDeals = () => {
                 </span>
               )}
 
-              <img
-                src={product.image}
-                alt={product.name}
-                className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
-              />
+              <Link
+                to={`/product/${product._id}`}
+                state={{ product: product.originalProduct || product }}
+                className="relative z-0 block h-full w-full"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+              </Link>
 
-              <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+              <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    addToCart(product, 1);
+                    dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                   }}
                   className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                   aria-label="View cart"
@@ -768,7 +565,7 @@ const goToNextHotDeals = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    toggleWishlist(product);
+                    dispatch(toggleWishlist(product.originalProduct || product));
                   }}
                   className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                   aria-label="View wishlist"
@@ -790,34 +587,40 @@ const goToNextHotDeals = () => {
               </div>
             </div>
 
-            <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
-              {product.name}
-            </h3>
+            <Link
+              to={`/product/${product._id}`}
+              state={{ product: product.originalProduct || product }}
+              className="block"
+            >
+              <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+                {product.name}
+              </h3>
 
-            <p className="mt-2 min-h-[24px] text-base text-gray-400">
-              {product.category}
-            </p>
+              <p className="mt-2 min-h-[24px] text-base text-gray-400">
+                {product.category}
+              </p>
 
-            <div className="mt-3 flex justify-center text-xl leading-none">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
+              <div className="mt-3 flex justify-center text-xl leading-none">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
 
-            <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
-              {product.oldPrice && (
-                <span className="text-base font-normal text-gray-400 line-through">
-                  {product.oldPrice}
-                </span>
-              )}
-              <span className="text-gray-950">{product.price}</span>
-            </div>
-          </Link>
+              <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+                {product.oldPrice && (
+                  <span className="text-base font-normal text-gray-400 line-through">
+                    {product.oldPrice}
+                  </span>
+                )}
+                <span className="text-gray-950">{product.price}</span>
+              </div>
+            </Link>
+          </div>
         ))}
       </div>
 
@@ -839,7 +642,9 @@ const goToNextHotDeals = () => {
     </div>
   </div>
 </section>
+)}
 
+{newArrivalProducts.length > 0 && (
       <section className="bg-white py-20">
         <div className="mx-auto max-w-[1540px] px-6">
           <div className="mb-14 text-center">
@@ -872,30 +677,36 @@ const goToNextHotDeals = () => {
 
             <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
               {visibleNewArrivals.map((product) => (
-                <Link
-                  key={product.name}
-                  to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
-                  state={{ product }}
+                <div
+                  key={product._id}
                   className="group relative block text-center"
                 >
                   <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
-                    <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
-                      {product.discount}
-                    </span>
+                    {product.discount && (
+                      <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                        {product.discount}
+                      </span>
+                    )}
 
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
-                    />
+                    <Link
+                      to={`/product/${product._id}`}
+                      state={{ product: product.originalProduct || product }}
+                      className="relative z-0 block h-full w-full"
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </Link>
 
-                    <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                    <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          addToCart(product, 1);
+                          dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                         }}
                         className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                         aria-label="View cart"
@@ -920,7 +731,7 @@ const goToNextHotDeals = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          toggleWishlist(product);
+                          dispatch(toggleWishlist(product.originalProduct || product));
                         }}
                         className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                         aria-label="View wishlist"
@@ -942,29 +753,40 @@ const goToNextHotDeals = () => {
                     </div>
                   </div>
 
-                  <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
-                    {product.name}
-                  </h3>
+                  <Link
+                    to={`/product/${product._id}`}
+                    state={{ product: product.originalProduct || product }}
+                    className="block"
+                  >
+                    <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+                      {product.name}
+                    </h3>
 
-                  <p className="mt-2 min-h-[24px] text-base text-gray-400">
-                    {product.category}
-                  </p>
+                    <p className="mt-2 min-h-[24px] text-base text-gray-400">
+                      {product.category}
+                    </p>
 
-                  <div className="mt-3 flex justify-center text-xl leading-none">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
+                    <div className="mt-3 flex justify-center text-xl leading-none">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
 
-                  <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
-                    <span className="text-gray-950">{product.price}</span>
-                  </div>
-                </Link>
+                    <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+                      {product.oldPrice && (
+                        <span className="text-base font-normal text-gray-400 line-through">
+                          {product.oldPrice}
+                        </span>
+                      )}
+                      <span className="text-gray-950">{product.price}</span>
+                    </div>
+                  </Link>
+                </div>
               ))}
             </div>
 
@@ -986,7 +808,9 @@ const goToNextHotDeals = () => {
           </div>
         </div>
       </section>
+)}
 
+{hotDealProducts.length > 0 && (
       <section className="bg-white py-20">
         <div className="mx-auto max-w-[1540px] px-6">
           <div className="mb-14 text-center">
@@ -1019,30 +843,36 @@ const goToNextHotDeals = () => {
 
             <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
               {visibleHotDeals.map((product) => (
-                <Link
-                  key={product.name}
-                  to={`/product/${product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}`}
-                  state={{ product }}
+                <div
+                  key={product._id}
                   className="group relative block text-center"
                 >
                   <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
-                    <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
-                      {product.discount}
-                    </span>
+                    {product.discount && (
+                      <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                        {product.discount}
+                      </span>
+                    )}
 
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
-                    />
+                    <Link
+                      to={`/product/${product._id}`}
+                      state={{ product: product.originalProduct || product }}
+                      className="relative z-0 block h-full w-full"
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </Link>
 
-                    <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:opacity-100">
+                    <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          addToCart(product, 1);
+                          dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                         }}
                         className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                         aria-label="View cart"
@@ -1067,7 +897,7 @@ const goToNextHotDeals = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          toggleWishlist(product);
+                          dispatch(toggleWishlist(product.originalProduct || product));
                         }}
                         className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                         aria-label="View wishlist"
@@ -1089,32 +919,40 @@ const goToNextHotDeals = () => {
                     </div>
                   </div>
 
-                  <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
-                    {product.name}
-                  </h3>
+                  <Link
+                    to={`/product/${product._id}`}
+                    state={{ product: product.originalProduct || product }}
+                    className="block"
+                  >
+                    <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+                      {product.name}
+                    </h3>
 
-                  <p className="mt-2 min-h-[24px] text-base text-gray-400">
-                    {product.category}
-                  </p>
+                    <p className="mt-2 min-h-[24px] text-base text-gray-400">
+                      {product.category}
+                    </p>
 
-                  <div className="mt-3 flex justify-center text-xl leading-none">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
+                    <div className="mt-3 flex justify-center text-xl leading-none">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          className={star <= product.rating ? 'text-yellow-400' : 'text-gray-300'}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
 
-                  <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
-                    <span className="text-base font-normal text-gray-400 line-through">
-                      {product.oldPrice}
-                    </span>
-                    <span className="text-gray-950">{product.price}</span>
-                  </div>
-                </Link>
+                    <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
+                      {product.oldPrice && (
+                        <span className="text-base font-normal text-gray-400 line-through">
+                          {product.oldPrice}
+                        </span>
+                      )}
+                      <span className="text-gray-950">{product.price}</span>
+                    </div>
+                  </Link>
+                </div>
               ))}
             </div>
 
@@ -1136,6 +974,7 @@ const goToNextHotDeals = () => {
           </div>
         </div>
       </section>
+)}
 
 
 
