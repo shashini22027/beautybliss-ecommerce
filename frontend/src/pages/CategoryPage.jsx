@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../redux/slices/cartSlice';
+import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import categoryGroups from '../data/categoryGroups';
-import { formatPrice } from '../utils/currency';
+import { formatPrice, parsePrice } from '../utils/currency';
 
 const fallbackImages = [
   'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85',
@@ -74,7 +77,21 @@ const formatProductPrice = (product) => {
   return price || 'View Product';
 };
 
+const getDiscountLabel = (product) => {
+  if (product.discountLabel || product.discount) {
+    return product.discountLabel || product.discount;
+  }
+  const price = Number(product.price || product.currentPrice || product.salePrice || 0);
+  const compareAtPrice = Number(product.compareAtPrice || product.oldPrice || 0);
+  if (compareAtPrice > price && compareAtPrice > 0) {
+    const discount = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
+    return `-${discount}%`;
+  }
+  return '';
+};
+
 const ProductCard = ({ product }) => {
+  const dispatch = useDispatch();
   const id = product._id || product.id;
   const productPath = `/product/${id}`;
 
@@ -85,9 +102,9 @@ const ProductCard = ({ product }) => {
       className="group relative block text-center"
     >
       <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
-        {product.discount && (
+        {getDiscountLabel(product) && (
           <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
-            {product.discount}
+            {getDiscountLabel(product)}
           </span>
         )}
 
@@ -106,7 +123,11 @@ const ProductCard = ({ product }) => {
         <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <button
             type="button"
-            onClick={(event) => event.preventDefault()}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              dispatch(addToCart({ product, qty: 1 }));
+            }}
             className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
             aria-label="Add to cart"
           >
@@ -126,7 +147,11 @@ const ProductCard = ({ product }) => {
           </button>
           <button
             type="button"
-            onClick={(event) => event.preventDefault()}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              dispatch(toggleWishlist(product));
+            }}
             className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
             aria-label="Add to wishlist"
           >
@@ -166,14 +191,20 @@ const ProductCard = ({ product }) => {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-lg font-bold">
-        {product.oldPrice && (
-          <span className="text-base font-normal text-gray-400 line-through">
-            {product.oldPrice}
+        {(product.oldPrice || (product.compareAtPrice && product.compareAtPrice > product.price)) ? (
+          <>
+            <span className="text-base font-normal text-gray-400 line-through">
+              {formatPrice(product.oldPrice || product.compareAtPrice)}
+            </span>
+            <span className="text-gray-950">
+              {formatProductPrice(product)}
+            </span>
+          </>
+        ) : (
+          <span className="text-gray-950">
+            {formatProductPrice(product)}
           </span>
         )}
-        <span className="text-gray-950">
-          {formatProductPrice(product)}
-        </span>
       </div>
     </Link>
   );
@@ -183,6 +214,8 @@ const CategoryPage = () => {
   const { categorySlug } = useParams();
   const [selectedSubcategory, setSelectedSubcategory] = useState('All');
   const [apiProducts, setApiProducts] = useState([]);
+  const [sortOrder, setSortOrder] = useState('default');
+  const [loading, setLoading] = useState(true);
 
   const category = categoryGroups.find(
     (group) => getCategorySlug(group.title) === categorySlug
@@ -197,6 +230,7 @@ const CategoryPage = () => {
 
     const loadProducts = async () => {
       try {
+        setLoading(true);
         const response = await fetch('/api/products');
         const products = await response.json();
 
@@ -206,6 +240,10 @@ const CategoryPage = () => {
       } catch {
         if (isMounted) {
           setApiProducts([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
         }
       }
     };
@@ -224,7 +262,7 @@ const CategoryPage = () => {
     const categoryTitle = normalize(category.title);
     const subcategoryNames = category.items.map(normalize);
 
-    return products.filter((product) => {
+    const filtered = products.filter((product) => {
       const categoryText = normalize(getProductCategoryText(product));
       const belongsToCategory =
         categoryText.includes(categoryTitle) ||
@@ -239,7 +277,26 @@ const CategoryPage = () => {
         categoryText.includes(normalize(selectedSubcategory))
       );
     });
-  }, [apiProducts, category, selectedSubcategory]);
+
+    switch (sortOrder) {
+      case 'popular':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'newest':
+        filtered.reverse();
+        break;
+      case 'price-low':
+        filtered.sort((a, b) => parsePrice(a.price || a.currentPrice || a.salePrice) - parsePrice(b.price || b.currentPrice || b.salePrice));
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => parsePrice(b.price || b.currentPrice || b.salePrice) - parsePrice(a.price || a.currentPrice || a.salePrice));
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  }, [apiProducts, category, selectedSubcategory, sortOrder]);
 
   if (!category) {
     return (
@@ -318,7 +375,8 @@ const CategoryPage = () => {
                     Sort
                     <select
                       className="min-w-[170px] rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 outline-none transition focus:border-gray-950"
-                      defaultValue="default"
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value)}
                     >
                       <option value="default">Default sorting</option>
                       <option value="popular">Most popular</option>
@@ -342,8 +400,17 @@ const CategoryPage = () => {
               )}
             </div>
 
-            {categoryProducts.length > 0 ? (
-              <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-4">
+            {loading ? (
+              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+                  <div
+                    key={item}
+                    className="h-[470px] animate-pulse bg-gray-50"
+                  />
+                ))}
+              </div>
+            ) : categoryProducts.length > 0 ? (
+              <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {categoryProducts.map((product) => (
                   <ProductCard
                     key={product.id || product._id || product.name}
