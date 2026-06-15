@@ -28,6 +28,42 @@ const getStoredUser = () => {
   }
 };
 
+const MAX_STANDARD_IMAGES = 2;
+const MAX_LIPSTICK_IMAGES = 5;
+
+const normalizeImageValues = (...values) => {
+  const images = [];
+
+  const pushValue = (value) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) {
+        images.push(trimmed);
+      }
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(pushValue);
+      return;
+    }
+
+    if (value && typeof value === "object" && typeof value.url === "string") {
+      pushValue(value.url);
+    }
+  };
+
+  values.forEach(pushValue);
+
+  return [...new Set(images)];
+};
+
+const isLipstickProduct = (name, subcategory, categoryName) =>
+  [name, subcategory, categoryName].filter(Boolean).join(" ").toLowerCase().includes("lipstick");
+
+const getCategoryName = (categories, categoryId) =>
+  categories.find((cat) => cat._id === categoryId)?.name || "";
+
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
   const isCreate = !productId;
@@ -48,8 +84,14 @@ const ProductEditScreen = () => {
       ? "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80"
       : ""
   );
+  const [images, setImages] = useState(
+    useFloralBloomTemplate
+      ? ["https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&q=80"]
+      : []
+  );
   const [imageError, setImageError] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [manualImageUrl, setManualImageUrl] = useState("");
   const [brand, setBrand] = useState(useFloralBloomTemplate ? "BeautyBliss" : "");
   const [subcategory, setSubcategory] = useState(
     useFloralBloomTemplate ? "Perfumes" : ""
@@ -131,6 +173,11 @@ const ProductEditScreen = () => {
     }
   }, [categories, category, useFloralBloomTemplate]);
 
+  const categoryName = getCategoryName(categories, category);
+  const imageLimit = isLipstickProduct(name, subcategory, categoryName)
+    ? MAX_LIPSTICK_IMAGES
+    : MAX_STANDARD_IMAGES;
+
   useEffect(() => {
     setImageError(false);
   }, [image]);
@@ -148,10 +195,12 @@ const ProductEditScreen = () => {
 
         const { data } = await api.get(`/products/${productId}`);
         const product = data.product || data;
+        const normalizedImages = normalizeImageValues(product.image, product.images);
 
         setName(product.name || "");
         setPrice(product.price || 0);
-        setImage(product.image || "");
+        setImage(normalizedImages[0] || "");
+        setImages(normalizedImages);
         setBrand(product.brand || "");
         setSubcategory(product.subcategory || "");
 
@@ -180,25 +229,87 @@ const ProductEditScreen = () => {
   }, [productId]);
 
   const uploadFileHandler = async (event) => {
-    const file = event.target.files[0];
+    const selectedFiles = Array.from(event.target.files || []);
+    event.target.value = "";
 
-    if (!file) return;
+    if (!selectedFiles.length) return;
 
+    const remainingSlots = imageLimit - images.length;
+    if (remainingSlots <= 0) {
+      setError(`This product can only have up to ${imageLimit} image${imageLimit === 1 ? "" : "s"}.`);
+      return;
+    }
+
+    const filesToUpload = selectedFiles.slice(0, remainingSlots);
     const formData = new FormData();
-    formData.append("image", file);
+
+    filesToUpload.forEach((file) => {
+      formData.append("images", file);
+    });
 
     try {
       setUploading(true);
 
       const { data } = await api.post("/upload", formData);
+      const uploadedImages = normalizeImageValues(data.urls, data.url);
 
-      setImage(data.url);
+      setImages((current) => {
+        const nextImages = normalizeImageValues(current, uploadedImages).slice(0, imageLimit);
+        setImage(nextImages[0] || "");
+        return nextImages;
+      });
+      setImageError(false);
     } catch (err) {
       console.error("Image upload failed", err);
       setError("Image upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
+  };
+
+  const setPrimaryImage = (index) => {
+    setImages((current) => {
+      if (!current[index]) {
+        return current;
+      }
+
+      const nextImages = [current[index], ...current.filter((_, itemIndex) => itemIndex !== index)];
+      setImage(nextImages[0] || "");
+      return nextImages;
+    });
+  };
+
+  const removeImage = (index) => {
+    setImages((current) => {
+      if (current.length <= 1) {
+        setError("Each product needs at least one image.");
+        return current;
+      }
+
+      const nextImages = current.filter((_, itemIndex) => itemIndex !== index);
+      setImage(nextImages[0] || "");
+      return nextImages;
+    });
+  };
+
+  const addManualImage = () => {
+    const nextUrl = manualImageUrl.trim();
+
+    if (!nextUrl) {
+      return;
+    }
+
+    if (images.length >= imageLimit) {
+      setError(`This product can only have up to ${imageLimit} image${imageLimit === 1 ? "" : "s"}.`);
+      return;
+    }
+
+    const nextImages = normalizeImageValues(images, nextUrl).slice(0, imageLimit);
+    setImages(nextImages);
+    setImage(nextImages[0] || "");
+    setManualImageUrl("");
+    setShowUrlInput(false);
+    setImageError(false);
   };
 
   const submitHandler = async (event) => {
@@ -213,10 +324,21 @@ const ProductEditScreen = () => {
           ? null
           : Number(compareAtPrice);
 
+      if (!images.length) {
+        setError("Please add at least one product image.");
+        return;
+      }
+
+      if (images.length > imageLimit) {
+        setError(`This product can only have up to ${imageLimit} image${imageLimit === 1 ? "" : "s"}.`);
+        return;
+      }
+
       const payload = {
         name,
         price,
-        image,
+        image: images[0] || "",
+        images,
         brand,
         subcategory,
         category,
@@ -250,9 +372,9 @@ const ProductEditScreen = () => {
   };
 
   const hasValidImage =
-    image &&
-    image !== "" &&
-    image !== "/images/sample.jpg" &&
+    images[0] &&
+    images[0] !== "" &&
+    images[0] !== "/images/sample.jpg" &&
     !imageError;
 
   return (
@@ -399,13 +521,19 @@ const ProductEditScreen = () => {
                 {/* IMAGE SECTION */}
                 <section className="bg-[#f6f6f6] p-6">
                   <h3 className="border-b border-gray-200 pb-4 text-2xl font-extrabold uppercase">
-                    Product Image
+                    Product Images
                   </h3>
+
+                  <p className="mt-4 text-sm font-medium leading-6 text-gray-500">
+                    Upload up to {imageLimit} image{imageLimit === 1 ? "" : "s"}.
+                    Lipstick products can use 5 images.
+                  </p>
 
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/png,image/jpeg,image/jpg,image/webp"
+                    multiple
                     onChange={uploadFileHandler}
                     className="hidden"
                   />
@@ -414,7 +542,7 @@ const ProductEditScreen = () => {
                     {hasValidImage ? (
                       <div className="group relative overflow-hidden bg-white">
                         <img
-                          src={image}
+                          src={images[0]}
                           alt="Product preview"
                           onError={() => setImageError(true)}
                           className="h-[420px] w-full object-contain transition duration-500 group-hover:scale-105"
@@ -428,13 +556,13 @@ const ProductEditScreen = () => {
                           <Upload size={28} />
 
                           <span className="text-sm font-bold uppercase tracking-widest">
-                            Replace Image
+                            Add More Images
                           </span>
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => setImage("")}
+                          onClick={() => removeImage(0)}
                           className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center bg-black text-white transition hover:bg-red-600"
                         >
                           <X size={18} />
@@ -444,10 +572,11 @@ const ProductEditScreen = () => {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className={`flex h-[420px] w-full flex-col items-center justify-center border-2 border-dashed bg-white p-8 text-center transition ${uploading
+                        className={`flex h-[420px] w-full flex-col items-center justify-center border-2 border-dashed bg-white p-8 text-center transition ${
+                          uploading
                             ? "border-amber-400 bg-amber-50"
                             : "border-gray-300 hover:border-pink-500"
-                          }`}
+                        }`}
                       >
                         {uploading ? (
                           <>
@@ -464,7 +593,7 @@ const ProductEditScreen = () => {
                             </div>
 
                             <p className="text-xl font-extrabold uppercase">
-                              Upload Product Image
+                              Upload Product Images
                             </p>
 
                             <p className="mt-3 text-base text-gray-500">
@@ -476,6 +605,41 @@ const ProductEditScreen = () => {
                     )}
                   </div>
 
+                  {images.length > 0 ? (
+                    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {images.map((img, index) => (
+                        <div
+                          key={`${img}-${index}`}
+                          className={`group relative overflow-hidden bg-white ${index === 0 ? "ring-2 ring-pink-500" : ""}`}
+                        >
+                          <img
+                            src={img}
+                            alt={`Product ${index + 1}`}
+                            className="h-32 w-full object-contain"
+                          />
+
+                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-black/60 p-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+                            <button
+                              type="button"
+                              onClick={() => setPrimaryImage(index)}
+                              className="text-[10px] font-bold uppercase tracking-widest text-white"
+                            >
+                              Primary
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="text-[10px] font-bold uppercase tracking-widest text-white"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
                   <div className="mt-6">
                     {!showUrlInput ? (
                       <button
@@ -483,7 +647,7 @@ const ProductEditScreen = () => {
                         onClick={() => setShowUrlInput(true)}
                         className="text-sm font-bold uppercase tracking-widest text-gray-500 transition hover:text-pink-600"
                       >
-                        Enter image URL manually
+                        Add image URL manually
                       </button>
                     ) : (
                       <div className="border border-gray-200 bg-white p-5">
@@ -510,13 +674,19 @@ const ProductEditScreen = () => {
                           <input
                             type="text"
                             placeholder="https://example.com/image.jpg"
-                            value={image}
-                            onChange={(event) =>
-                              setImage(event.target.value)
-                            }
+                            value={manualImageUrl}
+                            onChange={(event) => setManualImageUrl(event.target.value)}
                             className="w-full border border-gray-300 py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
                           />
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={addManualImage}
+                          className="mt-4 inline-flex h-11 items-center justify-center bg-[#2b2b2b] px-5 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-pink-600"
+                        >
+                          Add URL
+                        </button>
                       </div>
                     )}
                   </div>

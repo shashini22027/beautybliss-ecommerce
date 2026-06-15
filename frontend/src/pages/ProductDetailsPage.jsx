@@ -258,7 +258,7 @@ const ProductDetailsPage = () => {
 
   if (!product) return null;
 
-  const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))].slice(0, 3);
+  const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))];
   const price = getNumberValue(product.price);
   const oldPrice = getNumberValue(product.oldPrice, 0);
   const rating = getNumberValue(product.rating, 4.8);

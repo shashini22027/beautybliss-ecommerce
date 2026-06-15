@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { WishlistContext } from "../context/WishlistContext";
 import { formatPrice, parsePrice } from "../utils/currency";
+import api from "../services/api";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -43,228 +44,6 @@ const getTextValue = (value, fallback = "") => {
     return value.name || value.title || value._id || fallback;
 };
 
-const productDescriptions = [
-    {
-        name: "Aliver Pumpkin Seed Oil 60ml",
-        category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "Rs. 1,434.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Luscious Lips Shimmer Lip Oil",
-        category: "Lips",
-        price: "From Rs. 834.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "-34%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Teeth Whitening Foam Toothpaste Mint Flavour",
-        category: "Oral Care",
-        price: "Rs. 654.00",
-        oldPrice: "Rs. 990.00",
-        rating: 3,
-        discount: "-34%",
-        soldOut: true,
-        image:
-            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set",
-        category: "Lips, Lip glow",
-        price: "Rs. 990.00",
-        oldPrice: "Rs. 1,314.00",
-        rating: 4,
-        discount: "-25%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Brightening Vitamin C Serum",
-        category: "Skin Care",
-        price: "Rs. 1,710.00",
-        oldPrice: "Rs. 1,950.00",
-        rating: 5,
-        discount: "-12%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Rose Cloud Cleanser",
-        category: "Cleansers",
-        price: "Rs. 1,950.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Daily Silk Sunscreen",
-        category: "Sun Care",
-        price: "Rs. 2,520.00",
-        oldPrice: "Rs. 2,940.00",
-        rating: 5,
-        discount: "-14%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Velvet Repair Cream",
-        category: "Moisturizers",
-        price: "Rs. 3,450.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Glow Boost Vitamin C Drops",
-        category: "Skin Care",
-        price: "Rs. 1,770.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Soft Matte Lip Tint",
-        category: "Cosmetics",
-        price: "Rs. 1,050.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Hydra Dew Face Cream",
-        category: "Moisturizers",
-        price: "Rs. 2,190.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Fresh Bloom Body Mist",
-        category: "Fragrances",
-        price: "Rs. 1,494.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Silk Repair Hair Serum",
-        category: "Hair Care",
-        price: "Rs. 1,890.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Glow Routine Bundle",
-        category: "Beauty Sets",
-        price: "Rs. 4,194.00",
-        oldPrice: "Rs. 4,920.00",
-        rating: 5,
-        discount: "-15%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Natural Foot Peel Mask 2 Packs (Lavender)",
-        category: "Body Care, Foot & Hand",
-        price: "Rs. 990.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Neem Oil 60ml",
-        category: "Nourishing Oils",
-        price: "Rs. 1,374.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "",
-        soldOut: true,
-        image:
-            "https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Organic Sunflower Oil For Skin 60ml",
-        category: "Skin Care, Body Care, Hair Care, Nourishing Oils",
-        price: "Rs. 1,374.00",
-        oldPrice: "",
-        rating: 4,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Rosemary Essential Oil 60ml",
-        category: "Hair Care, Nourishing Oils",
-        price: "Rs. 1,494.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "New",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Coffee Body Scrub",
-        category: "Body Care",
-        price: "Rs. 1,194.00",
-        oldPrice: "Rs. 1,470.00",
-        rating: 4,
-        discount: "-19%",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=700&q=85",
-    },
-    {
-        name: "Aliver Aloe Vera Soothing Gel",
-        category: "Skin Care, Body Care",
-        price: "Rs. 1,110.00",
-        oldPrice: "",
-        rating: 5,
-        discount: "",
-        soldOut: false,
-        image:
-            "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=700&q=85",
-    },
-];
 
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
@@ -290,8 +69,8 @@ const getCartProduct = (product) => {
 const ProductsPage = () => {
     const { addToCart } = useContext(CartContext);
     const { toggleWishlist } = useContext(WishlistContext);
-    const [products, setProducts] = useState(productDescriptions);
-    const [loading, setLoading] = useState(false);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
     const [currentPage, setCurrentPage] = useState(0);
@@ -330,9 +109,25 @@ const ProductsPage = () => {
     }, [activeCategory]);
 
     useEffect(() => {
-        setProducts(productDescriptions);
-        setLoading(false);
-        setError("");
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                setError("");
+                const { data } = await api.get("/products");
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                } else {
+                    setProducts([]);
+                }
+            } catch (err) {
+                setError(err?.response?.data?.message || err.message || "Failed to load products");
+                setProducts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
     }, []);
 
     // Scroll to top whenever the page changes

@@ -41,13 +41,29 @@ const upload = multer({
   },
 });
 
-router.post('/', upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded' });
+router.post(
+  '/',
+  upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'images', maxCount: 5 },
+  ]),
+  (req, res) => {
+    const uploadedFiles = [
+      ...(req.files?.image || []),
+      ...(req.files?.images || []),
+    ];
+
+    if (!uploadedFiles.length) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const urls = uploadedFiles.map((file) => `/uploads/${file.filename}`);
+    res.status(200).json({
+      url: urls[0],
+      urls,
+      message: 'Image uploaded successfully',
+    });
   }
-  // Return the public URL for the uploaded image
-  const url = `/uploads/${req.file.filename}`;
-  res.status(200).json({ url, message: 'Image uploaded successfully' });
-});
+);
 
 export default router;

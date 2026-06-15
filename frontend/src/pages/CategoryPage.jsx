@@ -22,9 +22,13 @@ const getCategorySlug = (title) =>
 
 const normalize = (value = '') => value.toString().trim().toLowerCase();
 
-const getProductCategoryText = (product) =>
-  [
-    product.category,
+const getProductCategoryText = (product) => {
+  const categoryName = typeof product.category === 'object'
+    ? product.category?.name || ''
+    : product.category || '';
+
+  return [
+    categoryName,
     product.subcategory,
     product.subCategory,
     product.type,
@@ -32,6 +36,7 @@ const getProductCategoryText = (product) =>
   ]
     .filter(Boolean)
     .join(' ');
+};
 
 const buildFallbackProducts = (category) =>
   category.items.flatMap((item, itemIndex) =>
@@ -69,104 +74,110 @@ const formatProductPrice = (product) => {
   return price || 'View Product';
 };
 
-const ProductCard = ({ product }) => (
-  <Link
-    to="/products"
-    className="group relative block text-center"
-  >
-    <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
-      {product.discount && (
-        <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
-          {product.discount}
-        </span>
-      )}
+const ProductCard = ({ product }) => {
+  const id = product._id || product.id;
+  const productPath = `/product/${id}`;
 
-      {product.soldOut && (
-        <span className="absolute left-5 top-14 z-10 text-sm font-bold uppercase tracking-wide text-black">
-          SOLD OUT
-        </span>
-      )}
+  return (
+    <Link
+      to={productPath}
+      state={{ product }}
+      className="group relative block text-center"
+    >
+      <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+        {product.discount && (
+          <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+            {product.discount}
+          </span>
+        )}
 
-      <img
-        src={getProductImage(product)}
-        alt={product.name}
-        className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
-      />
+        {product.soldOut && (
+          <span className="absolute left-5 top-14 z-10 text-sm font-bold uppercase tracking-wide text-black">
+            SOLD OUT
+          </span>
+        )}
 
-      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-        <button
-          type="button"
-          onClick={(event) => event.preventDefault()}
-          className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
-          aria-label="Add to cart"
-        >
-          <svg
-            aria-hidden="true"
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
+        <img
+          src={getProductImage(product)}
+          alt={product.name}
+          className="h-[300px] w-[300px] object-cover transition duration-500 group-hover:scale-105"
+        />
+
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={(event) => event.preventDefault()}
+            className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+            aria-label="Add to cart"
           >
-            <path d="M6 7h12l-1 13H7L6 7Z" />
-            <path d="M9 7a3 3 0 0 1 6 0" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={(event) => event.preventDefault()}
-          className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
-          aria-label="Add to wishlist"
-        >
-          <svg
-            aria-hidden="true"
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
+            <svg
+              aria-hidden="true"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 7h12l-1 13H7L6 7Z" />
+              <path d="M9 7a3 3 0 0 1 6 0" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={(event) => event.preventDefault()}
+            className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+            aria-label="Add to wishlist"
           >
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
-          </svg>
-        </button>
+            <svg
+              aria-hidden="true"
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
 
-    <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
-      {product.name}
-    </h3>
+      <h3 className="mx-auto min-h-[48px] max-w-[320px] text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+        {product.name}
+      </h3>
 
-    <p className="mt-2 min-h-[24px] text-base text-gray-400">
-      {product.subcategory || product.category}
-    </p>
+      <p className="mt-2 min-h-[24px] text-base text-gray-400">
+        {product.subcategory || (typeof product.category === 'object' ? product.category?.name : product.category)}
+      </p>
 
-    <div className="mt-3 flex justify-center text-xl leading-none">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          className={star <= (product.rating || 5) ? 'text-yellow-400' : 'text-gray-300'}
-        >
-          ★
+      <div className="mt-3 flex justify-center text-xl leading-none">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={star <= (product.rating || 5) ? 'text-yellow-400' : 'text-gray-300'}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-lg font-bold">
+        {product.oldPrice && (
+          <span className="text-base font-normal text-gray-400 line-through">
+            {product.oldPrice}
+          </span>
+        )}
+        <span className="text-gray-950">
+          {formatProductPrice(product)}
         </span>
-      ))}
-    </div>
-
-    <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-lg font-bold">
-      {product.oldPrice && (
-        <span className="text-base font-normal text-gray-400 line-through">
-          {product.oldPrice}
-        </span>
-      )}
-      <span className="text-gray-950">
-        {formatProductPrice(product)}
-      </span>
-    </div>
-  </Link>
-);
+      </div>
+    </Link>
+  );
+};
 
 const CategoryPage = () => {
   const { categorySlug } = useParams();
@@ -209,8 +220,7 @@ const CategoryPage = () => {
   const categoryProducts = useMemo(() => {
     if (!category) return [];
 
-    const fallbackProducts = buildFallbackProducts(category);
-    const products = apiProducts.length > 0 ? apiProducts : fallbackProducts;
+    const products = apiProducts;
     const categoryTitle = normalize(category.title);
     const subcategoryNames = category.items.map(normalize);
 
