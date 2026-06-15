@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectWishlistItems, toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
@@ -59,15 +59,74 @@ const WishlistPage = () => {
   const menuItems = [
     { label: "Dashboard", to: "/profile" },
     { label: "Orders", to: "/orders" },
+    { label: "Downloads", to: "/profile" },
     { label: "Addresses", to: "/profile" },
     { label: "Account details", to: "/profile" },
     { label: "Wishlist", to: "/wishlist", active: true },
   ];
 
+  const [selectedItems, setSelectedItems] = useState(new Set());
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allIds = wishlistItems.map(getProductId).filter(Boolean);
+      setSelectedItems(new Set(allIds));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
+  const handleSelectItem = (productId, isChecked) => {
+    const newSelected = new Set(selectedItems);
+    if (isChecked) {
+      newSelected.add(productId);
+    } else {
+      newSelected.delete(productId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const handleRemoveSelected = () => {
+    if (selectedItems.size === 0) return;
+    wishlistItems.forEach(product => {
+      const id = getProductId(product);
+      if (selectedItems.has(id)) {
+        toggleWishlist(product);
+      }
+    });
+    setSelectedItems(new Set());
+  };
+
+  const isAllSelected = wishlistItems.length > 0 && selectedItems.size === wishlistItems.length;
+
   return (
     <main className="min-h-screen bg-white text-gray-950">
-      <section className="mx-auto max-w-[1460px] px-6 py-12">
+      {/* Hero Banner */}
+      <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+        <img
+          src="/images/banner.jpg"
+          alt="Wishlist"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
+          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+            Wishlist
+          </h1>
+          <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+            <Link to="/" className="text-white/85 transition hover:text-white">
+              Home
+            </Link>
+            <span>/</span>
+            <span className="font-bold">Wishlist</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Content with Sidebar */}
+      <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
+          {/* Left Sidebar */}
           <aside className="border-gray-200 lg:border-r lg:pr-9">
             <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
               My Account
@@ -94,14 +153,10 @@ const WishlistPage = () => {
             </nav>
           </aside>
 
+          {/* Right Content */}
           <section>
             <div className="flex flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-2xl font-extrabold uppercase">Your Products Wishlist</h1>
-              <div className="flex items-center gap-3 text-lg font-bold">
-                <span>Share:</span>
-                <span className="text-gray-700">f</span>
-                <span className="text-gray-700">☏</span>
-              </div>
+              <h2 className="text-2xl font-extrabold uppercase">Your Products Wishlist</h2>
             </div>
 
             {wishlistItems.length === 0 ? (
@@ -116,19 +171,29 @@ const WishlistPage = () => {
               </div>
             ) : (
               <div className="pt-6">
-                <div className="mb-8 grid grid-cols-[1fr_auto] items-center text-base font-bold text-gray-600">
+                <div className="mb-8 flex items-center justify-between text-base font-bold text-gray-600">
                   <button
                     type="button"
-                    onClick={() => toggleWishlist(wishlistItems[0])}
-                    className="inline-flex items-center gap-2 transition hover:text-red-600"
+                    onClick={handleRemoveSelected}
+                    disabled={selectedItems.size === 0}
+                    className={`inline-flex items-center gap-2 transition ${selectedItems.size > 0 ? "hover:text-red-600 cursor-pointer" : "opacity-50 cursor-not-allowed"}`}
                   >
                     <Icon name="close" className="h-5 w-5" />
-                    Remove
+                    Remove Selected
                   </button>
-                  <input type="checkbox" className="h-4 w-4" aria-label="Select wishlist item" />
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="selectAll" className="cursor-pointer select-none">Select All</label>
+                    <input 
+                      type="checkbox" 
+                      id="selectAll"
+                      className="h-4 w-4 cursor-pointer" 
+                      checked={isAllSelected}
+                      onChange={handleSelectAll}
+                    />
+                  </div>
                 </div>
 
-                <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
                   {wishlistItems.map((product) => {
                     const productId = getProductId(product);
                     const price = getProductPrice(product);
@@ -136,24 +201,43 @@ const WishlistPage = () => {
                     const rating = Number(product.rating || 4);
 
                     return (
-                      <article key={productId || product.name || price} className="max-w-[430px] text-center">
-                        <Link
-                          to={productId ? `/product/${productId}` : "#"}
-                          state={{ product }}
-                          className="mx-auto flex h-[340px] w-full items-center justify-center bg-white"
-                        >
-                          {image ? (
-                            <img
-                              src={image}
-                              alt={product?.name || "Wishlist product"}
-                              className="h-full w-full object-contain"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-[#f6f6f6] text-gray-400">
-                              No image
-                            </div>
-                          )}
-                        </Link>
+                      <article key={productId || product.name || price} className="text-center mx-auto w-full">
+                        <div className="relative mx-auto flex h-[340px] w-full items-center justify-center bg-white group border border-gray-100 p-4">
+                          <input 
+                            type="checkbox" 
+                            className="absolute top-4 right-4 h-5 w-5 z-10 cursor-pointer"
+                            checked={selectedItems.has(productId)}
+                            onChange={(e) => handleSelectItem(productId, e.target.checked)}
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleWishlist(product);
+                            }}
+                            className="absolute top-4 left-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-500 shadow hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="Remove from wishlist"
+                          >
+                            <Icon name="close" className="h-4 w-4" />
+                          </button>
+                          <Link
+                            to={productId ? `/product/${productId}` : "#"}
+                            state={{ product }}
+                            className="h-full w-full flex items-center justify-center"
+                          >
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={product?.name || "Wishlist product"}
+                                className="h-full w-full object-contain"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-[#f6f6f6] text-gray-400">
+                                No image
+                              </div>
+                            )}
+                          </Link>
+                        </div>
 
                         <Link
                           to={productId ? `/product/${productId}` : "#"}
@@ -176,9 +260,16 @@ const WishlistPage = () => {
                             />
                           ))}
                         </div>
-                        <p className="mt-3 text-lg">
-                          From <span className="font-bold text-gray-950">{formatPrice(price)}</span>
-                        </p>
+                        <div className="mt-3 flex flex-col items-center gap-0.5">
+                          {product?.compareAtPrice && product.compareAtPrice > price && (
+                            <span className="text-sm text-gray-400 line-through">
+                              {formatPrice(product.compareAtPrice)}
+                            </span>
+                          )}
+                          <span className="text-base font-extrabold text-gray-950">
+                            {typeof product.price === 'number' ? formatPrice(price) : product.price}
+                          </span>
+                        </div>
                       </article>
                     );
                   })}
