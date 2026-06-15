@@ -266,6 +266,10 @@ const ProductDetailsPage = () => {
   const stockCount = product.soldOut ? 0 : getNumberValue(product.countInStock ?? product.stock, 10);
   const category = getTextValue(product.category);
   const sku = getTextValue(product.sku, product.name);
+  const brand = getTextValue(product.brand);
+  const subcategory = getTextValue(product.subcategory);
+  const color = getTextValue(product.color);
+  const country = getTextValue(product.country);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
   const mainImage = activeImage || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
   const hasOldPrice = Boolean(product.oldPrice);
@@ -415,10 +419,83 @@ const ProductDetailsPage = () => {
             </div>
           )}
 
-          <div className="mt-8 border-t border-gray-200 pt-7 text-lg text-gray-500">
-            <p><span className="font-bold text-gray-950">SKU:</span> {sku}</p>
-            <p className="mt-4"><span className="font-bold text-gray-950">Category:</span> {category}</p>
-            <p className="mt-4 flex items-center gap-3">
+          <div className="mt-8 border-t border-gray-200 pt-7 text-[15px] text-gray-500">
+            <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-4">
+              <span className="font-bold text-gray-950">SKU:</span>
+              <span>{sku}</span>
+
+              <span className="font-bold text-gray-950">Category:</span>
+              <span>{category}</span>
+
+              {subcategory && (
+                <>
+                  <span className="font-bold text-gray-950">Subcategory:</span>
+                  <span>{subcategory}</span>
+                </>
+              )}
+
+              {brand && (
+                <>
+                  <span className="font-bold text-gray-950">Brand:</span>
+                  <span>{brand}</span>
+                </>
+              )}
+
+              {color && (
+                <>
+                  <span className="font-bold text-gray-950">Color:</span>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-4 w-4 rounded-full border border-gray-200"
+                      style={{ backgroundColor: color.toLowerCase() }}
+                    />
+                    {color}
+                  </span>
+                </>
+              )}
+
+              {country && (
+                <>
+                  <span className="font-bold text-gray-950">Country:</span>
+                  <span>{country}</span>
+                </>
+              )}
+
+              <span className="font-bold text-gray-950">Availability:</span>
+              <span>
+                {stockCount === 0 ? (
+                  <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-red-700">
+                    Out of Stock
+                  </span>
+                ) : stockCount <= 5 ? (
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-700">
+                    Low Stock — {stockCount} left
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-emerald-700">
+                    In Stock — {stockCount} available
+                  </span>
+                )}
+              </span>
+
+              {product.compareAtPrice > 0 && product.compareAtPrice > price && (
+                <>
+                  <span className="font-bold text-gray-950">Compare at:</span>
+                  <span className="text-gray-400 line-through">{formatPrice(product.compareAtPrice)}</span>
+                </>
+              )}
+
+              {product.discountLabel && (
+                <>
+                  <span className="font-bold text-gray-950">Discount:</span>
+                  <span className="inline-flex items-center rounded-full bg-pink-50 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-pink-700">
+                    {product.discountLabel}
+                  </span>
+                </>
+              )}
+            </div>
+
+            <p className="mt-6 flex items-center gap-3">
               <span className="font-bold text-gray-950">Share:</span>
               <a
                 href="https://www.facebook.com"
