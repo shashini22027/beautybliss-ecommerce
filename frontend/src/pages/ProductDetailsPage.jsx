@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
-import { WishlistContext } from '../context/WishlistContext';
+import { useDispatch } from 'react-redux';
+import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import CartPage from './CartPage';
 import { formatPrice, parsePrice } from '../utils/currency';
 
@@ -96,48 +97,18 @@ const DetailIcon = ({ name, className = 'h-6 w-6' }) => {
   );
 };
 
-const imageSet = [
-  'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=900&q=85',
-];
 
-const localProducts = [
-  ['Aliver Pumpkin Seed Oil 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'Rs. 1,434.00', '', 5, '', false, 'A nourishing beauty oil made for soft, healthy-looking skin, body, and hair care routines.', imageSet[0]],
-  ['Aliver Luscious Lips Shimmer Lip Oil', 'Lips', 'From Rs. 834.00', '', 4, '-34%', false, 'A glossy shimmer lip oil that helps lips look hydrated, smooth, and naturally radiant.', 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Teeth Whitening Foam Toothpaste Mint Flavour', 'Oral Care', 'Rs. 654.00', 'Rs. 990.00', 3, '-34%', true, 'A mint-flavoured foam toothpaste designed for a fresh, clean daily oral-care routine.', 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Lip Plumper Lip Gloss for Fuller & Hydrated 2Pcs/Set', 'Lips, Lip glow', 'Rs. 990.00', 'Rs. 1,314.00', 4, '-25%', false, 'A two-piece lip gloss set made to give lips a fuller-looking, hydrated, high-shine finish.', 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=900&q=85'],
-  ['Brightening Vitamin C Serum', 'Skin Care', 'Rs. 1,710.00', 'Rs. 1,950.00', 5, '-12%', false, 'A brightening serum that supports a smoother, more radiant-looking daily skincare routine.', imageSet[1]],
-  ['Rose Cloud Cleanser', 'Cleansers', 'Rs. 1,950.00', '', 4, '', false, 'A gentle cleanser for a soft, refreshed feel without stripping the skin.', imageSet[2]],
-  ['Daily Silk Sunscreen', 'Sun Care', 'Rs. 2,520.00', 'Rs. 2,940.00', 5, '-14%', false, 'A daily sunscreen made for lightweight, comfortable protection with a silky finish.', 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=900&q=85'],
-  ['Velvet Repair Cream', 'Moisturizers', 'Rs. 3,450.00', '', 4, '', false, 'A rich repair cream that helps skin feel softer, smoother, and deeply moisturized.', imageSet[0]],
-  ['Aliver Neem Oil 60ml', 'Nourishing Oils', 'Rs. 1,374.00', '', 4, '', true, 'A cold-pressed neem oil for hair growth, scalp care, and skin nourishment.', 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?auto=format&fit=crop&w=900&q=85'],
-  ['Aliver Organic Sunflower Oil For Skin 60ml', 'Skin Care, Body Care, Hair Care, Nourishing Oils', 'Rs. 1,374.00', '', 4, '', false, 'A lightweight sunflower seed oil for soft, nourished skin and hair.', 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85'],
-].map(([name, category, price, oldPrice, rating, discount, soldOut, description, image], index) => ({
-  name,
-  category,
-  price,
-  oldPrice,
-  rating,
-  discount,
-  soldOut,
-  description,
-  image,
-  countInStock: soldOut ? 0 : 10,
-  sku: name.replace(/^Aliver\s+/i, ''),
-  images: [image, imageSet[index % imageSet.length], imageSet[(index + 1) % imageSet.length]],
-}));
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
   const location = useLocation();
-  const { toggleWishlist } = useContext(WishlistContext);
+  const dispatch = useDispatch();
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState('');
   const [activeTab, setActiveTab] = useState('description');
   const [relatedPage, setRelatedPage] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -199,22 +170,22 @@ const ProductDetailsPage = () => {
 
     const loadProduct = async () => {
       const stateProduct = location.state?.product;
-      const localProduct = localProducts.find((item) => getProductSlug(item) === id);
-      const fallbackProduct = localProduct && stateProduct
-        ? { ...localProduct, ...stateProduct }
-        : stateProduct || localProduct;
-      const selectedProduct = isObjectId(id)
-        ? fallbackProduct
-        : await fetchProductBySlug(fallbackProduct);
 
-      if (selectedProduct) {
-        const productImages = selectedProduct.images?.length
-          ? selectedProduct.images
-          : [selectedProduct.image, ...imageSet.slice(0, 2)].filter(Boolean);
+      if (isObjectId(id)) {
+        await fetchProduct();
+        if (!ignore) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setActiveTab('description');
+          setQty(1);
+        }
+        return;
+      }
 
+      // If it's a slug, try state first or fetch by slug
+      if (stateProduct && getProductSlug(stateProduct) === id) {
         if (ignore) return;
-        setProduct({ ...selectedProduct, images: productImages });
-        setActiveImage(selectedProduct.image || productImages[0] || '');
+        setProduct(stateProduct);
+        setActiveImage(stateProduct.image || stateProduct.images?.[0] || '');
         setActiveTab('description');
         setQty(1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -223,15 +194,18 @@ const ProductDetailsPage = () => {
         return;
       }
 
-      if (isObjectId(id)) {
-        fetchProduct();
-        return;
-      }
-
+      const fetchedProduct = await fetchProductBySlug();
       if (ignore) return;
-      setProduct(null);
-      setError('Unable to load product details.');
-      setLoading(false);
+      
+      if (fetchedProduct) {
+        setProduct(fetchedProduct);
+        setActiveImage(fetchedProduct.image || fetchedProduct.images?.[0] || '');
+        setActiveTab('description');
+        setQty(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (!error) {
+         setError('Unable to load product details.');
+      }
     };
 
     loadProduct();
@@ -240,6 +214,20 @@ const ProductDetailsPage = () => {
       ignore = true;
     };
   }, [id, location.state]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        const res = await fetch('/api/products?limit=8');
+        const data = await res.json();
+        const products = Array.isArray(data) ? data : data.products || [];
+        setRelatedProducts(products);
+      } catch {
+        setRelatedProducts([]);
+      }
+    };
+    fetchRelatedProducts();
+  }, []);
 
   if (loading) {
     return <div className="py-20 text-center font-serif text-stone-500">Loading beauty details...</div>;
@@ -273,10 +261,10 @@ const ProductDetailsPage = () => {
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
   const mainImage = activeImage || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
   const hasOldPrice = Boolean(product.oldPrice);
-  const relatedProducts = localProducts.filter((item) => getProductSlug(item) !== id);
+  const filteredRelated = relatedProducts.filter((item) => (item._id || getProductSlug(item)) !== id);
   const relatedPerPage = 4;
-  const relatedPageCount = Math.max(1, Math.ceil(relatedProducts.length / relatedPerPage));
-  const visibleRelatedProducts = relatedProducts.slice(
+  const relatedPageCount = Math.max(1, Math.ceil(filteredRelated.length / relatedPerPage));
+  const visibleRelatedProducts = filteredRelated.slice(
     relatedPage * relatedPerPage,
     relatedPage * relatedPerPage + relatedPerPage
   );
@@ -391,10 +379,7 @@ const ProductDetailsPage = () => {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-lg font-semibold text-gray-700">
-            <button type="button" className="transition hover:text-pink-600">
-              Compare
-            </button>
-            <button type="button" onClick={() => toggleWishlist(product)} className="transition hover:text-pink-600">
+            <button type="button" onClick={() => dispatch(toggleWishlist(product))} className="transition hover:text-pink-600">
               Add to wishlist
             </button>
           </div>
@@ -494,28 +479,6 @@ const ProductDetailsPage = () => {
                 </>
               )}
             </div>
-
-            <p className="mt-6 flex items-center gap-3">
-              <span className="font-bold text-gray-950">Share:</span>
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Share on Facebook"
-                className="inline-flex items-center justify-center text-gray-900 transition hover:text-pink-600"
-              >
-                <DetailIcon name="facebook" className="h-6 w-6" />
-              </a>
-              <a
-                href="https://www.whatsapp.com"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Share on WhatsApp"
-                className="inline-flex items-center justify-center text-gray-900 transition hover:text-pink-600"
-              >
-                <DetailIcon name="whatsapp" className="h-6 w-6" />
-              </a>
-            </p>
           </div>
 
           <div className="mt-6 flex items-center gap-4 text-sm text-gray-500">
@@ -631,14 +594,49 @@ const ProductDetailsPage = () => {
 
             <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:px-14">
               {visibleRelatedProducts.map((relatedProduct) => {
-                const relatedSlug = getProductSlug(relatedProduct);
+                const relatedSlug = relatedProduct._id || getProductSlug(relatedProduct);
+                const relatedImage = relatedProduct.image || relatedProduct.images?.[0] || '';
+                const relatedCategory = typeof relatedProduct.category === 'object' ? relatedProduct.category?.name : relatedProduct.category || '';
+                const relatedDiscount = relatedProduct.compareAtPrice && relatedProduct.compareAtPrice > relatedProduct.price
+                  ? `-${Math.round((1 - relatedProduct.price / relatedProduct.compareAtPrice) * 100)}%`
+                  : '';
+                const relatedLabel = relatedProduct.isNewArrival ? 'NEW' : relatedProduct.isHotDeal ? 'HOT' : relatedProduct.isBestSeller ? 'BEST' : '';
+
+                const addRelatedToCart = () => {
+                  const cartId = relatedProduct._id || relatedProduct.id || getProductSlug(relatedProduct);
+                  const cartProduct = {
+                    ...relatedProduct,
+                    _id: relatedProduct._id || cartId,
+                    id: relatedProduct.id || cartId,
+                    product: cartId,
+                    qty: 1,
+                    quantity: 1,
+                  };
+                  const currentItems = mergeStoredCartItems(readStoredCartItems());
+                  const nextItems = [
+                    ...currentItems.filter((item) => getCartItemKey(item) !== cartId),
+                    cartProduct,
+                  ];
+                  writeStoredCartItems(nextItems);
+                  setCartDrawerOpen(true);
+                };
 
                 return (
-                  <article key={relatedProduct.name} className="group relative text-center">
+                  <article key={relatedProduct._id || relatedProduct.name} className="group relative text-center">
                     <div className="relative mx-auto mb-5 flex h-[330px] w-full max-w-[330px] items-center justify-center overflow-hidden bg-white">
+                      {relatedDiscount && (
+                        <span className="absolute left-2 top-2 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
+                          {relatedDiscount}
+                        </span>
+                      )}
+                      {relatedLabel && (
+                        <span className={`absolute left-2 ${relatedDiscount ? 'top-12' : 'top-2'} z-10 rounded-full bg-red-500 px-4 py-1.5 text-sm font-bold text-white`}>
+                          {relatedLabel}
+                        </span>
+                      )}
                       <Link to={`/product/${relatedSlug}`} state={{ product: relatedProduct }} className="flex h-full w-full items-center justify-center">
                         <img
-                          src={relatedProduct.image}
+                          src={relatedImage}
                           alt={relatedProduct.name}
                           className="h-[300px] w-[300px] object-contain transition duration-500 group-hover:scale-105"
                         />
@@ -648,7 +646,7 @@ const ProductDetailsPage = () => {
                         <button
                           type="button"
                           aria-label="Add to cart"
-                          onClick={() => addToCart(relatedProduct, 1)}
+                          onClick={addRelatedToCart}
                           className="inline-flex h-14 w-14 items-center justify-center text-2xl text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                         >
                           <DetailIcon name="bag" />
@@ -656,7 +654,7 @@ const ProductDetailsPage = () => {
                         <button
                           type="button"
                           aria-label="Add to wishlist"
-                          onClick={() => toggleWishlist(relatedProduct)}
+                          onClick={() => dispatch(toggleWishlist(relatedProduct))}
                           className="inline-flex h-14 w-14 items-center justify-center text-2xl text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                         >
                           <DetailIcon name="heart" />
@@ -671,7 +669,7 @@ const ProductDetailsPage = () => {
                     </Link>
 
                     <p className="mt-2 min-h-[24px] text-base text-gray-400">
-                      {relatedProduct.category}
+                      {relatedCategory}
                     </p>
 
                     <div className="mt-3 flex justify-center text-xl leading-none">
@@ -686,12 +684,12 @@ const ProductDetailsPage = () => {
                     </div>
 
                     <div className="mt-3 flex items-center justify-center gap-2 text-lg font-bold">
-                      {relatedProduct.oldPrice && (
-                        <span className="text-base font-normal text-gray-400 line-through">
-                          {relatedProduct.oldPrice}
+                      <span className="text-gray-950">{formatPrice(relatedProduct.price)}</span>
+                      {relatedProduct.compareAtPrice && relatedProduct.compareAtPrice > relatedProduct.price && (
+                        <span className="text-sm font-normal text-gray-400 line-through">
+                          {formatPrice(relatedProduct.compareAtPrice)}
                         </span>
                       )}
-                      <span className="text-gray-950">{relatedProduct.price}</span>
                     </div>
                   </article>
                 );
