@@ -36,6 +36,7 @@ import SalesReportScreen from '../pages/admin/SalesReportScreen';
 import UserListScreen from '../pages/admin/UserListScreen';
 import BlogListScreen from '../pages/admin/BlogListScreen';
 import BlogEditScreen from '../pages/admin/BlogEditScreen';
+import MessageListScreen from '../pages/admin/MessageListScreen';
 import PaymentPage from '../pages/PaymentPage';
 import OrderCompletePage from '../pages/OrderCompletePage';
 import ScrollToTop from '../components/ScrollToTop';
@@ -79,6 +80,7 @@ const AppRoutes = () => {
           <Route path="/admin/bloglist" element={<BlogListScreen />} />
           <Route path="/admin/blog/create" element={<BlogEditScreen />} />
           <Route path="/admin/blog/:id/edit" element={<BlogEditScreen />} />
+          <Route path="/admin/messages" element={<MessageListScreen />} />
           <Route path="/adminDashboard" element={<Navigate to="/admin-dashboard" replace />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPostDetail />} />

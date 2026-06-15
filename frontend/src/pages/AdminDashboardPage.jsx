@@ -116,6 +116,7 @@ const AdminDashboardPage = () => {
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },
     { name: "Sales", icon: "sales", link: "/admin/sales" },
     { name: "Blogs", icon: "dashboard", link: "/admin/bloglist" },
+    { name: "Messages", icon: "dashboard", link: "/admin/messages" },
   ];
 
   return (

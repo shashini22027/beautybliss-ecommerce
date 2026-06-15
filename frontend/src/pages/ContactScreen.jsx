@@ -49,14 +49,30 @@ const ContactScreen = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitStatus("sending");
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setSubmitStatus("success");
       setFormData({ name: "", email: "", phone: "", company: "", message: "" });
       setTimeout(() => setSubmitStatus(null), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitStatus("error");
+      setTimeout(() => setSubmitStatus(null), 3000);
+    }
   };
 
   return (
@@ -211,6 +227,11 @@ const ContactScreen = () => {
               {submitStatus === "success" && (
                 <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
                   Thank you! Your message has been sent successfully.
+                </div>
+              )}
+              {submitStatus === "error" && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                  Sorry, there was an error sending your message. Please try again.
                 </div>
               )}
 

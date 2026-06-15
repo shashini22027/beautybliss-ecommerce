@@ -20,6 +20,7 @@ import path from 'path';
 import uploadRoutes from './routes/uploadRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -48,6 +49,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/blogs', blogRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Serve uploads static directory
 const __dirname = path.resolve();
