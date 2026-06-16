@@ -28,6 +28,7 @@ const UserListScreen = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterType, setFilterType] = useState("Total");
 
   const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
@@ -61,6 +62,14 @@ const UserListScreen = () => {
       customers: users.length - admins,
     };
   }, [users]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      if (filterType === "Admins") return user.isAdmin;
+      if (filterType === "Customers") return !user.isAdmin;
+      return true;
+    });
+  }, [users, filterType]);
 
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
@@ -177,15 +186,20 @@ const UserListScreen = () => {
                 ["Admins", stats.admins],
                 ["Customers", stats.customers],
               ].map(([label, value]) => (
-                <div
+                <button
                   key={label}
-                  className="border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)]"
+                  onClick={() => setFilterType(label)}
+                  className={`border border-gray-200 px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition-all text-left ${
+                    filterType === label
+                      ? "bg-[#2b2b2b] text-white"
+                      : "bg-white hover:bg-[#f2f2f2]"
+                  }`}
                 >
-                  <p className="text-3xl font-extrabold text-gray-950">{value}</p>
-                  <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">
+                  <p className={`text-3xl font-extrabold ${filterType === label ? "text-white" : "text-gray-950"}`}>{value}</p>
+                  <p className={`mt-2 text-sm font-bold uppercase tracking-widest ${filterType === label ? "text-gray-300" : "text-gray-500"}`}>
                     {label}
                   </p>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -221,7 +235,7 @@ const UserListScreen = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {users.map((user, index) => (
+                        {filteredUsers.map((user, index) => (
                           <tr key={user._id} className="transition hover:bg-[#f8f8f8]">
                             <td className="px-6 py-5 font-mono text-[10px] text-gray-400">
                               {`U${String(index + 1).padStart(4, "0")}`}
