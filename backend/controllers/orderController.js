@@ -30,7 +30,12 @@ const getMyOrders = asyncHandler(async (req, res) => {
   if (req.user && req.user.isAdmin) {
     orders = await Order.find({}).populate('user', 'name email');
   } else {
-    orders = await Order.find({ user: req.user._id });
+    orders = await Order.find({
+      $or: [
+        { user: req.user._id },
+        { 'shippingAddress.email': req.user.email }
+      ]
+    });
   }
   res.json(orders);
 });

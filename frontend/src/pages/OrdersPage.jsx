@@ -96,19 +96,19 @@ const OrdersPage = () => {
 
     useEffect(() => {
         const loadOrders = async () => {
-            const checkoutOrders = getCheckoutOrders();
+            const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+            const token = userInfo.token;
 
-            if (checkoutOrders.length) {
+            if (!token) {
+                const checkoutOrders = getCheckoutOrders();
                 setOrders(checkoutOrders);
                 setLoading(false);
                 return;
             }
 
             try {
-                const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
-                const token = userInfo.token;
                 const res = await fetch("/api/orders/myorders", {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await res.json();
 
@@ -116,7 +116,27 @@ const OrdersPage = () => {
                     throw new Error(data?.message || "Unable to load orders");
                 }
 
-                setOrders(Array.isArray(data) ? data : data.orders || []);
+                const backendOrders = Array.isArray(data) ? data : data.orders || [];
+                
+                const localOrders = getCheckoutOrders().filter(
+                    (order) => 
+                        order.customer?.email === userInfo.email || 
+                        order.shippingAddress?.email === userInfo.email ||
+                        order.paymentResult?.email_address === userInfo.email
+                );
+
+                const mergedOrders = [...backendOrders, ...localOrders].reduce((acc, current) => {
+                    const exists = acc.find(item => (item._id || item.id) === (current._id || current.id));
+                    if (!exists) {
+                        return acc.concat([current]);
+                    }
+                    return acc;
+                }, []);
+
+                // Sort by date descending
+                mergedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                setOrders(mergedOrders);
             } catch (err) {
                 setError(err.message || "Unable to load orders");
             } finally {
@@ -222,7 +242,7 @@ const OrdersPage = () => {
                                                 </p>
                                                 <p className="mt-3 text-base font-medium text-gray-500">
                                                     {formatDate(order.createdAt)}
-                                                    {order.customer?.name ? ` • ${order.customer.name}` : ""}
+                                                    {order.user?.name ? ` • ${order.user.name}` : ""}
                                                 </p>
                                             </div>
 
