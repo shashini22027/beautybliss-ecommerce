@@ -20,6 +20,9 @@ const addOrderItems = asyncHandler(async (req, res) => {
 });
 
 const getOrderById = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
   const order = await Order.findById(req.params.id).populate('user', 'name email');
   if (order) res.json(order);
   else res.status(404).json({ message: 'Order not found' });
