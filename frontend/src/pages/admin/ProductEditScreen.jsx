@@ -382,7 +382,7 @@ const ProductEditScreen = () => {
       {/* HERO SECTION */}
       <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
         <img
-          src="/images/banner.jpg"
+          src="/images/admin_banner.png"
           alt="Beauty products"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />

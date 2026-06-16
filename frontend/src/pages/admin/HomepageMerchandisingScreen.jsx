@@ -2,28 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  LayoutDashboard,
-  LogOut,
   Package,
   Sparkles,
   Tag,
   Truck,
-  Users,
-  ShoppingBag,
+  Search,
 } from "lucide-react";
 import api from "../../services/api";
 import { formatPrice } from "../../utils/currency";
-
-const getStoredUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("userInfo")) || null;
-  } catch {
-    return null;
-  }
-};
+import AdminSidebar from "./components/AdminSidebar";
 
 const getProductImage = (product) =>
-  product.image || product.images?.[0] || "/images/banner.jpg";
+  product.image || product.images?.[0] || "/images/admin_banner.png";
 
 const getSectionLabel = (product, section) => {
   if (section === "newArrival") return "New";
@@ -57,10 +47,10 @@ const sectionConfig = [
 ];
 
 const HomepageMerchandisingScreen = () => {
-  const navigate = useNavigate();
-  const [userInfo] = useState(getStoredUser);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
   const [sectionProducts, setSectionProducts] = useState({
     bestSeller: [],
     newArrival: [],
@@ -107,24 +97,11 @@ const HomepageMerchandisingScreen = () => {
     return { bestSeller, newArrival, hotDeal, total };
   }, [sectionProducts]);
 
-  const sidebarItems = [
-    { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
-    { name: "Customers", icon: Users, link: "/admin/userlist" },
-    { name: "Products", icon: Package, link: "/admin/productlist" },
-    { name: "Orders", icon: ShoppingBag, link: "/admin/orderlist" },
-    { name: "Sales", icon: Truck, link: "/admin/sales" },
-  ];
-
-  const logoutHandler = () => {
-    localStorage.removeItem("userInfo");
-    navigate("/login");
-  };
-
   return (
     <main className="min-h-screen bg-white text-gray-950">
       <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
         <img
-          src="/images/banner.jpg"
+          src="/images/admin_banner.png"
           alt="Beauty products arranged for homepage merchandising"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
@@ -149,55 +126,7 @@ const HomepageMerchandisingScreen = () => {
 
       <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
-          <aside className="border-gray-200 lg:border-r lg:pr-9">
-            <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
-              Admin Panel
-            </h2>
-
-            <nav className="mt-5 space-y-1 text-lg font-bold">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.link}
-                    className={`flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${
-                      item.link === "/admin-dashboard" ? "bg-[#f2f2f2]" : ""
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-
-              <button
-                type="button"
-                onClick={logoutHandler}
-                className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"
-              >
-                <LogOut className="h-5 w-5" />
-                Logout
-              </button>
-            </nav>
-
-            <div className="mt-8 border border-gray-200 bg-white p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center bg-[#2b2b2b] text-lg font-extrabold text-white">
-                  {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-base font-extrabold">
-                    {userInfo?.name || "Admin"}
-                  </p>
-                  <p className="mt-1 truncate text-sm text-gray-500">
-                    {userInfo?.email || "admin@beautybliss.com"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </aside>
+          <AdminSidebar />
 
           <section className="min-w-0 lg:pl-1">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -206,13 +135,25 @@ const HomepageMerchandisingScreen = () => {
                 Use the product editor to toggle the homepage flags and compare-at pricing.
               </p>
 
-              <Link
-                to="/admin/product/create"
-                className="inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
-              >
-                <Tag size={18} />
-                Add Product
-              </Link>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <input
+                    type="text"
+                    placeholder="Search featured products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-12 w-full pl-10 pr-4 border border-gray-200 outline-none focus:border-pink-600 focus:ring-1 focus:ring-pink-600 transition min-w-[260px]"
+                  />
+                </div>
+                <Link
+                  to="/admin/product/create"
+                  className="inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600 shrink-0"
+                >
+                  <Tag size={18} />
+                  Add Product
+                </Link>
+              </div>
             </div>
 
             {error && (
@@ -222,10 +163,10 @@ const HomepageMerchandisingScreen = () => {
             )}
 
             <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard label="Best Sellers" value={stats.bestSeller} tone="amber" icon={Sparkles} />
-              <StatCard label="New Arrivals" value={stats.newArrival} tone="sky" icon={Tag} />
-              <StatCard label="Hot Deals" value={stats.hotDeal} tone="rose" icon={Truck} />
-              <StatCard label="Total Featured" value={stats.total} tone="gray" icon={Package} />
+              <StatCard label="All Sections" value={stats.total} tone="gray" icon={Package} isActive={activeTab === "All"} onClick={() => setActiveTab("All")} />
+              <StatCard label="Best Sellers" value={stats.bestSeller} tone="amber" icon={Sparkles} isActive={activeTab === "bestSeller"} onClick={() => setActiveTab("bestSeller")} />
+              <StatCard label="New Arrivals" value={stats.newArrival} tone="sky" icon={Tag} isActive={activeTab === "newArrival"} onClick={() => setActiveTab("newArrival")} />
+              <StatCard label="Hot Deals" value={stats.hotDeal} tone="rose" icon={Truck} isActive={activeTab === "hotDeal"} onClick={() => setActiveTab("hotDeal")} />
             </div>
 
             {loading ? (
@@ -234,8 +175,12 @@ const HomepageMerchandisingScreen = () => {
               </div>
             ) : (
               <div className="mt-12 space-y-12">
-                {sectionConfig.map((section) => {
-                  const products = sectionProducts[section.key] || [];
+                {sectionConfig.filter(s => activeTab === "All" || s.key === activeTab).map((section) => {
+                  const products = (sectionProducts[section.key] || []).filter(
+                    (product) =>
+                      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()))
+                  );
 
                   return (
                     <section key={section.key} className="border border-gray-200 bg-white p-6 shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
@@ -337,20 +282,23 @@ const HomepageMerchandisingScreen = () => {
   );
 };
 
-const StatCard = ({ label, value, tone, icon: Icon }) => {
+const StatCard = ({ label, value, tone, icon: Icon, isActive, onClick }) => {
   const toneClasses = {
-    amber: "bg-amber-50 text-amber-700 border-amber-100",
-    sky: "bg-sky-50 text-sky-700 border-sky-100",
-    rose: "bg-rose-50 text-rose-700 border-rose-100",
-    gray: "bg-gray-50 text-gray-700 border-gray-100",
+    amber: isActive ? "bg-[#2b2b2b] text-white border-transparent" : "bg-white text-gray-900 border-gray-200 hover:bg-amber-50 hover:border-amber-200",
+    sky: isActive ? "bg-[#2b2b2b] text-white border-transparent" : "bg-white text-gray-900 border-gray-200 hover:bg-sky-50 hover:border-sky-200",
+    rose: isActive ? "bg-[#2b2b2b] text-white border-transparent" : "bg-white text-gray-900 border-gray-200 hover:bg-rose-50 hover:border-rose-200",
+    gray: isActive ? "bg-[#2b2b2b] text-white border-transparent" : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50",
   };
 
   return (
-    <div className={`border px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] ${toneClasses[tone]}`}>
-      <Icon className="mb-5 h-11 w-11 text-gray-300" />
-      <p className="text-3xl font-extrabold text-gray-950">{value}</p>
-      <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">{label}</p>
-    </div>
+    <button
+      onClick={onClick}
+      className={`border px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition-all text-left ${toneClasses[tone]}`}
+    >
+      <Icon className={`mb-5 h-11 w-11 ${isActive ? "text-white/80" : "text-gray-400"}`} />
+      <p className={`text-3xl font-extrabold ${isActive ? "text-white" : "text-gray-950"}`}>{value}</p>
+      <p className={`mt-2 text-sm font-bold uppercase tracking-widest ${isActive ? "text-white/70" : "text-gray-500"}`}>{label}</p>
+    </button>
   );
 };
 

@@ -123,7 +123,7 @@ const AdminDashboardPage = () => {
     <main className="min-h-screen bg-white text-gray-950">
       <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
         <img
-          src="/images/banner.jpg"
+          src="/images/admin_banner.png"
           alt="Beauty products arranged for admin dashboard"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
@@ -250,12 +250,6 @@ const AdminDashboardPage = () => {
                       to: "/admin/product/create",
                       label: "Add New Product",
                       icon: "plus",
-                    },
-                    {
-                      to: "/admin/product/create",
-                      label: "Create Floral Bloom Perfume",
-                      icon: "sparkle",
-                      state: { template: "floralBloom" },
                     },
                     {
                       to: "/admin/homepage-merchandising",

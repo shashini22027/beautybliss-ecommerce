@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -7,6 +7,9 @@ import {
   ShoppingBag,
   User,
   LogOut,
+  FileText,
+  Mail,
+  DollarSign,
 } from 'lucide-react';
 
 // Helper to retrieve stored user info from localStorage
@@ -20,13 +23,18 @@ const getStoredUser = () => {
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const userInfo = React.useState(getStoredUser)[0];
 
   const sidebarItems = [
     { name: 'Dashboard', icon: LayoutDashboard, link: '/admin-dashboard' },
     { name: 'Customers', icon: Users, link: '/admin/userlist' },
-    { name: 'Products', icon: Package, link: '/admin/productlist', active: true },
+    { name: 'Products', icon: Package, link: '/admin/productlist' },
     { name: 'Orders', icon: ShoppingBag, link: '/admin/orderlist' },
+    { name: 'Blogs', icon: FileText, link: '/admin/bloglist' },
+    { name: 'Messages', icon: Mail, link: '/admin/messages' },
+    { name: 'Sales', icon: DollarSign, link: '/admin/sales' },
   ];
 
   return (
@@ -38,11 +46,12 @@ const AdminSidebar = () => {
       <nav className="mt-5 space-y-1 text-lg font-bold">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
+          const isActive = currentPath === item.link || (item.link !== '/admin-dashboard' && currentPath.startsWith(item.link));
           return (
             <Link
               key={item.name}
               to={item.link}
-              className={`flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${item.active ? 'bg-[#f2f2f2]' : ''}`}
+              className={`flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${isActive ? 'bg-[#f2f2f2] text-pink-600' : ''}`}
             >
               <Icon className="h-5 w-5" />
               {item.name}

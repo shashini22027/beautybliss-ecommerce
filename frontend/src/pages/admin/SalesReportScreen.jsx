@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import { formatPrice, parsePrice } from "../../utils/currency";
+import AdminSidebar from "./components/AdminSidebar";
 
 const PROFIT_MARGIN = 0.35;
 
@@ -93,12 +94,7 @@ const SalesReportScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const sidebarItems = [
-    { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
-    { name: "Customers", icon: Users, link: "/admin/userlist" },
-    { name: "Products", icon: Package, link: "/admin/productlist" },
-    { name: "Orders", icon: ShoppingBag, link: "/admin/orderlist" },
-  ];
+
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -169,7 +165,7 @@ const SalesReportScreen = () => {
     <main className="min-h-screen bg-white text-gray-950">
       <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
         <img
-          src="/images/banner.jpg"
+          src="/images/admin_banner.png"
           alt="Beauty products arranged for sales reporting"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
@@ -192,55 +188,7 @@ const SalesReportScreen = () => {
 
       <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
         <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
-          <aside className="border-gray-200 lg:border-r lg:pr-9">
-            <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
-              Admin Panel
-            </h2>
-
-            <nav className="mt-5 space-y-1 text-lg font-bold">
-              {sidebarItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.link}
-                    className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600"
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-              <Link to="/admin/sales" className="flex items-center gap-3 bg-[#f2f2f2] px-5 py-3 transition hover:text-pink-600">
-                <BarChart3 className="h-5 w-5" />
-                Sales
-              </Link>
-              <Link to="/profile" className="flex items-center gap-3 px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600">
-                <User className="h-5 w-5" />
-                Profile
-              </Link>
-              <button
-                type="button"
-                onClick={logoutHandler}
-                className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"
-              >
-                <LogOut className="h-5 w-5" />
-                Logout
-              </button>
-            </nav>
-
-            <div className="mt-8 border border-gray-200 bg-white p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center bg-[#2b2b2b] text-lg font-extrabold text-white">
-                  {userInfo?.name?.charAt(0)?.toUpperCase() || "A"}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-base font-extrabold">{userInfo?.name || "Admin"}</p>
-                  <p className="mt-1 truncate text-sm text-gray-500">{userInfo?.email || "admin@beautybliss.com"}</p>
-                </div>
-              </div>
-            </div>
-          </aside>
+          <AdminSidebar />
 
           <section className="min-w-0 lg:pl-1">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
