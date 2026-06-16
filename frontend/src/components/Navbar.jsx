@@ -185,66 +185,22 @@ const Navbar = () => {
                         <div className="border-b border-gray-100 px-4 py-3">
                           <p className="mb-1 text-xs font-bold uppercase tracking-widest text-gray-500">My Account</p>
                         </div>
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Dashboard
-                        </Link>
-                        <Link
-                          to="/orders"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Orders
-                        </Link>
-                        <Link
-                          to="/track-your-order"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Track your order
-                        </Link>
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Downloads
-                        </Link>
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Addresses
-                        </Link>
-                        <Link
-                          to="/profile"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Account details
-                        </Link>
-                        <Link
-                          to="/wishlist"
-                          onClick={() => setShowProfileMenu(false)}
-                          className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                        >
-                          Wishlist
-                        </Link>
-                        {isAdmin && (
-                          <>
-                            <div className="border-t border-gray-100 my-1"></div>
-                            <Link
-                              to="/admin-dashboard"
-                              onClick={() => setShowProfileMenu(false)}
-                              className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
-                            >
-                              Admin Dashboard
-                            </Link>
-                          </>
+                        {isAdmin ? (
+                          <Link
+                            to="/admin-dashboard"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
+                          >
+                            Admin Dashboard
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/profile"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="block px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-[#f6f6f6] hover:text-pink-600"
+                          >
+                            Dashboard
+                          </Link>
                         )}
                         <div className="border-t border-gray-100 my-1"></div>
                         <button

@@ -1,6 +1,8 @@
 import { useState, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -73,6 +75,7 @@ const RegisterPage = () => {
     const navigate = useNavigate();
     const { search } = useLocation();
     const { login } = useContext(AuthContext);
+    const dispatch = useDispatch();
     const redirect = new URLSearchParams(search).get("redirect") || "/";
     const passwordStrength = getPasswordStrength(password);
 
@@ -101,6 +104,7 @@ const RegisterPage = () => {
             }
 
             login(data);
+            dispatch(loginSuccess(data));
             navigate(redirect);
         } catch (err) {
             setRegisterError(err.message || "Registration failed");

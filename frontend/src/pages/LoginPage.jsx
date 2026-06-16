@@ -1,6 +1,8 @@
 import { useState, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -30,16 +32,17 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
 };
 
 const LoginPage = () => {
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(localStorage.getItem("rememberedEmail") || "");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberMe, setRememberMe] = useState(!!localStorage.getItem("rememberedEmail"));
     const [loading, setLoading] = useState(false);
     const [loginError, setLoginError] = useState("");
 
     const navigate = useNavigate();
     const { search } = useLocation();
     const { login } = useContext(AuthContext);
+    const dispatch = useDispatch();
     const redirect = new URLSearchParams(search).get("redirect") || "/";
 
     const submitHandler = async (e) => {
@@ -59,7 +62,14 @@ const LoginPage = () => {
                 throw new Error(data?.message || "Login failed");
             }
 
+            if (rememberMe) {
+                localStorage.setItem("rememberedEmail", email);
+            } else {
+                localStorage.removeItem("rememberedEmail");
+            }
+
             login(data);
+            dispatch(loginSuccess(data));
             navigate(redirect);
         } catch (err) {
             setLoginError(err.message || "Login failed");
@@ -144,15 +154,18 @@ const LoginPage = () => {
                             </button>
 
                             <div className="flex flex-col gap-4 text-lg sm:flex-row sm:items-center sm:justify-between">
-                                <label className="flex items-center gap-3">
+                                <div className="flex items-center gap-3">
                                     <input
                                         type="checkbox"
+                                        id="rememberMe"
                                         checked={rememberMe}
                                         onChange={(event) => setRememberMe(event.target.checked)}
-                                        className="h-4 w-4 border border-gray-300"
+                                        className="h-4 w-4 border border-gray-300 cursor-pointer"
                                     />
-                                    Remember me
-                                </label>
+                                    <label htmlFor="rememberMe" className="cursor-pointer select-none">
+                                        Remember me
+                                    </label>
+                                </div>
                                 <Link to="/forgot-password" className="transition hover:text-pink-600">
                                     Lost your password?
                                 </Link>
