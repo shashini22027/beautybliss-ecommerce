@@ -179,7 +179,7 @@ const requiredShippingFields = [
 const CheckoutPage = () => {
     const navigate = useNavigate();
     const [paymentMethod, setPaymentMethod] = useState("card");
-    const [shipDifferent, setShipDifferent] = useState(true);
+    const [shipDifferent, setShipDifferent] = useState(false);
     const [cartItems, setCartItems] = useState(getCartItems);
     const [checkoutForm, setCheckoutForm] = useState(initialCheckoutForm);
     const [errors, setErrors] = useState({});
@@ -448,15 +448,18 @@ const CheckoutPage = () => {
                                 {renderError("billingEmail")}
                             </label>
 
-                            <label className="flex items-center gap-3 text-lg font-bold">
+                            <div className="flex items-center gap-3">
                                 <input
                                     type="checkbox"
+                                    id="shipDifferent"
                                     checked={shipDifferent}
                                     onChange={(event) => setShipDifferent(event.target.checked)}
-                                    className="h-4 w-4"
+                                    className="h-4 w-4 cursor-pointer"
                                 />
-                                Ship to a different address?
-                            </label>
+                                <label htmlFor="shipDifferent" className="text-lg font-bold cursor-pointer select-none">
+                                    Ship to a different address?
+                                </label>
+                            </div>
 
                             {shipDifferent && (
                                 <div className="space-y-7 pt-2">
