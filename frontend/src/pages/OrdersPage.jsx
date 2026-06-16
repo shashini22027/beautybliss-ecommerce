@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/slices/authSlice";
+import { apiFetch } from "../utils/api";
 import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -93,13 +96,11 @@ const OrdersPage = () => {
     const [orders, setOrders] = useState(getCheckoutOrders);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const user = useSelector(selectUser);
 
     useEffect(() => {
         const loadOrders = async () => {
-            const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
-            const token = userInfo.token;
-
-            if (!token) {
+            if (!user) {
                 const checkoutOrders = getCheckoutOrders();
                 setOrders(checkoutOrders);
                 setLoading(false);
@@ -107,8 +108,8 @@ const OrdersPage = () => {
             }
 
             try {
-                const res = await fetch("/api/orders/myorders", {
-                    headers: { Authorization: `Bearer ${token}` },
+                const res = await apiFetch("/api/orders/myorders", {
+                    method: "GET",
                 });
                 const data = await res.json();
 

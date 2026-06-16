@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/slices/authSlice";
+import { apiFetch } from "../../utils/api";
 import { Edit, Trash2, Plus, AlertCircle } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 
@@ -16,7 +19,7 @@ const BlogListScreen = () => {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/blogs");
+      const res = await apiFetch("/api/blogs");
       if (!res.ok) throw new Error("Failed to fetch blogs");
       const data = await res.json();
       setBlogs(data);
@@ -30,12 +33,8 @@ const BlogListScreen = () => {
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this blog post?")) {
       try {
-        const token = JSON.parse(localStorage.getItem("userInfo")).token;
-        const res = await fetch(`/api/blogs/id/${id}`, {
+        const res = await apiFetch(`/api/blogs/id/${id}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         });
         if (!res.ok) throw new Error("Failed to delete blog post");
         fetchBlogs();

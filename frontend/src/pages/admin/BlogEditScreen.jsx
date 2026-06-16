@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/slices/authSlice";
+import { apiFetch } from "../../utils/api";
 
 const BlogEditScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = useSelector(selectUser);
 
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -25,7 +29,7 @@ const BlogEditScreen = () => {
   const fetchBlogDetails = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/blogs/id/${id}`);
+      const res = await apiFetch(`/api/blogs/id/${id}`);
       if (!res.ok) throw new Error("Blog not found");
       const data = await res.json();
       setTitle(data.title);
@@ -48,7 +52,7 @@ const BlogEditScreen = () => {
 
     setUploading(true);
     try {
-      const res = await fetch("/api/upload", {
+      const res = await apiFetch("/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -71,22 +75,21 @@ const BlogEditScreen = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const token = JSON.parse(localStorage.getItem("userInfo")).token;
 
       const method = isEdit ? "PUT" : "POST";
       const url = isEdit ? `/api/blogs/id/${id}` : "/api/blogs";
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title,
           excerpt,
           image,
           description,
+          author: user?._id,
         }),
       });
 

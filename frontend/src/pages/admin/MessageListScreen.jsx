@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/slices/authSlice";
+import { apiFetch } from "../../utils/api";
 import {
   LayoutDashboard,
   LogOut,
@@ -14,17 +17,9 @@ import {
 } from "lucide-react";
 import AdminSidebar from "./components/AdminSidebar";
 
-const getStoredUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("userInfo")) || null;
-  } catch {
-    return null;
-  }
-};
-
 const MessageListScreen = () => {
   const navigate = useNavigate();
-  const [userInfo] = useState(getStoredUser);
+  const userInfo = useSelector(selectUser);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,10 +35,8 @@ const MessageListScreen = () => {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/messages", {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
+      const res = await apiFetch("/api/messages", {
+        method: "GET",
       });
       if (!res.ok) throw new Error("Failed to load messages");
       const data = await res.json();
@@ -58,11 +51,8 @@ const MessageListScreen = () => {
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this message?")) {
       try {
-        const res = await fetch(`/api/messages/${id}`, {
+        const res = await apiFetch(`/api/messages/${id}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`,
-          },
         });
         if (!res.ok) throw new Error("Failed to delete message");
         fetchMessages();
@@ -74,11 +64,8 @@ const MessageListScreen = () => {
 
   const markAsReadHandler = async (id) => {
     try {
-      const res = await fetch(`/api/messages/${id}/read`, {
+      const res = await apiFetch(`/api/messages/${id}/read`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-        },
       });
       if (!res.ok) throw new Error("Failed to mark as read");
       fetchMessages();

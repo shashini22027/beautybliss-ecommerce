@@ -2,8 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
+import { fetchProducts, selectAllProducts, selectProductsStatus } from '../redux/slices/productsSlice';
 import CartPage from './CartPage';
 import { formatPrice, parsePrice } from '../utils/currency';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -112,7 +113,14 @@ const ProductDetailsPage = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const allProducts = useSelector(selectAllProducts);
+  const productsStatus = useSelector(selectProductsStatus);
+
+  useEffect(() => {
+    if (productsStatus === 'idle') {
+      dispatch(fetchProducts());
+    }
+  }, [productsStatus, dispatch]);
 
   const fetchProduct = async () => {
     if (!isObjectId(id)) return;
@@ -141,11 +149,12 @@ const ProductDetailsPage = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await fetch('/api/products');
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || 'Unable to load product details.');
+      let data;
+      if (allProducts.length > 0) {
+        data = allProducts;
+      } else {
+        const res = await fetch('/api/products');
+        data = await res.json();
       }
 
       const products = Array.isArray(data) ? data : data.products || [];
@@ -217,18 +226,10 @@ const ProductDetailsPage = () => {
   }, [id, location.state]);
 
   useEffect(() => {
-    const fetchRelatedProducts = async () => {
-      try {
-        const res = await fetch('/api/products?limit=8');
-        const data = await res.json();
-        const products = Array.isArray(data) ? data : data.products || [];
-        setRelatedProducts(products);
-      } catch {
-        setRelatedProducts([]);
-      }
-    };
-    fetchRelatedProducts();
-  }, []);
+    if (allProducts && allProducts.length > 0) {
+      setRelatedProducts(allProducts.slice(0, 8));
+    }
+  }, [allProducts]);
 
   if (loading) {
     return <div className="py-20 text-center font-serif text-stone-500">Loading beauty details...</div>;

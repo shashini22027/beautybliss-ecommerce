@@ -2,6 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import mongoose from 'mongoose';
+import { clearCache } from '../middleware/cacheMiddleware.js';
 
 const MAX_STANDARD_IMAGES = 2;
 const MAX_LIPSTICK_IMAGES = 5;
@@ -187,6 +188,7 @@ const createProduct = asyncHandler(async (req, res) => {
   });
 
   const createdProduct = await product.save();
+  await clearCache('/api/products*');
   res.status(201).json(createdProduct);
 });
 
@@ -216,6 +218,7 @@ const createProductReview = asyncHandler(async (req, res) => {
       product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
 
     await product.save();
+    await clearCache('/api/products*');
     res.status(201).json({ message: 'Review added' });
   } else {
     res.status(404).json({ message: 'Product not found' });
@@ -294,6 +297,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       rating === undefined || rating === null || rating === '' ? product.rating : Number(rating);
 
     const updatedProduct = await product.save();
+    await clearCache('/api/products*');
     res.json(updatedProduct);
   } else {
     res.status(404).json({ message: 'Product not found' });
@@ -304,6 +308,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     await Product.deleteOne({ _id: req.params.id });
+    await clearCache('/api/products*');
     res.json({ message: 'Product removed successfully' });
   } else {
     res.status(404).json({ message: 'Product not found' });

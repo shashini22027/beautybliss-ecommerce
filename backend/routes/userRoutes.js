@@ -1,10 +1,12 @@
 import express from 'express';
-import { registerUser, authUser, getUserProfile, getAllUsers, deleteUser, forgotPassword, resetPassword } from '../controllers/userController.js';
+import { registerUser, authUser, getUserProfile, getAllUsers, deleteUser, forgotPassword, resetPassword, refreshToken, logoutUser } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/', registerUser);
 router.post('/login', authUser);
+router.post('/refresh', refreshToken);
+router.post('/logout', protect, logoutUser);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password/:token', resetPassword);
 router.route('/').get(protect, admin, getAllUsers);

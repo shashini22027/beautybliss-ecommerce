@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
+import { fetchProducts, selectAllProducts, selectProductsStatus } from '../redux/slices/productsSlice';
 import categoryGroups from '../data/categoryGroups';
 import { formatPrice, parsePrice } from '../utils/currency';
 
@@ -213,9 +214,11 @@ const ProductCard = ({ product }) => {
 const CategoryPage = () => {
   const { categorySlug } = useParams();
   const [selectedSubcategory, setSelectedSubcategory] = useState('All');
-  const [apiProducts, setApiProducts] = useState([]);
   const [sortOrder, setSortOrder] = useState('default');
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const apiProducts = useSelector(selectAllProducts);
+  const productsStatus = useSelector(selectProductsStatus);
+  const loading = productsStatus === 'loading';
 
   const category = categoryGroups.find(
     (group) => getCategorySlug(group.title) === categorySlug
@@ -226,34 +229,10 @@ const CategoryPage = () => {
   }, [categorySlug]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/products');
-        const products = await response.json();
-
-        if (isMounted && Array.isArray(products)) {
-          setApiProducts(products);
-        }
-      } catch {
-        if (isMounted) {
-          setApiProducts([]);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadProducts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    if (productsStatus === 'idle') {
+      dispatch(fetchProducts());
+    }
+  }, [productsStatus, dispatch]);
 
   const categoryProducts = useMemo(() => {
     if (!category) return [];

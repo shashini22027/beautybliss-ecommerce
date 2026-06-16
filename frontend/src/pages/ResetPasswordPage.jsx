@@ -1,11 +1,12 @@
 import { useState, useContext } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const dispatch = useDispatch();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,7 +36,7 @@ const ResetPasswordPage = () => {
 
       if (!res.ok) throw new Error(data.message || "Something went wrong.");
 
-      login(data);
+      dispatch(loginSuccess(data));
       navigate("/profile?password_reset=true");
     } catch (err) {
       setError(err.message);

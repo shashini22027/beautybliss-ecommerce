@@ -1,10 +1,20 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiFetch } from '../../utils/api';
 
 const userInfo = localStorage.getItem('userInfo');
 const initialState = {
   user: userInfo ? JSON.parse(userInfo) : null,
   loading: false,
 };
+
+export const logoutUserThunk = createAsyncThunk('auth/logout', async (_, { dispatch }) => {
+  try {
+    await apiFetch('/api/users/logout', { method: 'POST' });
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+  dispatch(logoutUser());
+});
 
 const authSlice = createSlice({
   name: 'auth',

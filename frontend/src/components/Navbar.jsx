@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartItems } from '../redux/slices/cartSlice';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
-import { selectUser, logoutUser } from '../redux/slices/authSlice';
+import { selectUser, logoutUserThunk } from '../redux/slices/authSlice';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -206,7 +206,7 @@ const Navbar = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            dispatch(logoutUser());
+                            dispatch(logoutUserThunk());
                             setShowProfileMenu(false);
                             window.location.href = '/login';
                           }}

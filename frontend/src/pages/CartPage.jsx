@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, addToCart as reduxAddToCart, removeFromCart as reduxRemoveFromCart, setCart } from "../redux/slices/cartSlice";
+import { fetchProducts, selectAllProducts, selectProductsStatus } from "../redux/slices/productsSlice";
 import { toggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 
@@ -117,19 +118,20 @@ const CartPage = ({ onClose }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const allProducts = useSelector(selectAllProducts);
+    const productsStatus = useSelector(selectProductsStatus);
+
     useEffect(() => {
-        const fetchSuggestedProducts = async () => {
-            try {
-                const res = await fetch('/api/products?limit=6');
-                const data = await res.json();
-                const products = Array.isArray(data) ? data : data.products || [];
-                setSuggestedProducts(products);
-            } catch {
-                setSuggestedProducts([]);
-            }
-        };
-        fetchSuggestedProducts();
-    }, []);
+        if (productsStatus === 'idle') {
+            dispatch(fetchProducts());
+        }
+    }, [productsStatus, dispatch]);
+
+    useEffect(() => {
+        if (allProducts && allProducts.length > 0) {
+            setSuggestedProducts(allProducts.slice(0, 6));
+        }
+    }, [allProducts]);
 
     useEffect(() => {
         if (location.state?.cartItem) {

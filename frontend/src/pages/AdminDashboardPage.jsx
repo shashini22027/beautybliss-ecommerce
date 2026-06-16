@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { selectUser, logoutUserThunk } from "../redux/slices/authSlice";
 import {
   fetchAdminDashboardData,
   selectAdminDashboardStats,
@@ -44,7 +44,7 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, logout } = useContext(AuthContext);
+  const user = useSelector(selectUser);
   const stats = useSelector(selectAdminDashboardStats);
   const dashboardError = useSelector((state) => state.adminDashboard.error);
 
@@ -58,7 +58,7 @@ const AdminDashboardPage = () => {
   }, [dispatch, navigate, user]);
 
   const logoutHandler = () => {
-    logout();
+    dispatch(logoutUserThunk());
     navigate("/login");
   };
 

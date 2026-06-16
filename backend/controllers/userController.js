@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import asyncHandler from '../utils/asyncHandler.js';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
+import jwt from 'jsonwebtoken';
 import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Register new user
@@ -24,7 +25,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token: generateToken(user._id),
+      token: generateToken(res, user._id),
     });
   } else {
     res.status(400).json({ message: 'Invalid user data' });
@@ -44,7 +45,7 @@ const authUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token: generateToken(user._id),
+      token: generateToken(res, user._id),
     });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
@@ -183,9 +184,48 @@ const resetPassword = asyncHandler(async (req, res) => {
     name: user.name,
     email: user.email,
     isAdmin: user.isAdmin,
-    token: generateToken(user._id),
+    token: generateToken(res, user._id),
     message: 'Password has been reset successfully.',
   });
+});
+
+// @desc    Refresh access token
+// @route   POST /api/users/refresh
+// @access  Public
+const refreshToken = asyncHandler(async (req, res) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no refresh token' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refreshsecret123');
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
+    }
+
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123', {
+      expiresIn: '15m',
+    });
+
+    res.json({ token: accessToken });
+  } catch (error) {
+    res.status(401).json({ message: 'Not authorized, refresh token failed' });
+  }
+});
+
+// @desc    Logout user / clear cookie
+// @route   POST /api/users/logout
+// @access  Private
+const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
 export {
@@ -196,4 +236,6 @@ export {
   deleteUser,
   forgotPassword,
   resetPassword,
+  refreshToken,
+  logoutUser,
 };

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { apiFetch } from "../utils/api";
 import { formatPrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -81,15 +82,8 @@ const OrderDetailsPage = () => {
           return;
         }
 
-        const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
-        const token = userInfo.token;
-
-        if (!token) {
-          throw new Error("Please log in to view this order.");
-        }
-
-        const res = await fetch(`/api/orders/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await apiFetch(`/api/orders/${id}`, {
+          method: "GET",
         });
         const data = await res.json();
 

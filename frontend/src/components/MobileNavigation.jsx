@@ -4,12 +4,12 @@ import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCartItems } from '../redux/slices/cartSlice';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
-import { AuthContext } from '../context/AuthContext';
+import { selectUser } from '../redux/slices/authSlice';
 
 const MobileNavigation = () => {
   const cartItems = useSelector(selectCartItems);
   const wishlistItems = useSelector(selectWishlistItems);
-  const { user } = useContext(AuthContext);
+  const user = useSelector(selectUser);
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
