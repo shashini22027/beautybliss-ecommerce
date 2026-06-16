@@ -38,6 +38,22 @@ const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("All");
+
+  const filteredProducts = useMemo(() => {
+    if (filter === "Low Stock") {
+      return products.filter((product) => Number(product.countInStock || 0) <= 5);
+    }
+    if (filter === "Out of Stock") {
+      return products.filter((product) => Number(product.countInStock || 0) === 0);
+    }
+    if (filter === "Featured") {
+      return products.filter(
+        (product) => product.isBestSeller || product.isNewArrival || product.isHotDeal
+      );
+    }
+    return products;
+  }, [products, filter]);
 
   const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
@@ -213,24 +229,35 @@ const ProductListScreen = () => {
                 ["Out of Stock", stats.outOfStock],
                 ["Stock Value", formatPrice(stats.totalValue)],
                 ["Featured", stats.featured],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="min-w-0 border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)]"
-                >
-                  <p className="break-words text-2xl font-extrabold leading-tight text-gray-950 sm:text-3xl">
-                    {value}
-                  </p>
-                  <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">
-                    {label}
-                  </p>
-                </div>
-              ))}
+              ].map(([label, value]) => {
+                const isFilterable = ["Items", "Low Stock", "Out of Stock", "Featured"].includes(label);
+                const filterKey = label === "Items" ? "All" : label;
+                const isActive = isFilterable && filter === filterKey;
+
+                return (
+                  <div
+                    key={label}
+                    onClick={() => isFilterable && setFilter(filterKey)}
+                    className={`min-w-0 border px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] select-none ${
+                      isFilterable ? "cursor-pointer transition-all hover:border-pink-400 hover:shadow-md" : ""
+                    } ${
+                      isActive ? "border-pink-600 ring-2 ring-pink-600 ring-offset-2" : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <p className={`break-words text-2xl font-extrabold leading-tight sm:text-3xl ${isActive ? "text-pink-600" : "text-gray-950"}`}>
+                      {value}
+                    </p>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">
+                      {label}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-12">
               <h2 className="text-3xl font-extrabold uppercase">
-                Product Records
+                Product Records {filter !== "All" && <span className="text-pink-600 text-lg font-bold normal-case ml-2">({filter})</span>}
               </h2>
 
               {loading ? (
@@ -259,6 +286,25 @@ const ProductListScreen = () => {
                   >
                     <Plus size={18} />
                     New Product
+                  </button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="mt-7 bg-[#f6f6f6] px-6 py-16 text-center">
+                  <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center bg-white text-pink-600 shadow-sm">
+                    <Package className="h-7 w-7" />
+                  </div>
+                  <h3 className="text-3xl font-extrabold uppercase text-gray-950">
+                    No products match filter
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-md text-lg leading-7 text-gray-600">
+                    No products match the selected filter ({filter}).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFilter("All")}
+                    className="mt-7 inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
+                  >
+                    Clear Filter
                   </button>
                 </div>
               ) : (
@@ -294,7 +340,7 @@ const ProductListScreen = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {products.map((product, index) => {
+                        {filteredProducts.map((product, index) => {
                           const stock = Number(product.countInStock || 0);
                           const image = getProductImage(product);
                           const productId = product._id || product.id;
