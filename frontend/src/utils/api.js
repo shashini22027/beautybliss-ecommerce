@@ -1,15 +1,11 @@
-import { store } from '../redux/store';
-import { loginSuccess, logoutUser } from '../redux/slices/authSlice';
-
-// Helper to get current access token
-const getAccessToken = () => {
-  const state = store.getState();
-  return state.auth.user?.token;
-};
-
 // Base fetch wrapper
 export const apiFetch = async (url, options = {}) => {
-  const token = getAccessToken();
+  // Dynamically import store and actions to prevent circular dependencies
+  const { store } = await import('../redux/store.js');
+  const { loginSuccess, logoutUser } = await import('../redux/slices/authSlice.js');
+
+  const state = store.getState();
+  const token = state.auth.user?.token;
   
   const headers = new Headers(options.headers || {});
   if (token) {

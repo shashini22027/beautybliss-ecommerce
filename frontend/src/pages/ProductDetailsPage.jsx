@@ -113,6 +113,7 @@ const ProductDetailsPage = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const allProducts = useSelector(selectAllProducts);
   const productsStatus = useSelector(selectProductsStatus);
 
