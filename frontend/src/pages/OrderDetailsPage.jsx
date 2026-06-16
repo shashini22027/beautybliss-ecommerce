@@ -218,6 +218,7 @@ const OrderDetailsPage = () => {
                     />
                     <div>
                       <p className="text-base font-bold text-gray-950">{item.name}</p>
+                      {item.color && <p className="mt-1 text-sm text-gray-500">Color: {item.color}</p>}
                       <p className="mt-1 text-base text-gray-500">
                         Qty {getItemQty(item)} x {formatPrice(getItemPrice(item))}
                       </p>

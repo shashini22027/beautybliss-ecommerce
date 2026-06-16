@@ -35,13 +35,15 @@ const normalizeImageValues = (image, images) => {
   return [...new Set(values)];
 };
 
-const isLipstickProduct = ({ name, subcategory, categoryName }) => {
+const MULTI_COLOR_KEYWORDS = ['lipstick', 'mascara', 'foundation'];
+
+const isColorVariantProduct = ({ name, subcategory, categoryName }) => {
   const haystack = [name, subcategory, categoryName]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
 
-  return haystack.includes('lipstick');
+  return MULTI_COLOR_KEYWORDS.some((kw) => haystack.includes(kw));
 };
 
 const resolveCategoryId = async (category) => {
@@ -66,7 +68,28 @@ const resolveCategoryId = async (category) => {
 };
 
 const getAllowedImageCount = (productInfo) =>
-  isLipstickProduct(productInfo) ? MAX_LIPSTICK_IMAGES : MAX_STANDARD_IMAGES;
+  isColorVariantProduct(productInfo) ? MAX_LIPSTICK_IMAGES : MAX_STANDARD_IMAGES;
+
+const normalizeVariants = (variants) => {
+  if (!Array.isArray(variants)) {
+    return [];
+  }
+
+  return variants
+    .map((variant) => ({
+      name: typeof variant?.name === 'string' ? variant.name.trim() : '',
+      hex: typeof variant?.hex === 'string' ? variant.hex.trim() : '',
+      image: typeof variant?.image === 'string' ? variant.image.trim() : '',
+      countInStock:
+        variant?.countInStock === undefined || variant?.countInStock === null || variant?.countInStock === ''
+          ? 0
+          : Number(variant.countInStock),
+    }))
+    .filter((variant) => variant.name);
+};
+
+const sumVariantStock = (variants) =>
+  variants.reduce((total, variant) => total + (Number.isFinite(variant.countInStock) ? variant.countInStock : 0), 0);
 
 const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category;
@@ -141,6 +164,7 @@ const createProduct = asyncHandler(async (req, res) => {
     isNewArrival,
     isHotDeal,
     rating,
+    variants,
   } = req.body;
 
   let categoryId;
@@ -153,12 +177,21 @@ const createProduct = asyncHandler(async (req, res) => {
     throw err;
   }
 
-  const finalImages = normalizeImageValues(image, images);
-  const allowedImageCount = getAllowedImageCount({
+  const productInfo = {
     name,
     subcategory,
     categoryName: categoryDoc?.name,
-  });
+  };
+  const normalizedVariants = normalizeVariants(variants);
+  const isVariantProduct = isColorVariantProduct(productInfo);
+
+  if (isVariantProduct && normalizedVariants.length === 0) {
+    res.status(400);
+    throw new Error('Please add at least one color variant with stock for this product.');
+  }
+
+  const finalImages = normalizeImageValues(image, images);
+  const allowedImageCount = getAllowedImageCount(productInfo);
 
   if (finalImages.length > allowedImageCount) {
     res.status(400);
@@ -166,6 +199,10 @@ const createProduct = asyncHandler(async (req, res) => {
       `This product can have at most ${allowedImageCount} image${allowedImageCount === 1 ? '' : 's'}.`
     );
   }
+
+  const resolvedCountInStock = isVariantProduct
+    ? sumVariantStock(normalizedVariants)
+    : countInStock;
 
   const product = new Product({
     name,
@@ -177,7 +214,8 @@ const createProduct = asyncHandler(async (req, res) => {
     subcategory,
     color,
     country,
-    countInStock,
+    variants: isVariantProduct ? normalizedVariants : [],
+    countInStock: resolvedCountInStock,
     description,
     compareAtPrice,
     discountLabel,
@@ -244,6 +282,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     isNewArrival,
     isHotDeal,
     rating,
+    variants,
   } = req.body;
 
   const product = await Product.findById(req.params.id).populate('category');
@@ -259,15 +298,25 @@ const updateProduct = asyncHandler(async (req, res) => {
       throw err;
     }
 
+    const productInfo = {
+      name: name || product.name,
+      subcategory: subcategory || product.subcategory,
+      categoryName: categoryDoc?.name || product.category?.name,
+    };
+    const isVariantProduct = isColorVariantProduct(productInfo);
+    const normalizedVariants =
+      variants !== undefined ? normalizeVariants(variants) : product.variants || [];
+
+    if (isVariantProduct && variants !== undefined && normalizedVariants.length === 0) {
+      res.status(400);
+      throw new Error('Please add at least one color variant with stock for this product.');
+    }
+
     const submittedImages = normalizeImageValues(image, images);
     const nextImages = submittedImages.length
       ? submittedImages
       : normalizeImageValues(product.image, product.images);
-    const allowedImageCount = getAllowedImageCount({
-      name: name || product.name,
-      subcategory: subcategory || product.subcategory,
-      categoryName: categoryDoc?.name || product.category?.name,
-    });
+    const allowedImageCount = getAllowedImageCount(productInfo);
 
     if (nextImages.length > allowedImageCount) {
       res.status(400);
@@ -285,7 +334,14 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.subcategory = subcategory || product.subcategory;
     product.color = color || product.color;
     product.country = country || product.country;
-    product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
+
+    if (isVariantProduct) {
+      product.variants = normalizedVariants;
+      product.countInStock = sumVariantStock(normalizedVariants);
+    } else {
+      product.variants = [];
+      product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
+    }
     product.description = description || product.description;
     product.compareAtPrice =
       compareAtPrice === undefined ? product.compareAtPrice : compareAtPrice;

@@ -323,6 +323,7 @@ const OrdersPage = () => {
                                                                 >
                                                                     {item.name || "BeautyBliss order item"}
                                                                 </Link>
+                                                                {item.color && <p className="mt-1 text-sm text-gray-500">Color: {item.color}</p>}
                                                                 <p className="mt-2 text-base text-gray-500">
                                                                     {formatPrice(price)} <span className="text-gray-400">x</span> Qty: {qty}
                                                                 </p>

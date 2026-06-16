@@ -582,7 +582,10 @@ const CheckoutPage = () => {
                                     return (
                                         <div key={`${product.name}-${qty}`} className="border-b border-gray-200 py-5">
                                             <div className="grid grid-cols-[1fr_140px] gap-4">
-                                                <p className="text-lg leading-6 text-gray-600">{product.name}</p>
+                                                <div>
+                                                    <p className="text-lg leading-6 text-gray-600">{product.name}</p>
+                                                    {product.color && <p className="mt-1 text-sm text-gray-500">Color: {product.color}</p>}
+                                                </div>
                                                 <p className="text-right text-lg text-gray-600">{formatPrice(lineTotal)}</p>
                                             </div>
                                             <div className="mt-3 inline-flex h-10 items-center border border-gray-200">

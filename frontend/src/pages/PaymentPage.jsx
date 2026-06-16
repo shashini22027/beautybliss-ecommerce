@@ -265,9 +265,12 @@ const PaymentPage = () => {
                                 {order.orderItems.map((item) => (
                                     <div key={item._id} className="border-b border-gray-100 py-4">
                                         <div className="grid grid-cols-[1fr_auto] gap-4">
-                                            <p className="text-base text-gray-700">
-                                                {item.name} <span className="text-gray-400">× {item.qty}</span>
-                                            </p>
+                                            <div>
+                                                <p className="text-base text-gray-700">
+                                                    {item.name} <span className="text-gray-400">× {item.qty}</span>
+                                                </p>
+                                                {item.color && <p className="mt-1 text-sm text-gray-500">Color: {item.color}</p>}
+                                            </div>
                                             <p className="text-base font-medium text-gray-900">{formatPrice(item.lineTotal)}</p>
                                         </div>
                                     </div>

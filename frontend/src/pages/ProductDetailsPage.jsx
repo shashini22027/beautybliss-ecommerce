@@ -29,6 +29,33 @@ const getProductSlug = (product) =>
 
 const isObjectId = (value) => /^[a-f\d]{24}$/i.test(value || '');
 
+const MULTI_COLOR_KEYWORDS = ['lipstick', 'mascara', 'foundation'];
+
+const isColorVariantProduct = (product) => {
+  if (Array.isArray(product?.variants) && product.variants.length > 0) {
+    return true;
+  }
+
+  const haystack = [product?.name, product?.subcategory, product?.category?.name || product?.category]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return MULTI_COLOR_KEYWORDS.some((keyword) => haystack.includes(keyword));
+};
+
+const getVariantSwatchColor = (variant) => {
+  if (variant?.hex) {
+    return variant.hex;
+  }
+
+  if (variant?.name) {
+    return variant.name.toLowerCase();
+  }
+
+  return '#cccccc';
+};
+
 const readStoredCartItems = () => {
   try {
     const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
@@ -108,6 +135,7 @@ const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [activeImage, setActiveImage] = useState('');
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
   const [relatedPage, setRelatedPage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
@@ -138,7 +166,8 @@ const ProductDetailsPage = () => {
 
       const productData = data.product || data;
       setProduct(productData);
-      setActiveImage(productData.image || productData.images?.[0] || '');
+      setSelectedVariantIndex(0);
+      setActiveImage(productData.image || productData.images?.[0] || productData.variants?.[0]?.image || '');
     } catch (err) {
       setError(err.message || 'Unable to load product details.');
     } finally {
@@ -196,7 +225,8 @@ const ProductDetailsPage = () => {
       if (stateProduct && getProductSlug(stateProduct) === id) {
         if (ignore) return;
         setProduct(stateProduct);
-        setActiveImage(stateProduct.image || stateProduct.images?.[0] || '');
+        setSelectedVariantIndex(0);
+        setActiveImage(stateProduct.image || stateProduct.images?.[0] || stateProduct.variants?.[0]?.image || '');
         setActiveTab('description');
         setQty(1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -210,7 +240,8 @@ const ProductDetailsPage = () => {
       
       if (fetchedProduct) {
         setProduct(fetchedProduct);
-        setActiveImage(fetchedProduct.image || fetchedProduct.images?.[0] || '');
+        setSelectedVariantIndex(0);
+        setActiveImage(fetchedProduct.image || fetchedProduct.images?.[0] || fetchedProduct.variants?.[0]?.image || '');
         setActiveTab('description');
         setQty(1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -250,19 +281,26 @@ const ProductDetailsPage = () => {
   if (!product) return null;
 
   const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))];
+  const productVariants = Array.isArray(product.variants) ? product.variants : [];
+  const hasColorVariants = isColorVariantProduct(product) && productVariants.length > 0;
+  const selectedVariant = hasColorVariants ? productVariants[selectedVariantIndex] || productVariants[0] : null;
   const price = getNumberValue(product.price);
   const oldPrice = getNumberValue(product.oldPrice, 0);
   const rating = getNumberValue(product.rating, 4.8);
   const reviewCount = getNumberValue(product.numReviews);
-  const stockCount = product.soldOut ? 0 : getNumberValue(product.countInStock ?? product.stock, 10);
+  const stockCount = product.soldOut
+    ? 0
+    : hasColorVariants
+      ? getNumberValue(selectedVariant?.countInStock, 0)
+      : getNumberValue(product.countInStock ?? product.stock, 10);
   const category = getTextValue(product.category);
   const sku = getTextValue(product.sku, product.name);
   const brand = getTextValue(product.brand);
   const subcategory = getTextValue(product.subcategory);
-  const color = getTextValue(product.color);
+  const color = hasColorVariants ? getTextValue(selectedVariant?.name) : getTextValue(product.color);
   const country = getTextValue(product.country);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
-  const mainImage = activeImage || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
+  const mainImage = activeImage || selectedVariant?.image || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
   const hasOldPrice = Boolean(product.oldPrice);
   const filteredRelated = relatedProducts.filter((item) => (item._id || getProductSlug(item)) !== id);
   const relatedPerPage = 4;
@@ -271,9 +309,34 @@ const ProductDetailsPage = () => {
     relatedPage * relatedPerPage,
     relatedPage * relatedPerPage + relatedPerPage
   );
+  const isOutOfStock = product.soldOut || stockCount === 0;
+
+  const handleSelectVariant = (index) => {
+    const variant = productVariants[index];
+    if (!variant) {
+      return;
+    }
+
+    setSelectedVariantIndex(index);
+    if (variant.image) {
+      setActiveImage(variant.image);
+    } else if (allImages[index]) {
+      setActiveImage(allImages[index]);
+    }
+    setQty(1);
+  };
 
   const handleAddToCart = () => {
-    dispatch(addToCart({ product, qty }));
+    const cartProduct = hasColorVariants && selectedVariant
+      ? {
+          ...product,
+          color: selectedVariant.name,
+          countInStock: selectedVariant.countInStock,
+          selectedVariant,
+        }
+      : product;
+
+    dispatch(addToCart({ product: cartProduct, qty }));
     setCartDrawerOpen(true);
   };
 
@@ -357,9 +420,52 @@ const ProductDetailsPage = () => {
             </span>
           </div>
 
-          <p className={`mt-6 text-lg font-bold ${product.soldOut ? 'text-red-600' : 'text-emerald-700'}`}>
-            {product.soldOut ? 'Out of stock' : 'In stock'}
+          <p className={`mt-6 text-lg font-bold ${isOutOfStock ? 'text-red-600' : 'text-emerald-700'}`}>
+            {isOutOfStock ? 'Out of stock' : 'In stock'}
           </p>
+
+          {hasColorVariants && (
+            <div className="mt-8">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-gray-950">
+                Select Color
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {productVariants.map((variant, index) => {
+                  const variantStock = getNumberValue(variant.countInStock, 0);
+                  const isSelected = selectedVariantIndex === index;
+                  const isVariantOutOfStock = variantStock === 0;
+
+                  return (
+                    <button
+                      key={`${variant.name}-${index}`}
+                      type="button"
+                      onClick={() => handleSelectVariant(index)}
+                      disabled={isVariantOutOfStock}
+                      aria-pressed={isSelected}
+                      title={isVariantOutOfStock ? `${variant.name} is out of stock` : variant.name}
+                      className={`inline-flex items-center gap-3 border px-4 py-3 text-sm font-semibold transition ${
+                        isSelected
+                          ? 'border-gray-950 bg-gray-950 text-white'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-pink-300'
+                      } ${isVariantOutOfStock ? 'cursor-not-allowed opacity-40' : ''}`}
+                    >
+                      <span
+                        className="inline-block h-5 w-5 rounded-full border border-gray-200"
+                        style={{ backgroundColor: getVariantSwatchColor(variant) }}
+                      />
+                      <span>{variant.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedVariant && (
+                <p className="mt-3 text-sm text-gray-500">
+                  Selected: <span className="font-semibold text-gray-950">{selectedVariant.name}</span>
+                  {stockCount > 0 ? ` — ${stockCount} in stock` : ' — out of stock'}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mt-6 flex flex-wrap items-center gap-6 text-lg font-semibold text-gray-700">
             <button type="button" onClick={() => dispatch(toggleWishlist(product))} className="transition hover:text-pink-600">
@@ -367,7 +473,7 @@ const ProductDetailsPage = () => {
             </button>
           </div>
 
-          {!product.soldOut && (
+          {!isOutOfStock && (
             <div className="mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
               <select
                 value={qty}
@@ -415,7 +521,11 @@ const ProductDetailsPage = () => {
                   <span className="flex items-center gap-2">
                     <span
                       className="inline-block h-4 w-4 rounded-full border border-gray-200"
-                      style={{ backgroundColor: color.toLowerCase() }}
+                      style={{
+                        backgroundColor: hasColorVariants
+                          ? getVariantSwatchColor(selectedVariant)
+                          : color.toLowerCase(),
+                      }}
                     />
                     {color}
                   </span>

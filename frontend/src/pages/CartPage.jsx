@@ -201,6 +201,7 @@ const CartPage = ({ onClose }) => {
                                             <Link to={`/product/${id}`} state={{ product }} className="text-lg font-bold leading-6 text-gray-800 hover:text-pink-600">
                                                 {product.name}
                                             </Link>
+                                            {product.color && <p className="mt-1 text-sm text-gray-500">Color: {product.color}</p>}
                                             <p className="mt-3 text-base text-gray-500">
                                                 {qty} x <span className="font-bold text-gray-950">{typeof product.price === "string" ? product.price : formatPrice(getItemPrice(item))}</span>
                                             </p>

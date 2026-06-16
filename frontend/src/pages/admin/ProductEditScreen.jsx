@@ -11,6 +11,7 @@ import {
   Star,
   Tag,
   Upload,
+  Plus,
   X,
   LayoutDashboard,
   LogOut,
@@ -58,11 +59,22 @@ const normalizeImageValues = (...values) => {
   return [...new Set(images)];
 };
 
-const isLipstickProduct = (name, subcategory, categoryName) =>
-  [name, subcategory, categoryName].filter(Boolean).join(" ").toLowerCase().includes("lipstick");
+const MULTI_COLOR_KEYWORDS = ['lipstick', 'mascara', 'foundation'];
+
+const isColorVariantProduct = (name, subcategory, categoryName) =>
+  MULTI_COLOR_KEYWORDS.some((kw) =>
+    [name, subcategory, categoryName].filter(Boolean).join(' ').toLowerCase().includes(kw)
+  );
 
 const getCategoryName = (categories, categoryId) =>
   categories.find((cat) => cat._id === categoryId)?.name || "";
+
+const createEmptyVariant = () => ({
+  name: "",
+  hex: "",
+  image: "",
+  countInStock: 0,
+});
 
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
@@ -113,6 +125,7 @@ const ProductEditScreen = () => {
   const [isBestSeller, setIsBestSeller] = useState(useFloralBloomTemplate);
   const [isNewArrival, setIsNewArrival] = useState(useFloralBloomTemplate);
   const [isHotDeal, setIsHotDeal] = useState(useFloralBloomTemplate);
+  const [variants, setVariants] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -174,13 +187,24 @@ const ProductEditScreen = () => {
   }, [categories, category, useFloralBloomTemplate]);
 
   const categoryName = getCategoryName(categories, category);
-  const imageLimit = isLipstickProduct(name, subcategory, categoryName)
+  const isVariantProduct = isColorVariantProduct(name, subcategory, categoryName);
+  const imageLimit = isVariantProduct
     ? MAX_LIPSTICK_IMAGES
     : MAX_STANDARD_IMAGES;
+  const totalVariantStock = variants.reduce(
+    (total, variant) => total + (Number(variant.countInStock) || 0),
+    0
+  );
 
   useEffect(() => {
     setImageError(false);
   }, [image]);
+
+  useEffect(() => {
+    if (isCreate && isVariantProduct && variants.length === 0) {
+      setVariants([createEmptyVariant()]);
+    }
+  }, [isCreate, isVariantProduct, variants.length]);
 
   useEffect(() => {
     if (!productId) {
@@ -218,6 +242,18 @@ const ProductEditScreen = () => {
         setIsBestSeller(Boolean(product.isBestSeller));
         setIsNewArrival(Boolean(product.isNewArrival));
         setIsHotDeal(Boolean(product.isHotDeal));
+        setVariants(
+          Array.isArray(product.variants) && product.variants.length
+            ? product.variants.map((variant) => ({
+                name: variant.name || "",
+                hex: variant.hex || "",
+                image: variant.image || "",
+                countInStock: variant.countInStock ?? 0,
+              }))
+            : product.color
+              ? [{ ...createEmptyVariant(), name: product.color, countInStock: product.countInStock || 0 }]
+              : []
+        );
       } catch (err) {
         setError(err?.response?.data?.message || err.message);
       } finally {
@@ -312,6 +348,22 @@ const ProductEditScreen = () => {
     setImageError(false);
   };
 
+  const updateVariant = (index, field, value) => {
+    setVariants((current) =>
+      current.map((variant, variantIndex) =>
+        variantIndex === index ? { ...variant, [field]: value } : variant
+      )
+    );
+  };
+
+  const addVariant = () => {
+    setVariants((current) => [...current, createEmptyVariant()]);
+  };
+
+  const removeVariant = (index) => {
+    setVariants((current) => current.filter((_, variantIndex) => variantIndex !== index));
+  };
+
   const submitHandler = async (event) => {
     event.preventDefault();
 
@@ -334,6 +386,20 @@ const ProductEditScreen = () => {
         return;
       }
 
+      const normalizedVariants = variants
+        .map((variant) => ({
+          name: variant.name.trim(),
+          hex: variant.hex.trim(),
+          image: variant.image.trim(),
+          countInStock: Number(variant.countInStock) || 0,
+        }))
+        .filter((variant) => variant.name);
+
+      if (isVariantProduct && normalizedVariants.length === 0) {
+        setError("Please add at least one color with stock for lipstick, mascara, or foundation products.");
+        return;
+      }
+
       const payload = {
         name,
         price,
@@ -342,7 +408,7 @@ const ProductEditScreen = () => {
         brand,
         subcategory,
         category,
-        countInStock,
+        countInStock: isVariantProduct ? totalVariantStock : countInStock,
         description,
         compareAtPrice: parsedCompareAtPrice,
         discountLabel,
@@ -350,6 +416,7 @@ const ProductEditScreen = () => {
         isBestSeller,
         isNewArrival,
         isHotDeal,
+        variants: isVariantProduct ? normalizedVariants : [],
       };
 
       if (isCreate) {
@@ -718,15 +785,126 @@ const ProductEditScreen = () => {
                         required
                       />
 
-                      <Field
-                        icon={Hash}
-                        label="Stock Count"
-                        type="number"
-                        value={countInStock}
-                        onChange={setCountInStock}
-                        required
-                      />
+                      {isVariantProduct ? (
+                        <div>
+                          <label className="mb-3 block text-sm font-bold uppercase tracking-widest text-gray-500">
+                            Total Stock
+                          </label>
+                          <div className="relative">
+                            <Hash
+                              size={18}
+                              className="absolute left-4 top-1/2 -translate-y-1/2 text-pink-500"
+                            />
+                            <input
+                              type="number"
+                              value={totalVariantStock}
+                              readOnly
+                              className="w-full cursor-not-allowed border border-gray-300 bg-gray-100 py-4 pl-12 pr-4 text-base font-medium text-gray-600 outline-none"
+                            />
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Sum of stock across all color variants below.
+                          </p>
+                        </div>
+                      ) : (
+                        <Field
+                          icon={Hash}
+                          label="Stock Count"
+                          type="number"
+                          value={countInStock}
+                          onChange={setCountInStock}
+                          required
+                        />
+                      )}
                     </div>
+
+                    {isVariantProduct && (
+                      <div className="space-y-4 border border-gray-200 bg-white p-5">
+                        <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-4">
+                          <div>
+                            <h4 className="text-sm font-bold uppercase tracking-widest text-gray-500">
+                              Color Variants
+                            </h4>
+                            <p className="mt-2 text-sm text-gray-500">
+                              Add each shade with its stock count for lipstick, mascara, or foundation products.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={addVariant}
+                            className="inline-flex items-center gap-2 bg-[#2b2b2b] px-4 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-pink-600"
+                          >
+                            <Plus size={14} />
+                            Add Color
+                          </button>
+                        </div>
+
+                        {variants.length === 0 ? (
+                          <p className="text-sm text-gray-500">
+                            No colors added yet. Click &quot;Add Color&quot; to create the first shade.
+                          </p>
+                        ) : (
+                          <div className="space-y-4">
+                            {variants.map((variant, index) => (
+                              <div
+                                key={`variant-${index}`}
+                                className="grid gap-4 border border-gray-200 p-4 sm:grid-cols-[1fr_auto_auto_auto]"
+                              >
+                                <div>
+                                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                    Color Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={variant.name}
+                                    onChange={(event) => updateVariant(index, "name", event.target.value)}
+                                    placeholder="e.g. Ruby Red"
+                                    className="w-full border border-gray-300 bg-white px-4 py-3 text-base font-medium outline-none transition focus:border-pink-500"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                    Swatch
+                                  </label>
+                                  <input
+                                    type="color"
+                                    value={variant.hex || "#cccccc"}
+                                    onChange={(event) => updateVariant(index, "hex", event.target.value)}
+                                    className="h-[50px] w-full cursor-pointer border border-gray-300 bg-white p-1"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                    Stock Count
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={variant.countInStock}
+                                    onChange={(event) =>
+                                      updateVariant(index, "countInStock", event.target.value)
+                                    }
+                                    className="w-full border border-gray-300 bg-white px-4 py-3 text-base font-medium outline-none transition focus:border-pink-500"
+                                  />
+                                </div>
+
+                                <div className="flex items-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeVariant(index)}
+                                    className="inline-flex h-[50px] w-full items-center justify-center border border-gray-300 bg-white px-4 text-xs font-bold uppercase tracking-widest text-gray-500 transition hover:border-red-300 hover:text-red-600 sm:w-auto"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="grid gap-6 sm:grid-cols-2">
                       <Field
