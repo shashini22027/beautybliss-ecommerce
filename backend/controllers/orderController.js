@@ -62,4 +62,20 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
   }
 });
 
-export { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered };
+const deleteOrder = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    res.status(400).json({ message: 'Invalid order id' });
+    return;
+  }
+
+  const order = await Order.findById(req.params.id);
+
+  if (order) {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Order removed successfully' });
+  } else {
+    res.status(404).json({ message: 'Order not found' });
+  }
+});
+
+export { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered, deleteOrder };

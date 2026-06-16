@@ -7,6 +7,7 @@ import {
   LogOut,
   Package,
   ShoppingBag,
+  Trash2,
   Truck,
   User,
   Users,
@@ -114,6 +115,17 @@ const OrderListScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deliveringId, setDeliveringId] = useState("");
+  const [filter, setFilter] = useState("All");
+
+  const filteredOrders = useMemo(() => {
+    if (filter === "Paid") {
+      return orders.filter((order) => Boolean(order.isPaid || order.paidAt));
+    }
+    if (filter === "Delivered") {
+      return orders.filter((order) => Boolean(order.isDelivered || order.deliveredAt));
+    }
+    return orders;
+  }, [orders, filter]);
 
   const sidebarItems = [
     { name: "Dashboard", icon: LayoutDashboard, link: "/admin-dashboard" },
@@ -203,6 +215,34 @@ const OrderListScreen = () => {
       setError(err?.response?.data?.message || err.message || "Unable to update delivery status");
     } finally {
       setDeliveringId("");
+    }
+  };
+
+  const deleteHandler = async (order, index) => {
+    const orderId = order._id || order.id;
+    const orderKey = getOrderKey(order, index);
+
+    if (window.confirm("Are you sure you want to delete this order?")) {
+      try {
+        setError(null);
+        if (isObjectId(orderId)) {
+          await api.delete(`/orders/${orderId}`);
+        }
+
+        setOrders((currentOrders) =>
+          currentOrders.filter((o, idx) => getOrderKey(o, idx) !== orderKey)
+        );
+
+        const checkoutOrders = getCheckoutOrders();
+        if (checkoutOrders.length) {
+          const nextCheckoutOrders = checkoutOrders.filter(
+            (o, idx) => getOrderKey(o, idx) !== orderKey
+          );
+          localStorage.setItem("checkoutOrders", JSON.stringify(nextCheckoutOrders));
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || err.message || "Unable to delete order");
+      }
     }
   };
 
@@ -305,22 +345,33 @@ const OrderListScreen = () => {
                 ["Paid", stats.paid],
                 ["Delivered", stats.delivered],
                 ["Revenue", formatPrice(stats.revenue)],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)]"
-                >
-                  <p className="text-3xl font-extrabold text-gray-950">{value}</p>
-                  <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">
-                    {label}
-                  </p>
-                </div>
-              ))}
+              ].map(([label, value]) => {
+                const isFilterable = ["Orders", "Paid", "Delivered"].includes(label);
+                const filterKey = label === "Orders" ? "All" : label;
+                const isActive = isFilterable && filter === filterKey;
+
+                return (
+                  <div
+                    key={label}
+                    onClick={() => isFilterable && setFilter(filterKey)}
+                    className={`border px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] select-none ${
+                      isFilterable ? "cursor-pointer transition-all hover:border-pink-400 hover:shadow-md" : ""
+                    } ${
+                      isActive ? "border-pink-600 ring-2 ring-pink-600 ring-offset-2 bg-pink-50/5" : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <p className={`text-3xl font-extrabold ${isActive ? "text-pink-600" : "text-gray-950"}`}>{value}</p>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-widest text-gray-500">
+                      {label}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-12">
               <h2 className="text-3xl font-extrabold uppercase">
-                Order Records
+                Order Records {filter !== "All" && <span className="text-pink-600 text-lg font-bold normal-case ml-2">({filter})</span>}
               </h2>
 
               {loading ? (
@@ -343,9 +394,28 @@ const OrderListScreen = () => {
                     Customer orders will appear here after checkout.
                   </p>
                 </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="mt-7 bg-[#f6f6f6] px-6 py-16 text-center">
+                  <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center bg-white text-pink-600 shadow-sm">
+                    <ShoppingBag className="h-7 w-7" />
+                  </div>
+                  <h3 className="text-3xl font-extrabold uppercase text-gray-950">
+                    No orders match filter
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-md text-lg leading-7 text-gray-600">
+                    No orders match the selected filter ({filter}).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setFilter("All")}
+                    className="mt-7 inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
+                  >
+                    Clear Filter
+                  </button>
+                </div>
               ) : (
                 <div className="mt-7 space-y-10">
-                  {orders.map((order, index) => {
+                  {filteredOrders.map((order, index) => {
                     const id = order._id || order.id;
                     const orderNumber = getOrderNumber(order, index);
                     const orderItems = getOrderItems(order);
@@ -418,6 +488,14 @@ const OrderListScreen = () => {
                                 {deliveringId === orderKey ? "Updating" : "Mark Delivered"}
                               </button>
                             )}
+                            <button
+                              type="button"
+                              onClick={() => deleteHandler(order, index)}
+                              className="inline-flex h-10 w-10 items-center justify-center bg-red-50 text-red-600 transition hover:bg-red-100 hover:text-red-800"
+                              aria-label="Delete order"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </div>
 
