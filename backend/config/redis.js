@@ -8,7 +8,6 @@ const redis = new Redis(redisUrl, {
   maxRetriesPerRequest: 3,
   retryStrategy(times) {
     if (times > 3) {
-      console.warn('Redis connection failed. Falling back to MongoDB...');
       return null; // Stop retrying
     }
     return Math.min(times * 50, 2000);
@@ -16,7 +15,9 @@ const redis = new Redis(redisUrl, {
 });
 
 redis.on('error', (error) => {
-  console.warn('Redis error:', error.message);
+  if (error.code !== 'ECONNREFUSED') {
+    console.warn('Redis error:', error.message);
+  }
 });
 
 redis.on('connect', () => {

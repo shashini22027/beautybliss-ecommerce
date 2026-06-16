@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatPrice, parsePrice } from "../utils/currency";
+import API from "../services/api";
 
 const getCartItems = () => {
     try {
@@ -245,7 +246,7 @@ const CheckoutPage = () => {
         return Object.keys(nextErrors).length === 0;
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         if (cartItems.length === 0) {
             setFormError("Your cart is empty. Add products before placing an order.");
             return;
@@ -281,7 +282,6 @@ const CheckoutPage = () => {
             : customerName;
 
         const checkoutOrder = {
-            _id: `checkout-${Date.now()}`,
             orderNo: `C${String(52 + savedOrders.length).padStart(4, "0")}`,
             orderItems,
             subtotal: orderTotal,
@@ -290,7 +290,6 @@ const CheckoutPage = () => {
             paymentMethod,
             isPaid: paymentMethod === "card",
             isDelivered: false,
-            createdAt: new Date().toISOString(),
             customer: {
                 name: customerName,
                 email: checkoutForm.billingEmail,
@@ -298,10 +297,11 @@ const CheckoutPage = () => {
             },
             shippingAddress: {
                 fullName: shippingName,
+                email: checkoutForm.billingEmail,
                 phone: shipDifferent ? checkoutForm.shippingPhone : checkoutForm.billingPhone,
                 address: shipDifferent ? checkoutForm.shippingStreet : checkoutForm.billingStreet,
                 city: shipDifferent ? checkoutForm.shippingCity : checkoutForm.billingCity,
-                district: shipDifferent ? checkoutForm.shippingDistrict : "",
+                postalCode: "00000",
                 country: "Sri Lanka",
             },
             orderNotes: checkoutForm.orderNotes,
@@ -310,14 +310,20 @@ const CheckoutPage = () => {
 
         if (paymentMethod === "card") {
             // Save pending order for payment page
-            localStorage.setItem("pendingPaymentOrder", JSON.stringify(checkoutOrder));
+            localStorage.setItem("pendingPaymentOrder", JSON.stringify({ ...checkoutOrder, _id: `checkout-${Date.now()}` }));
             navigate("/payment");
         } else {
-            // COD: save order, clear cart, go to order complete
-            localStorage.setItem("checkoutOrders", JSON.stringify([checkoutOrder, ...savedOrders]));
-            localStorage.setItem("cartItems", JSON.stringify([]));
-            localStorage.setItem("cart", JSON.stringify([]));
-            navigate("/order-complete", { state: { order: checkoutOrder } });
+            // COD: call API to save order, clear cart, go to order complete
+            try {
+                const { data } = await API.post("/orders", checkoutOrder);
+                localStorage.setItem("checkoutOrders", JSON.stringify([data, ...savedOrders]));
+                localStorage.setItem("cartItems", JSON.stringify([]));
+                localStorage.setItem("cart", JSON.stringify([]));
+                navigate("/order-complete", { state: { order: data } });
+            } catch (error) {
+                console.error(error);
+                setFormError("Failed to place order. Please try again.");
+            }
         }
     };
 

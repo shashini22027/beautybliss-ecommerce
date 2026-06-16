@@ -3,7 +3,7 @@ import { addOrderItems, getOrderById, getMyOrders, updateOrderToDelivered, delet
 import { protect, admin } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
-router.route('/').post(protect, addOrderItems).get(protect, getMyOrders);
+router.route('/').post(addOrderItems).get(protect, getMyOrders);
 router.route('/myorders').get(protect, getMyOrders);
 router.route('/:id').get(protect, getOrderById).delete(protect, admin, deleteOrder);
 router.route('/:id/deliver').put(protect, admin, updateOrderToDelivered);

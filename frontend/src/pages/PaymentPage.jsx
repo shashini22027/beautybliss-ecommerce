@@ -154,7 +154,7 @@ const PaymentPage = () => {
         initializePayment();
     }, [navigate]);
 
-    const handlePaymentSuccess = (paymentIntentId) => {
+    const handlePaymentSuccess = async (paymentIntentId) => {
         const updatedOrder = {
             ...order,
             isPaid: true,
@@ -166,21 +166,31 @@ const PaymentPage = () => {
             },
         };
 
-        // Save to checkout orders
         try {
-            const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
-            savedOrders.unshift(updatedOrder);
-            localStorage.setItem("checkoutOrders", JSON.stringify(savedOrders));
-        } catch {
-            localStorage.setItem("checkoutOrders", JSON.stringify([updatedOrder]));
+            // Remove the temporary _id from frontend so backend generates a real one
+            const { _id, ...orderPayload } = updatedOrder;
+            const { data } = await API.post("/orders", orderPayload);
+
+            // Save to checkout orders
+            try {
+                const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+                savedOrders.unshift(data);
+                localStorage.setItem("checkoutOrders", JSON.stringify(savedOrders));
+            } catch {
+                localStorage.setItem("checkoutOrders", JSON.stringify([data]));
+            }
+
+            // Clear pending order and cart
+            localStorage.removeItem("pendingPaymentOrder");
+            localStorage.setItem("cartItems", JSON.stringify([]));
+            localStorage.setItem("cart", JSON.stringify([]));
+
+            navigate("/order-complete", { state: { order: data } });
+        } catch (error) {
+            console.error("Failed to save order to backend:", error);
+            // Fallback: still navigate to complete page but maybe show error or just use updatedOrder
+            navigate("/order-complete", { state: { order: updatedOrder } });
         }
-
-        // Clear pending order and cart
-        localStorage.removeItem("pendingPaymentOrder");
-        localStorage.setItem("cartItems", JSON.stringify([]));
-        localStorage.setItem("cart", JSON.stringify([]));
-
-        navigate("/order-complete", { state: { order: updatedOrder } });
     };
 
     if (!order) return null;

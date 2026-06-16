@@ -1,19 +1,41 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 import mongoose from 'mongoose';
 
 const addOrderItems = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, totalPrice, paymentMethod } = req.body;
+  const { orderItems, shippingAddress, totalPrice, paymentMethod, customer, isPaid, paidAt, paymentResult } = req.body;
   if (orderItems && orderItems.length === 0) {
     res.status(400).json({ message: 'No order items' });
     return;
   }
+
+  // Deduct inventory
+  for (const item of orderItems) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.countInStock = Math.max(0, product.countInStock - item.qty);
+      if (product.variants && product.variants.length > 0) {
+        // Find matching variant based on name
+        const variant = product.variants.find(v => item.name.endsWith(`- ${v.name}`));
+        if (variant) {
+          variant.countInStock = Math.max(0, variant.countInStock - item.qty);
+        }
+      }
+      await product.save();
+    }
+  }
+
   const order = new Order({
-    user: req.user._id,
+    user: req.user ? req.user._id : undefined,
+    customer,
     orderItems,
     shippingAddress,
     totalPrice,
-    paymentMethod: paymentMethod || 'Cash On Delivery'
+    paymentMethod: paymentMethod || 'Cash On Delivery',
+    isPaid: isPaid || false,
+    paidAt,
+    paymentResult
   });
   const createdOrder = await order.save();
   res.status(201).json(createdOrder);

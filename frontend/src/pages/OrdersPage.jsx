@@ -121,9 +121,9 @@ const OrdersPage = () => {
                 
                 const localOrders = getCheckoutOrders().filter(
                     (order) => 
-                        order.customer?.email === userInfo.email || 
-                        order.shippingAddress?.email === userInfo.email ||
-                        order.paymentResult?.email_address === userInfo.email
+                        order.customer?.email === user.email || 
+                        order.shippingAddress?.email === user.email ||
+                        order.paymentResult?.email_address === user.email
                 );
 
                 const mergedOrders = [...backendOrders, ...localOrders].reduce((acc, current) => {
