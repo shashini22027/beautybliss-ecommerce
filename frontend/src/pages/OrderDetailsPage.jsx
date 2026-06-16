@@ -132,7 +132,7 @@ const OrderDetailsPage = () => {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#fff1f4] px-4 py-16 text-center text-sm font-bold uppercase tracking-widest text-gray-400">
+      <main className="min-h-screen bg-white px-4 py-16 text-center text-sm font-bold uppercase tracking-widest text-gray-400">
         Loading order details...
       </main>
     );
@@ -140,15 +140,15 @@ const OrderDetailsPage = () => {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#fff1f4] px-4 py-16 text-center">
-        <div className="mx-auto max-w-lg rounded-lg border border-red-100 bg-red-50 p-6 text-sm font-medium text-red-700">
+      <main className="min-h-screen bg-white px-4 py-16 text-center">
+        <div className="mx-auto max-w-lg border border-red-100 bg-red-50 p-6 text-base font-medium text-red-700">
           {error}
         </div>
         <Link
           to="/orders"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gray-950 px-6 py-3 text-sm font-bold uppercase tracking-widest text-white transition hover:bg-pink-600"
+          className="mt-6 inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
         >
-          <Icon name="arrow" className="h-4 w-4" />
+          <Icon name="arrow" className="h-5 w-5" />
           Back to Orders
         </Link>
       </main>
@@ -162,50 +162,57 @@ const OrderDetailsPage = () => {
   const shippingAddress = order.shippingAddress || {};
 
   return (
-    <main
-      className="min-h-screen px-4 py-8 text-gray-950 sm:px-6 lg:px-8"
-      style={{
-        background:
-          "linear-gradient(135deg, #fff1f4 0%, #faf0ea 48%, #f8e7ee 100%)",
-      }}
-    >
-      <section className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-col gap-5 border-b border-pink-200/70 pb-6 lg:flex-row lg:items-end lg:justify-between">
+    <main className="min-h-screen bg-white text-gray-950">
+      <section className="relative min-h-[420px] overflow-hidden">
+        <img
+          src="/images/banner.jpg"
+          alt="Order Details"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] items-center justify-center px-6 text-white">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-3xl font-extrabold uppercase">
+            <Link to="/orders" className="text-white/80 transition hover:text-white">
+              My Orders
+            </Link>
+            <span className="text-white/80">→</span>
+            <span className="border-b-4 border-black pb-2">Order Details</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1460px] px-6 py-12">
+        <div className="mb-8 flex flex-col gap-5 border-b border-gray-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
-              BeautyBliss Order
-            </p>
-            <h1 className="break-all font-serif text-4xl font-bold tracking-tight text-gray-950 sm:text-5xl">
-              #{order._id || order.id}
+            <h1 className="break-all text-3xl font-extrabold uppercase text-gray-950">
+              Order #{order.orderNo || order._id || order.id}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-gray-500">
+            <p className="mt-3 text-lg leading-7 text-gray-600">
               Placed on {formatDate(order.createdAt)}
             </p>
           </div>
 
           <Link
             to="/orders"
-            className="inline-flex h-12 items-center justify-center gap-3 rounded-lg bg-gray-950 px-5 text-sm font-bold uppercase tracking-[0.16em] text-white transition hover:bg-pink-600"
+            className="inline-flex h-12 items-center justify-center gap-3 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
           >
             <Icon name="arrow" className="h-5 w-5" />
-            My Orders
+            Back to Orders
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-          <div className="space-y-6">
-            <section className="overflow-hidden rounded-lg border border-pink-200 bg-[#fff4f6]/90 shadow-sm">
-              <div className="border-b border-pink-200 px-5 py-4">
-                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-600">
-                  Order Items
-                </h2>
-              </div>
+        <div className="grid gap-10 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="space-y-10">
+            <section className="bg-[#f6f6f6] p-6">
+              <h2 className="mb-6 text-[21px] font-extrabold uppercase leading-none text-gray-950">
+                Order Items
+              </h2>
 
-              <div className="divide-y divide-pink-200">
+              <div className="divide-y divide-[#e5e5e5]">
                 {getOrderItems(order).map((item) => (
                   <article
                     key={item.product || item.name}
-                    className="grid gap-4 px-5 py-5 sm:grid-cols-[5rem_1fr_auto] sm:items-center"
+                    className="grid gap-4 py-5 sm:grid-cols-[5rem_1fr_auto] sm:items-center"
                   >
                     <img
                       src={
@@ -213,15 +220,15 @@ const OrderDetailsPage = () => {
                         "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=500&q=80"
                       }
                       alt={item.name}
-                      className="h-20 w-20 rounded-lg object-cover"
+                      className="h-20 w-20 object-cover"
                     />
                     <div>
-                      <p className="font-bold text-gray-950">{item.name}</p>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <p className="text-base font-bold text-gray-950">{item.name}</p>
+                      <p className="mt-1 text-base text-gray-500">
                         Qty {getItemQty(item)} x {formatPrice(getItemPrice(item))}
                       </p>
                     </div>
-                    <p className="text-sm font-bold text-gray-950">
+                    <p className="text-lg font-bold text-gray-950">
                       {formatPrice(getItemQty(item) * getItemPrice(item))}
                     </p>
                   </article>
@@ -229,78 +236,96 @@ const OrderDetailsPage = () => {
               </div>
             </section>
 
-            <section className="rounded-lg border border-pink-200 bg-[#fff4f6]/90 p-5 shadow-sm">
-              <div className="mb-4 flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-pink-100 text-pink-600">
-                  <Icon name="map" className="h-5 w-5" />
-                </span>
-                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-gray-600">
+            <section className="bg-[#f6f6f6] p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center bg-white text-gray-950 shadow-sm">
+                  <Icon name="map" className="h-6 w-6" />
+                </div>
+                <h2 className="text-[21px] font-extrabold uppercase leading-none text-gray-950">
                   Shipping Address
                 </h2>
               </div>
-              <p className="text-sm font-medium leading-7 text-gray-600">
+              <p className="text-lg font-medium leading-7 text-gray-600">
+                {shippingAddress.fullName && (
+                  <>
+                    <span className="font-bold text-gray-950">{shippingAddress.fullName}</span>
+                    <br />
+                  </>
+                )}
                 {shippingAddress.address}
                 <br />
-                {[shippingAddress.city, shippingAddress.postalCode]
-                  .filter(Boolean)
-                  .join(", ")}
+                {[shippingAddress.city, shippingAddress.postalCode].filter(Boolean).join(", ")}
                 <br />
                 {shippingAddress.country}
+                {shippingAddress.phone && (
+                  <>
+                    <br />
+                    {shippingAddress.phone}
+                  </>
+                )}
               </p>
             </section>
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-lg border border-pink-200 bg-[#fff4f6]/90 p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-gray-600">
+          <aside className="space-y-10">
+            <section className="bg-[#f6f6f6] p-6">
+              <h2 className="mb-6 text-[21px] font-extrabold uppercase leading-none text-gray-950">
                 Status
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <span
-                  className={`flex items-center gap-2 rounded-lg px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${
+                  className={`flex items-center gap-3 border px-4 py-3 text-sm font-extrabold uppercase tracking-[0.08em] ${
                     isPaid
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-amber-50 text-amber-700"
+                      ? "border-emerald-200 bg-white text-emerald-700"
+                      : "border-[#f0c36d] bg-white text-[#9a6500]"
                   }`}
                 >
-                  <Icon name={isPaid ? "check" : "clock"} className="h-4 w-4" />
-                  {isPaid ? `Paid ${formatDate(order.paidAt)}` : "Payment Pending"}
+                  <span
+                    className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                      isPaid ? "bg-emerald-100" : "bg-[#fff6e5]"
+                    }`}
+                  >
+                    <Icon name={isPaid ? "check" : "clock"} className="h-3 w-3" />
+                  </span>
+                  {isPaid ? `Paid on ${formatDate(order.paidAt)}` : "Payment Pending"}
                 </span>
                 <span
-                  className={`flex items-center gap-2 rounded-lg px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${
+                  className={`flex items-center gap-3 border px-4 py-3 text-sm font-extrabold uppercase tracking-[0.08em] ${
                     isDelivered
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-pink-50 text-pink-700"
+                      ? "border-emerald-200 bg-white text-emerald-700"
+                      : "border-pink-200 bg-white text-pink-700"
                   }`}
                 >
-                  <Icon name={isDelivered ? "check" : "bag"} className="h-4 w-4" />
-                  {isDelivered
-                    ? `Delivered ${formatDate(order.deliveredAt)}`
-                    : "Processing"}
+                  <span
+                    className={`flex h-6 w-6 items-center justify-center rounded-full ${
+                      isDelivered ? "bg-emerald-100" : "bg-pink-100"
+                    }`}
+                  >
+                    <Icon name={isDelivered ? "check" : "bag"} className="h-3 w-3" />
+                  </span>
+                  {isDelivered ? `Delivered on ${formatDate(order.deliveredAt)}` : "Processing"}
                 </span>
               </div>
             </section>
 
-            <section className="rounded-lg border border-pink-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-gray-600">
+            <section className="bg-[#f6f6f6] p-6">
+              <h2 className="mb-6 text-[21px] font-extrabold uppercase leading-none text-gray-950">
                 Order Summary
               </h2>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4 text-base font-medium">
                 <div className="flex justify-between gap-4 text-gray-600">
                   <span>Items</span>
                   <span className="font-bold text-gray-950">{formatPrice(totals.items)}</span>
                 </div>
                 <div className="flex justify-between gap-4 text-gray-600">
                   <span>Shipping</span>
-                  <span className="font-bold text-gray-950">
-                    {formatPrice(totals.shipping)}
-                  </span>
+                  <span className="font-bold text-gray-950">{formatPrice(totals.shipping)}</span>
                 </div>
                 <div className="flex justify-between gap-4 text-gray-600">
                   <span>Tax</span>
                   <span className="font-bold text-gray-950">{formatPrice(totals.tax)}</span>
                 </div>
-                <div className="flex justify-between gap-4 border-t border-pink-100 pt-4 text-lg font-bold text-gray-950">
+                <div className="flex justify-between gap-4 border-t border-[#e5e5e5] pt-5 text-xl font-extrabold uppercase text-gray-950">
                   <span>Total</span>
                   <span>{formatPrice(totals.total)}</span>
                 </div>
