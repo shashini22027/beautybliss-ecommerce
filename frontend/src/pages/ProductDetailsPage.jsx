@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import CartPage from './CartPage';
 import { formatPrice, parsePrice } from '../utils/currency';
+import { addToCart } from '../redux/slices/cartSlice';
 
 const getTextValue = (value, fallback = '') => {
   if (!value) return fallback;
@@ -270,27 +271,7 @@ const ProductDetailsPage = () => {
   );
 
   const handleAddToCart = () => {
-    const cartId = product._id || product.id || getProductSlug(product);
-    const cartProduct = {
-      ...product,
-      _id: product._id || cartId,
-      id: product.id || cartId,
-      product: cartId,
-      qty,
-      quantity: qty,
-    };
-    const currentItems = mergeStoredCartItems(readStoredCartItems());
-    const selectedQty = Math.max(1, Number(qty || 1));
-    const nextItems = [
-      ...currentItems.filter((item) => getCartItemKey(item) !== cartId),
-      {
-        ...cartProduct,
-        qty: selectedQty,
-        quantity: selectedQty,
-      },
-    ];
-
-    writeStoredCartItems(nextItems);
+    dispatch(addToCart({ product, qty }));
     setCartDrawerOpen(true);
   };
 
@@ -603,21 +584,7 @@ const ProductDetailsPage = () => {
                 const relatedLabel = relatedProduct.isNewArrival ? 'NEW' : relatedProduct.isHotDeal ? 'HOT' : relatedProduct.isBestSeller ? 'BEST' : '';
 
                 const addRelatedToCart = () => {
-                  const cartId = relatedProduct._id || relatedProduct.id || getProductSlug(relatedProduct);
-                  const cartProduct = {
-                    ...relatedProduct,
-                    _id: relatedProduct._id || cartId,
-                    id: relatedProduct.id || cartId,
-                    product: cartId,
-                    qty: 1,
-                    quantity: 1,
-                  };
-                  const currentItems = mergeStoredCartItems(readStoredCartItems());
-                  const nextItems = [
-                    ...currentItems.filter((item) => getCartItemKey(item) !== cartId),
-                    cartProduct,
-                  ];
-                  writeStoredCartItems(nextItems);
+                  dispatch(addToCart({ product: relatedProduct, qty: 1 }));
                   setCartDrawerOpen(true);
                 };
 
