@@ -52,6 +52,39 @@ app.use(cookieParser());
 
 app.use('/api/', apiLimiter);
 
+// 🔍 DATABASE TEST ROUTE (ප්‍රශ්නය හඳුනාගැනීම සඳහා අලුතින් එකතු කරන ලදී)
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    const statusMap = { 0: "Disconnected", 1: "Connected", 2: "Connecting", 3: "Disconnecting" };
+
+    if (dbStatus !== 1) {
+      return res.status(500).json({ 
+        status: statusMap[dbStatus], 
+        message: "Database is not fully connected yet." 
+      });
+    }
+
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collectionNames = collections.map(col => col.name);
+
+    res.json({
+      status: statusMap[dbStatus],
+      databaseName: mongoose.connection.db.databaseName,
+      message: "Database connected successfully!",
+      collections: collectionNames
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      status: "Error", 
+      message: "Failed to fetch collections", 
+      error: err.message 
+    });
+  }
+});
+
+// Regular API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
