@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "beautybliss-ecommerce-production.up.railway.app/$1"
+      "destination": "beautybliss-ecommerce-production.up.railway.app/api/$1"
     },
     {
       "source": "/(.*)",
