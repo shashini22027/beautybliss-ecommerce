@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://beautybliss-backend.onrender.com/api/$1"
+      "destination": "beautybliss-ecommerce-production.up.railway.app"
     },
     {
       "source": "/(.*)",
