@@ -1,8 +1,9 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "beautybliss-ecommerce-production.up.railway.app/api/$1"
+      "destination": "https://beautybliss-ecommerce-production.up.railway.app/api/$1"
     },
     {
       "source": "/(.*)",
