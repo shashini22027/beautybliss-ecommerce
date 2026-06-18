@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../../utils/image";
 import {
   LayoutDashboard,
   LogOut,
@@ -49,7 +50,7 @@ const ReviewListScreen = () => {
             ...review,
             productId: product._id || product.id,
             productName: product.name,
-            productImage: product.image || product.images?.[0] || "",
+            productImage: getImageUrl(product.image || product.images?.[0] || ""),
           }))
         );
 

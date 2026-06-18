@@ -10,10 +10,11 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import { formatPrice } from "../../utils/currency";
+import { getImageUrl } from "../../utils/image";
 import AdminSidebar from "./components/AdminSidebar";
 
 const getProductImage = (product) =>
-  product.image || product.images?.[0] || "/images/admin_banner.png";
+  getImageUrl(product.image || product.images?.[0] || "/images/admin_banner.png");
 
 const getSectionLabel = (product, section) => {
   if (section === "newArrival") return "New";

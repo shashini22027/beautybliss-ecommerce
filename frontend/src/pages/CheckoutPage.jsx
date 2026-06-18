@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../utils/image";
 import { formatPrice, parsePrice } from "../utils/currency";
 import API from "../services/api";
 
@@ -269,8 +270,8 @@ const CheckoutPage = () => {
                 name: product.name || "BeautyBliss product",
                 qty,
                 quantity: qty,
-                image: product.image || product.images?.[0] || "",
-                images: product.images || (product.image ? [product.image] : []),
+                image: getImageUrl(product.image || product.images?.[0] || ""),
+                images: (product.images || (product.image ? [product.image] : [])).map(getImageUrl),
                 price,
                 lineTotal: price * qty,
             };

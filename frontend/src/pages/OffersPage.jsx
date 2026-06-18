@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/image';
 import { ArrowRight, BadgePercent, Gift, Sparkles, Truck } from 'lucide-react';
 import API from '../services/api';
 import { formatPrice } from '../utils/currency';
@@ -33,13 +34,16 @@ const getProductsFromResponse = (data) => {
 };
 
 const getProductImage = (product) => {
-  if (product.image) return product.image;
-  if (product.imageUrl) return product.imageUrl;
-  if (Array.isArray(product.images)) {
+  let src;
+  if (product.image) src = product.image;
+  else if (product.imageUrl) src = product.imageUrl;
+  else if (Array.isArray(product.images)) {
     const [firstImage] = product.images;
-    return typeof firstImage === 'string' ? firstImage : firstImage?.url;
+    src = typeof firstImage === 'string' ? firstImage : firstImage?.url;
+  } else {
+    src = '';
   }
-  return '';
+  return getImageUrl(src);
 };
 
 const OffersPage = () => {

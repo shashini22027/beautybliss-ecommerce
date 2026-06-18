@@ -1,4 +1,5 @@
 import React from 'react';
+import { getImageUrl } from '../utils/image';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -33,7 +34,7 @@ const ProductCard = ({ product }) => {
           className="absolute inset-0 cursor-pointer"
         >
           <img
-            src={product.image}
+            src={getImageUrl(product.image)}
             alt={product.name}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
             loading="lazy"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { getImageUrl } from "../utils/image";
 import { useDispatch } from "react-redux";
 import { addToCart as reduxAddToCart } from "../redux/slices/cartSlice";
 import { toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
@@ -370,11 +371,11 @@ const ProductsPage = () => {
                                             )}
 
                                             <img
-                                                src={
+                                                src={getImageUrl(
                                                     product.image ||
                                                     product.images?.[0] ||
                                                     "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
-                                                }
+                                                )}
                                                 alt={product.name || "Beauty product"}
                                                 className="h-[330px] w-full max-w-[360px] object-cover transition duration-500 group-hover:scale-105"
                                             />

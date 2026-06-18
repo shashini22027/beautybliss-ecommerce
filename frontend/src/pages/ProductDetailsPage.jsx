@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
+import { getImageUrl } from '../utils/image';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
 import { useDispatch, useSelector } from 'react-redux';
@@ -280,7 +281,7 @@ const ProductDetailsPage = () => {
 
   if (!product) return null;
 
-  const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))];
+  const allImages = [...new Set([product.image, ...(product.images || [])].filter(Boolean))].map(getImageUrl);
   const productVariants = Array.isArray(product.variants) ? product.variants : [];
   const hasColorVariants = isColorVariantProduct(product) && productVariants.length > 0;
   const selectedVariant = hasColorVariants ? productVariants[selectedVariantIndex] || productVariants[0] : null;

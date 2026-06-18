@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../../utils/image";
 import {
   Edit,
   Image,
@@ -31,7 +32,7 @@ const getStoredUser = () => {
 };
 
 const getProductImage = (product) =>
-  product.image || product.images?.[0] || product.thumbnail || "";
+  getImageUrl(product.image || product.images?.[0] || product.thumbnail || "");
 
 const ProductListScreen = () => {
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../utils/image";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, addToCart as reduxAddToCart, removeFromCart as reduxRemoveFromCart, setCart } from "../redux/slices/cartSlice";
 import { fetchProducts, selectAllProducts, selectProductsStatus } from "../redux/slices/productsSlice";
@@ -195,7 +196,7 @@ const CartPage = ({ onClose }) => {
                                 return (
                                     <article key={id} className="grid grid-cols-[86px_1fr_28px] gap-4 border-b border-gray-200 px-5 py-5">
                                         <Link to={`/product/${id}`} state={{ product }} className="flex h-20 w-20 items-center justify-center bg-white">
-                                            <img src={product.image || product.images?.[0]} alt={product.name} className="h-full w-full object-contain" />
+                                            <img src={getImageUrl(product.image || product.images?.[0])} alt={product.name} className="h-full w-full object-contain" />
                                         </Link>
                                         <div>
                                             <Link to={`/product/${id}`} state={{ product }} className="text-lg font-bold leading-6 text-gray-800 hover:text-pink-600">
@@ -299,7 +300,7 @@ const CartPage = ({ onClose }) => {
 
                                         <div className="grid grid-cols-[120px_1fr] items-center gap-[20px]">
                                             <Link to={`/product/${id}`} state={{ product }} className="flex h-[78px] w-[78px] items-center justify-center bg-white">
-                                                <img src={product.image || product.images?.[0]} alt={product.name} className="h-full w-full object-contain" />
+                                                <img src={getImageUrl(product.image || product.images?.[0])} alt={product.name} className="h-full w-full object-contain" />
                                             </Link>
                                             <Link to={`/product/${id}`} state={{ product }} className="max-w-[360px] text-[18px] font-bold leading-6 text-gray-950 hover:text-pink-600">
                                                 {product.name}
@@ -360,7 +361,7 @@ const CartPage = ({ onClose }) => {
                     <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
                         {suggestedProducts.map((product) => {
                             const productSlug = product._id || getSlug(product);
-                            const productImage = product.image || product.images?.[0] || '';
+                            const productImage = getImageUrl(product.image || product.images?.[0] || '');
                             const categoryName = typeof product.category === 'object' ? product.category?.name : product.category || '';
                             const discountPercent = product.compareAtPrice && product.compareAtPrice > product.price
                                 ? `-${Math.round((1 - product.price / product.compareAtPrice) * 100)}%`

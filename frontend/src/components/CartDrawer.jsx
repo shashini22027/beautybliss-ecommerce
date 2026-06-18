@@ -1,4 +1,5 @@
 import React from 'react';
+import { getImageUrl } from '../utils/image';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartItems, removeFromCart } from '../redux/slices/cartSlice';
 import { X, Trash2 } from 'lucide-react';
@@ -24,7 +25,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
           ) : (
             cartItems.map((item) => (
               <div key={item.product._id} className="flex gap-4 p-3 bg-stone-50 rounded-xl border border-pink-50">
-                <img src={item.product.image} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg" />
+                <img src={getImageUrl(item.product.image)} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg" />
                 <div className="flex-grow">
                   <h4 className="text-xs font-semibold text-stone-850">{item.product.name}</h4>
                   <p className="text-xs text-stone-400 mt-1">Qty: {item.qty}</p>

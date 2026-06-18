@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/image';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
@@ -111,9 +112,11 @@ const ServicePill = ({ text }) => (
 );
 
 const getProductImage = (product) =>
-  product.image ||
-  (Array.isArray(product.images) ? product.images[0] : '') ||
-  '/images/banner.jpg';
+  getImageUrl(
+    product.image ||
+    (Array.isArray(product.images) ? product.images[0] : '') ||
+    '/images/banner.jpg'
+  );
 
 const getProductCategoryLabel = (product) => {
   const categoryName =

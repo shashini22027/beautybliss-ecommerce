@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { getImageUrl } from "../../utils/image";
 import {
   AlignLeft,
   ArrowLeft,
@@ -609,7 +610,7 @@ const ProductEditScreen = () => {
                     {hasValidImage ? (
                       <div className="group relative overflow-hidden bg-white">
                         <img
-                          src={images[0]}
+                          src={getImageUrl(images[0])}
                           alt="Product preview"
                           onError={() => setImageError(true)}
                           className="h-[420px] w-full object-contain transition duration-500 group-hover:scale-105"
@@ -680,7 +681,7 @@ const ProductEditScreen = () => {
                           className={`group relative overflow-hidden bg-white ${index === 0 ? "ring-2 ring-pink-500" : ""}`}
                         >
                           <img
-                            src={img}
+                            src={getImageUrl(img)}
                             alt={`Product ${index + 1}`}
                             className="h-32 w-full object-contain"
                           />

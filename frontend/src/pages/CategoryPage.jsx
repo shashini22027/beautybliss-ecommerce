@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { getImageUrl } from '../utils/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
@@ -59,13 +60,16 @@ const buildFallbackProducts = (category) =>
   );
 
 const getProductImage = (product) => {
-  if (typeof product.image === 'string') return product.image;
-  if (Array.isArray(product.images) && product.images.length > 0) {
-    return typeof product.images[0] === 'string'
+  let src;
+  if (typeof product.image === 'string') src = product.image;
+  else if (Array.isArray(product.images) && product.images.length > 0) {
+    src = typeof product.images[0] === 'string'
       ? product.images[0]
       : product.images[0]?.url;
+  } else {
+    src = product.image?.url || fallbackImages[0];
   }
-  return product.image?.url || fallbackImages[0];
+  return getImageUrl(src);
 };
 
 const formatProductPrice = (product) => {
