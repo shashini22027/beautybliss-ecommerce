@@ -11,9 +11,14 @@ const getStripePromise = async () => {
     if (!stripePromise) {
         try {
             const { data } = await API.get("/payment/config");
-            stripePromise = loadStripe(data.publishableKey);
-        } catch {
-            console.error("Failed to load Stripe config");
+            const key = data?.publishableKey || import.meta.env?.VITE_STRIPE_PUBLISHABLE_KEY;
+            if (!key) {
+                console.error("Stripe publishable key is missing. Please check your configuration.");
+                throw new Error("Missing Stripe configuration");
+            }
+            stripePromise = loadStripe(key);
+        } catch (error) {
+            console.error("Failed to load Stripe config", error);
             throw new Error("Config load failed");
         }
     }
