@@ -1,7 +1,5 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { loginSuccess } from "../redux/slices/authSlice";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -73,8 +71,8 @@ const RegisterPage = () => {
 
     const navigate = useNavigate();
     const { search } = useLocation();
-    const dispatch = useDispatch();
     const redirect = new URLSearchParams(search).get("redirect") || "/";
+    const loginPath = redirect !== "/" ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login";
     const passwordStrength = getPasswordStrength(password);
 
     const submitHandler = async (e) => {
@@ -101,8 +99,7 @@ const RegisterPage = () => {
                 throw new Error(data?.message || "Registration failed");
             }
 
-            dispatch(loginSuccess(data));
-            navigate(redirect);
+            navigate(loginPath);
         } catch (err) {
             setRegisterError(err.message || "Registration failed");
         } finally {
@@ -210,7 +207,7 @@ const RegisterPage = () => {
                         </p>
 
                         <Link
-                            to={redirect !== "/" ? `/login?redirect=${redirect}` : "/login"}
+                            to={loginPath}
                             className="mt-8 inline-flex h-[52px] items-center justify-center rounded-full bg-[#f6f6f6] px-9 text-base font-extrabold uppercase text-gray-950 transition hover:bg-[#2b2b2b] hover:text-white"
                         >
                             Login

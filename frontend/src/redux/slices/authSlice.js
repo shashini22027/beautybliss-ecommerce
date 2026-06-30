@@ -1,9 +1,42 @@
 import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiFetch } from '../../utils/api';
 
-const userInfo = localStorage.getItem('userInfo');
+const getTokenPayload = (token) => {
+  try {
+    const payload = token.split('.')[1];
+    const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decodedPayload);
+  } catch {
+    return null;
+  }
+};
+
+const getStoredUser = () => {
+  try {
+    const userInfo = localStorage.getItem('userInfo');
+
+    if (!userInfo) {
+      return null;
+    }
+
+    const user = JSON.parse(userInfo);
+    const payload = user?.token ? getTokenPayload(user.token) : null;
+    const tokenExpiresAt = payload?.exp ? payload.exp * 1000 : 0;
+
+    if (!tokenExpiresAt || tokenExpiresAt <= Date.now()) {
+      localStorage.removeItem('userInfo');
+      return null;
+    }
+
+    return user;
+  } catch {
+    localStorage.removeItem('userInfo');
+    return null;
+  }
+};
+
 const initialState = {
-  user: userInfo ? JSON.parse(userInfo) : null,
+  user: getStoredUser(),
   loading: false,
 };
 

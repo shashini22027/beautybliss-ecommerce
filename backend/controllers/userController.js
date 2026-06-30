@@ -25,7 +25,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token: generateToken(res, user._id),
+      message: 'Registration successful. Please log in to continue.',
     });
   } else {
     res.status(400).json({ message: 'Invalid user data' });
@@ -238,4 +238,4 @@ export {
   resetPassword,
   refreshToken,
   logoutUser,
-};
+};
