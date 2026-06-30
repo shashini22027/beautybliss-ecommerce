@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import {
   LayoutDashboard,
   Users,
@@ -11,6 +12,7 @@ import {
   Mail,
   DollarSign,
 } from 'lucide-react';
+import { logoutUserThunk } from '../../../redux/slices/authSlice';
 
 // Helper to retrieve stored user info from localStorage
 const getStoredUser = () => {
@@ -24,6 +26,7 @@ const getStoredUser = () => {
 const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const currentPath = location.pathname;
   const userInfo = React.useState(getStoredUser)[0];
 
@@ -68,7 +71,7 @@ const AdminSidebar = () => {
         <button
           type="button"
           onClick={() => {
-            localStorage.removeItem('userInfo');
+            dispatch(logoutUserThunk());
             navigate('/login');
           }}
           className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"

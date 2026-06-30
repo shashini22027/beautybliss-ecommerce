@@ -1,5 +1,4 @@
 import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiFetch } from '../../utils/api';
 
 const getTokenPayload = (token) => {
   try {
@@ -40,13 +39,18 @@ const initialState = {
   loading: false,
 };
 
-export const logoutUserThunk = createAsyncThunk('auth/logout', async (_, { dispatch }) => {
+export const logoutUserThunk = createAsyncThunk('auth/logout', async (_, { dispatch, getState }) => {
+  const token = getState().auth.user?.token;
+  dispatch(logoutUser());
+
   try {
-    await apiFetch('/api/users/logout', { method: 'POST' });
+    await fetch('/api/users/logout', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
   } catch (error) {
     console.error('Logout failed:', error);
   }
-  dispatch(logoutUser());
 });
 
 const authSlice = createSlice({
