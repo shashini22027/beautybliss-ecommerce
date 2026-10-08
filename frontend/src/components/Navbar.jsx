@@ -75,6 +75,7 @@ const Navbar = () => {
   const navLinks = [
     { label: 'Home', to: '/' },
     { label: 'Shop', to: '/products' },
+    { label: 'Skin Consultation', to: '/skin-consultation' },
     { label: 'Blog', to: '/blog' },
     { label: 'About us', to: '/about' },
     { label: 'Contact us', to: '/contact' },

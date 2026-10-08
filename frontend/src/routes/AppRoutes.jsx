@@ -21,6 +21,7 @@ import AboutPage from '../pages/AboutPage';
 import Blog from '../pages/Blog';
 import BlogPostDetail from '../pages/BlogPostDetail';
 import ContactScreen from "../pages/ContactScreen";
+import SkinConsultationPage from '../pages/SkinConsultationPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
@@ -85,6 +86,7 @@ const AppRoutes = () => {
           <Route path="/blog/:slug" element={<BlogPostDetail />} />
           <Route path="*" element={<ErrorPage />} />
           <Route path="/contact" element={<ContactScreen />} />
+          <Route path="/skin-consultation" element={<SkinConsultationPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/payment" element={<PaymentPage />} />

@@ -82,6 +82,7 @@ const Footer = () => {
                     <ul className="space-y-4 text-sm text-gray-600">
                         <li><Link to="/privacy-policy" className="transition-colors hover:text-pink-600">Privacy Policy</Link></li>
                         <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Terms & Conditions</Link></li>
+                        <li><Link to="/skin-consultation" className="transition-colors hover:text-pink-600">Skin Consultation</Link></li>
                         <li><Link to="/about" className="transition-colors hover:text-pink-600">About Us</Link></li>
                         <li><Link to="/contact" className="transition-colors hover:text-pink-600">Contact Support</Link></li>
                     </ul>
