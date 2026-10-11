@@ -72,13 +72,18 @@ const Navbar = () => {
     setShowProfileMenu(false);
   };
 
+  const navLinkClass =
+    'text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600';
+  const mobileNavLinkClass =
+    'block px-4 py-2 text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 hover:bg-[#f6f6f6]';
+
   const navLinks = [
     { label: 'Home', to: '/' },
     { label: 'Shop', to: '/products' },
     { label: 'Skin Consultation', to: '/skin-consultation' },
     { label: 'Blog', to: '/blog' },
-    { label: 'About us', to: '/about' },
-    { label: 'Contact us', to: '/contact' },
+    { label: 'About Us', to: '/about' },
+    { label: 'Contact Us', to: '/contact' },
    
   ];
 
@@ -97,9 +102,9 @@ const Navbar = () => {
               BEAUTYBLISS
             </Link>
 
-            <nav className="hidden items-center justify-center gap-8 text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 lg:flex">
+            <nav className="hidden items-center justify-center gap-8 lg:flex">
               {navLinks.map((item) => (
-                <Link key={item.to} to={item.to} className="transition hover:text-pink-600">
+                <Link key={item.to} to={item.to} className={navLinkClass}>
                   {item.label}
                 </Link>
               ))}
@@ -280,7 +285,7 @@ const Navbar = () => {
                   key={item.to}
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
-                  className="block px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-700 hover:bg-[#f6f6f6]"
+                  className={mobileNavLinkClass}
                 >
                   {item.label}
                 </Link>

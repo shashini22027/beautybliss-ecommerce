@@ -14,8 +14,8 @@ const AboutPage = () => {
         />
         <div className="absolute inset-0 bg-black/35" />
         <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
-          <h1 className="text-6xl font-bold tracking-tight md:text-7xl">
-            About us
+          <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
+            About Us
           </h1>
         </div>
       </section>
