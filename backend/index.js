@@ -25,6 +25,7 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import newsletterRoutes from './routes/newsletterRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -103,6 +104,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Serve uploads static directory
 const __dirname = path.resolve();

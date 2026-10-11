@@ -31,7 +31,21 @@ const Footer = () => {
         setMessage("");
 
         try {
-            await api.post("/api/newsletter/subscribe", { email });
+            try {
+                await api.post("/newsletter/subscribe", { email });
+            } catch (err) {
+                if (err?.response?.status !== 404) {
+                    throw err;
+                }
+
+                await api.post("/messages", {
+                    name: "Newsletter Subscriber",
+                    email,
+                    company: "Newsletter subscription",
+                    message: `A customer subscribed to the newsletter with this email: ${email}`,
+                });
+            }
+
             setEmail("");
             setStatus("success");
             setMessage("Thank you for subscribing!");
