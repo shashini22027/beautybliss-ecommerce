@@ -5,7 +5,6 @@ import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import api from "../services/api";
 
 const Footer = () => {
-    const currentYear = new Date().getFullYear();
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState("idle");
     const [message, setMessage] = useState("");
@@ -150,16 +149,6 @@ const Footer = () => {
                             </p>
                         )}
                     </form>
-                </div>
-            </div>
-
-            <div className="mx-auto mt-16 flex max-w-[1540px] flex-col items-center justify-between gap-4 border-t border-gray-200 px-6 pt-8 text-xs uppercase tracking-widest text-gray-500 md:flex-row">
-                <p>&copy; {currentYear} BeautyBliss Cosmetics. All rights reserved.</p>
-                <div className="flex space-x-6">
-                    <Link to="/privacy-policy" className="transition-colors hover:text-gray-950">Privacy Policy</Link>
-                    <Link to="/terms-conditions" className="transition-colors hover:text-gray-950">Terms & Conditions</Link>
-                    <Link to="/about" className="transition-colors hover:text-gray-950">About Us</Link>
-                    <Link to="/contact" className="transition-colors hover:text-gray-950">Contact</Link>
                 </div>
             </div>
         </footer>
