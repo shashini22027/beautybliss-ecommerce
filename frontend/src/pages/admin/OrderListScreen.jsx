@@ -417,6 +417,7 @@ const OrderListScreen = () => {
                             </span>
                             <Link
                               to={id ? `/order/${id}` : "#"}
+                              state={{ orderNo: orderNumber }}
                               className="inline-flex h-10 items-center justify-center bg-[#2b2b2b] px-4 text-xs font-bold uppercase text-white transition hover:bg-pink-600"
                             >
                               View

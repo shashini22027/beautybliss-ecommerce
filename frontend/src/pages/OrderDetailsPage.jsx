@@ -201,7 +201,11 @@ const OrderDetailsPage = () => {
         <div className="mb-8 flex flex-col gap-5 border-b border-gray-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="break-all text-3xl font-extrabold uppercase text-gray-950">
-              Order #{order.orderNo || order.orderNumber || "C0052"}
+              Order #
+              {order.orderNo ||
+                order.orderNumber ||
+                location.state?.orderNo ||
+                "Order number unavailable"}
             </h1>
             <p className="mt-3 text-lg leading-7 text-gray-600">
               Placed on {formatDate(order.createdAt)}

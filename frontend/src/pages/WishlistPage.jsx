@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { Heart } from "lucide-react";
 import { selectWishlistItems, toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 
@@ -49,21 +50,6 @@ const WishlistPage = () => {
     ? rawWishlistItems.filter((item) => item && typeof item === "object")
     : [];
   const toggleWishlist = (product) => dispatch(reduxToggleWishlist(product));
-  const navigate = useNavigate();
-
-  const logoutHandler = () => {
-    localStorage.removeItem("userInfo");
-    navigate("/login");
-  };
-
-  const menuItems = [
-    { label: "Dashboard", to: "/profile" },
-    { label: "Orders", to: "/orders" },
-    { label: "Downloads", to: "/profile" },
-    { label: "Addresses", to: "/profile" },
-    { label: "Account details", to: "/profile" },
-    { label: "Wishlist", to: "/wishlist", active: true },
-  ];
 
   const [selectedItems, setSelectedItems] = useState(new Set());
 
@@ -102,18 +88,18 @@ const WishlistPage = () => {
   return (
     <main className="min-h-screen bg-white text-gray-950">
       {/* Hero Banner */}
-      <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+      <section className="relative min-h-[420px] overflow-hidden">
         <img
           src="/images/banner.jpg"
           alt="Wishlist"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
+        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-center text-white">
+          <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
             Wishlist
           </h1>
-          <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+          <div className="mt-6 flex items-center gap-3 text-base font-medium">
             <Link to="/" className="text-white/85 transition hover:text-white">
               Home
             </Link>
@@ -123,54 +109,41 @@ const WishlistPage = () => {
         </div>
       </section>
 
-      {/* Content with Sidebar */}
-      <section className="mx-auto max-w-[1460px] px-6 py-12 sm:py-16">
-        <div className="grid gap-10 lg:grid-cols-[315px_1fr]">
-          {/* Left Sidebar */}
-          <aside className="border-gray-200 lg:border-r lg:pr-9">
-            <h2 className="border-b border-gray-200 pb-5 text-2xl font-extrabold uppercase">
-              My Account
+      <section className="mx-auto max-w-7xl px-6 py-20">
+        {wishlistItems.length === 0 ? (
+          <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
+            <Heart
+              aria-hidden="true"
+              className="mb-8 h-36 w-36 stroke-[1.5] text-gray-200"
+            />
+            <h2 className="text-4xl font-bold text-stone-900 sm:text-5xl">
+              This wishlist is empty.
             </h2>
-            <nav className="mt-5 space-y-1 text-lg font-bold">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  className={`block px-5 py-3 transition hover:bg-[#f2f2f2] hover:text-pink-600 ${
-                    item.active ? "bg-[#f2f2f2]" : ""
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <button
-                type="button"
-                onClick={logoutHandler}
-                className="block w-full px-5 py-3 text-left transition hover:bg-[#f2f2f2] hover:text-pink-600"
-              >
-                Logout
-              </button>
-            </nav>
-          </aside>
-
-          {/* Right Content */}
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+              You don&apos;t have any products in your wishlist yet. You will find
+              a lot of interesting products on our Shop page.
+            </p>
+            <Link
+              to="/products"
+              className="mt-7 inline-flex items-center justify-center bg-[#2b2b2b] px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-pink-600"
+            >
+              Return to Shop
+            </Link>
+          </div>
+        ) : (
           <section>
             <div className="flex flex-col gap-4 border-b border-gray-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-2xl font-extrabold uppercase">Your Products Wishlist</h2>
+              <div>
+                <p className="mb-2 text-sm font-bold uppercase tracking-widest text-rose-600">
+                  Your Beauty Picks
+                </p>
+                <h2 className="text-3xl font-bold text-stone-900 sm:text-4xl">
+                  Your Products Wishlist
+                </h2>
+              </div>
             </div>
 
-            {wishlistItems.length === 0 ? (
-              <div className="py-16 text-center">
-                <p className="text-lg text-gray-600">Your wishlist is currently empty.</p>
-                <Link
-                  to="/products"
-                  className="mt-8 inline-flex h-12 items-center justify-center bg-[#2b2b2b] px-8 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
-                >
-                  Browse products
-                </Link>
-              </div>
-            ) : (
-              <div className="pt-6">
+            <div className="pt-8">
                 <div className="mb-8 flex items-center justify-between text-base font-bold text-gray-600">
                   <button
                     type="button"
@@ -274,10 +247,9 @@ const WishlistPage = () => {
                     );
                   })}
                 </div>
-              </div>
-            )}
+            </div>
           </section>
-        </div>
+        )}
       </section>
     </main>
   );

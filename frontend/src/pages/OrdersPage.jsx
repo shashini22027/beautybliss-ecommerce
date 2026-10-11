@@ -42,11 +42,12 @@ const formatDate = (date) => {
     });
 };
 
-const getOrderNumber = (order, index) => {
+const getOrderNumber = (order, index, totalOrders) => {
     if (order.orderNo || order.orderNumber) {
         return String(order.orderNo || order.orderNumber).toUpperCase();
     }
-    return `C${String(52 + index).padStart(4, "0")}`;
+    const sequenceNumber = 52 + Math.max(0, totalOrders - index - 1);
+    return `C${String(sequenceNumber).padStart(4, "0")}`;
 };
 
 const getOrderItems = (order) => {
@@ -316,7 +317,7 @@ const OrdersPage = () => {
                     <div className="space-y-10">
                         {orders.map((order, index) => {
                                 const id = order._id || order.id;
-                                const orderNumber = getOrderNumber(order, index);
+                                const orderNumber = getOrderNumber(order, index, orders.length);
                                 const orderItems = getOrderItems(order);
                                 const isPaid = Boolean(order.isPaid || order.paidAt);
                                 const isDelivered = Boolean(
@@ -369,6 +370,7 @@ const OrdersPage = () => {
                                                 <Link
                                                     to={id ? `/order/${id}` : "#"}
                                                     state={{
+                                                        orderNo: orderNumber,
                                                         orderEmail:
                                                             order.customer?.email ||
                                                             order.shippingAddress?.email ||
