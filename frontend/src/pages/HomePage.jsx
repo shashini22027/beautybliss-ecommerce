@@ -111,12 +111,19 @@ const ServicePill = ({ text }) => (
   </div>
 );
 
-const getProductImage = (product) =>
-  getImageUrl(
-    product.image ||
-    (Array.isArray(product.images) ? product.images[0] : '') ||
-    '/images/banner.jpg'
-  );
+const getProductImageValue = (image) => {
+  if (!image) return '';
+  return typeof image === 'string' ? image : image.url || image.src || '';
+};
+
+const getProductImages = (product) => {
+  const images = [
+    getProductImageValue(product.image),
+    ...(Array.isArray(product.images) ? product.images.map(getProductImageValue) : []),
+  ].filter(Boolean);
+
+  return [...new Set(images)].map(getImageUrl);
+};
 
 const getProductCategoryLabel = (product) => {
   const categoryName =
@@ -168,7 +175,8 @@ const mapHomepageProduct = (product, section) => ({
         ? getDiscountLabel(product)
         : product.discountLabel || getDiscountLabel(product),
   soldOut: Number(product.countInStock || 0) === 0,
-  image: getProductImage(product),
+  image: getProductImages(product)[0] || getImageUrl('/images/banner.jpg'),
+  hoverImage: getProductImages(product)[1] || '',
   originalProduct: product,
 });
 
@@ -533,8 +541,18 @@ const goToNextHotDeals = () => {
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  className={`h-full w-full object-cover transition duration-500 ${
+                    product.hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+                  }`}
                 />
+                {product.hoverImage && (
+                  <img
+                    src={product.hoverImage}
+                    alt={product.name}
+                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                    loading="lazy"
+                  />
+                )}
               </Link>
 
               <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
@@ -699,8 +717,18 @@ const goToNextHotDeals = () => {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        className={`h-full w-full object-cover transition duration-500 ${
+                          product.hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+                        }`}
                       />
+                      {product.hoverImage && (
+                        <img
+                          src={product.hoverImage}
+                          alt={product.name}
+                          className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                          loading="lazy"
+                        />
+                      )}
                     </Link>
 
                     <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">
@@ -865,8 +893,18 @@ const goToNextHotDeals = () => {
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        className={`h-full w-full object-cover transition duration-500 ${
+                          product.hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+                        }`}
                       />
+                      {product.hoverImage && (
+                        <img
+                          src={product.hoverImage}
+                          alt={product.name}
+                          className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                          loading="lazy"
+                        />
+                      )}
                     </Link>
 
                     <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:pointer-events-auto group-hover:opacity-100">

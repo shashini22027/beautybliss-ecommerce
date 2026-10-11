@@ -46,6 +46,19 @@ const getTextValue = (value, fallback = "") => {
     return value.name || value.title || value._id || fallback;
 };
 
+const getProductImageValue = (image) => {
+    if (!image) return "";
+    return typeof image === "string" ? image : image.url || image.src || "";
+};
+
+const getProductImages = (product) => {
+    const images = [
+        getProductImageValue(product.image),
+        ...(Array.isArray(product.images) ? product.images.map(getProductImageValue) : []),
+    ].filter(Boolean);
+
+    return [...new Set(images)];
+};
 
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
@@ -350,6 +363,11 @@ const ProductsPage = () => {
                         {visibleProducts.map((product) => {
                             const id = getProductId(product);
                             const productPath = `/product/${id}`;
+                            const productImages = getProductImages(product);
+                            const primaryImage =
+                                productImages[0] ||
+                                "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80";
+                            const hoverImage = productImages[1];
 
                             return (
                                 <article
@@ -371,14 +389,20 @@ const ProductsPage = () => {
                                             )}
 
                                             <img
-                                                src={getImageUrl(
-                                                    product.image ||
-                                                    product.images?.[0] ||
-                                                    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80"
-                                                )}
+                                                src={getImageUrl(primaryImage)}
                                                 alt={product.name || "Beauty product"}
-                                                className="h-[330px] w-full max-w-[360px] object-cover transition duration-500 group-hover:scale-105"
+                                                className={`h-[330px] w-full max-w-[360px] object-cover transition duration-500 ${
+                                                    hoverImage ? "group-hover:opacity-0" : "group-hover:scale-105"
+                                                }`}
                                             />
+                                            {hoverImage && (
+                                                <img
+                                                    src={getImageUrl(hoverImage)}
+                                                    alt={product.name || "Beauty product"}
+                                                    className="absolute left-1/2 top-1/2 h-[330px] w-full max-w-[360px] -translate-x-1/2 -translate-y-1/2 object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                                                    loading="lazy"
+                                                />
+                                            )}
 
                                             <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 overflow-hidden rounded-lg bg-white opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                                                 <button

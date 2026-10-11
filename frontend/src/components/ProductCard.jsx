@@ -7,11 +7,28 @@ import { selectWishlistItems, toggleWishlist } from '../redux/slices/wishlistSli
 import { addToCart } from '../redux/slices/cartSlice';
 import { formatPrice } from '../utils/currency';
 
+const getProductImageValue = (image) => {
+  if (!image) return '';
+  return typeof image === 'string' ? image : image.url || image.src || '';
+};
+
+const getProductImages = (product) => {
+  const images = [
+    getProductImageValue(product.image),
+    ...(Array.isArray(product.images) ? product.images.map(getProductImageValue) : []),
+  ].filter(Boolean);
+
+  return [...new Set(images)];
+};
+
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const wishlistItems = useSelector(selectWishlistItems);
   const navigate = useNavigate();
   const productId = product._id || product.id || product.name;
+  const productImages = getProductImages(product);
+  const primaryImage = getImageUrl(productImages[0]);
+  const hoverImage = getImageUrl(productImages[1]);
 
   const isWishlisted = wishlistItems.some((x) => (x._id || x.id || x.name) === productId);
   const rating = product.rating || product.reviews?.average || 0;
@@ -34,11 +51,21 @@ const ProductCard = ({ product }) => {
           className="absolute inset-0 cursor-pointer"
         >
           <img
-            src={getImageUrl(product.image)}
+            src={primaryImage}
             alt={product.name}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className={`h-full w-full object-cover transition duration-500 ${
+              hoverImage ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+            }`}
             loading="lazy"
           />
+          {hoverImage && (
+            <img
+              src={hoverImage}
+              alt={product.name}
+              className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+              loading="lazy"
+            />
+          )}
         </div>
         
         {/* Hover Overlay */}
