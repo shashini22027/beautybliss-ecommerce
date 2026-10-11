@@ -10,6 +10,9 @@ const BlogPostDetail = () => {
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [recentPostsLoading, setRecentPostsLoading] = useState(true);
+  const [recentPostsError, setRecentPostsError] = useState("");
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsLoadError, setCommentsLoadError] = useState("");
   const [commentSubmitError, setCommentSubmitError] = useState("");
@@ -21,6 +24,49 @@ const BlogPostDetail = () => {
 
   useEffect(() => {
     fetchPost();
+  }, [slug]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const fetchRecentPosts = async () => {
+      try {
+        setRecentPostsLoading(true);
+        setRecentPostsError("");
+        const response = await fetch("/api/blogs");
+        if (!response.ok) {
+          throw new Error("Failed to load recent posts");
+        }
+
+        const posts = await response.json();
+        if (!Array.isArray(posts)) {
+          throw new Error("Recent posts response was invalid");
+        }
+
+        if (isCurrent) {
+          setRecentPosts(
+            posts
+              .filter((recentPost) =>
+                recentPost.slug !== slug && String(recentPost._id) !== slug
+              )
+              .slice(0, 5)
+          );
+        }
+      } catch (err) {
+        if (isCurrent) {
+          setRecentPostsError(err.message || "Failed to load recent posts");
+        }
+      } finally {
+        if (isCurrent) {
+          setRecentPostsLoading(false);
+        }
+      }
+    };
+
+    fetchRecentPosts();
+    return () => {
+      isCurrent = false;
+    };
   }, [slug]);
 
   useEffect(() => {
@@ -108,6 +154,12 @@ const BlogPostDetail = () => {
   };
 
   const fallbackImage = "/images/banner.jpg";
+  const getPostPath = (blog) =>
+    `/blog/${encodeURIComponent(blog.slug || blog._id)}`;
+  const blogContentSections = (post?.description || "Content coming soon...")
+    .split(/(?=Step\s+\d+:|Tips for Maximum Results|Final Thoughts)/i)
+    .map((section) => section.trim())
+    .filter(Boolean);
 
   if (loading) {
     return (
@@ -164,7 +216,8 @@ const BlogPostDetail = () => {
       </section>
 
       {/* Content */}
-      <section className="mx-auto max-w-4xl px-4 py-16">
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 py-16 lg:grid-cols-[minmax(0,1fr)_345px] lg:gap-16">
+        <div className="min-w-0">
         <article className="prose prose-lg prose-pink max-w-none">
           <h2 className="mb-4 text-3xl font-bold text-gray-900 leading-tight">
             {post.title}
@@ -179,8 +232,27 @@ const BlogPostDetail = () => {
             <span>•</span>
             <span>{new Date(post.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
           </p>
-          <div className="text-gray-700 leading-relaxed whitespace-pre-wrap mt-8">
-            {post.description || "Content coming soon..."}
+          <div className="mt-8 space-y-5 rounded-2xl border border-pink-100 bg-[#fff9fb] p-6 text-base leading-8 text-black shadow-sm sm:p-8">
+            {blogContentSections.map((section, index) => {
+              const headingMatch = section.match(
+                /^(Step\s+\d+:|Tips for Maximum Results|Final Thoughts)\s*/i
+              );
+
+              return (
+                <p key={`${index}-${section.slice(0, 24)}`} className="whitespace-pre-wrap">
+                  {headingMatch && (
+                    <span className="mr-2 inline-block rounded bg-pink-100 px-2 py-0.5 font-bold leading-6 text-black decoration-pink-300 underline decoration-2 underline-offset-4">
+                      {headingMatch[1]}
+                    </span>
+                  )}
+                  <span className="text-black">
+                    {headingMatch
+                      ? section.slice(headingMatch[0].length)
+                      : section}
+                  </span>
+                </p>
+              );
+            })}
           </div>
         </article>
         
@@ -278,6 +350,76 @@ const BlogPostDetail = () => {
             </form>
           </div>
         </section>
+        </div>
+
+        <aside className="h-fit border-t border-gray-200 pt-8 lg:border-t-0 lg:pt-0">
+          <h2 className="border-b border-gray-200 pb-4 text-xl font-semibold uppercase text-[#1c2c39]">
+            Recent Posts
+          </h2>
+          {recentPostsLoading ? (
+            <div className="mt-5 space-y-5" aria-label="Loading recent posts">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="flex gap-5">
+                  <div className="h-20 w-24 shrink-0 animate-pulse rounded-xl bg-gray-100" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-4 animate-pulse rounded bg-gray-100" />
+                    <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentPostsError ? (
+            <p role="alert" className="mt-5 text-sm text-red-600">
+              {recentPostsError}
+            </p>
+          ) : recentPosts.length === 0 ? (
+            <p className="mt-5 text-sm text-gray-500">No other posts yet.</p>
+          ) : (
+            <div className="mt-5">
+              {recentPosts.map((recentPost) => {
+                const commentLabel = recentPost.commentCount === 1
+                  ? "1 Comment"
+                  : `${recentPost.commentCount || 0} Comments`;
+
+                return (
+                  <article
+                    key={recentPost._id}
+                    className="border-b border-gray-200 py-5 first:pt-0 last:border-b-0"
+                  >
+                    <Link
+                      to={getPostPath(recentPost)}
+                      className="group flex items-start gap-5"
+                    >
+                      <img
+                        src={recentPost.image || fallbackImage}
+                        alt=""
+                        onError={(event) => {
+                          event.currentTarget.src = fallbackImage;
+                        }}
+                        className="h-20 w-24 shrink-0 rounded-xl object-cover"
+                        loading="lazy"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-base font-semibold leading-6 text-[#1c2c39] transition-colors group-hover:text-pink-600">
+                          {recentPost.title}
+                        </span>
+                        <span className="mt-3 block text-sm text-gray-400">
+                          {new Date(recentPost.date).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                          <span className="mx-2">·</span>
+                          {commentLabel}
+                        </span>
+                      </span>
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </aside>
       </section>
     </main>
   );
