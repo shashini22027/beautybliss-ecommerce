@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import api from "../services/api";
 
@@ -8,6 +9,10 @@ const Footer = () => {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState("idle");
     const [message, setMessage] = useState("");
+    const address = "123 Beauty Lane, Colombo 03, Sri Lanka";
+    const phone = "+94 70 198 4663";
+    const contactEmail = "hello@beautybliss.com";
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
     useEffect(() => {
         if (status !== "success") return;
@@ -60,18 +65,35 @@ const Footer = () => {
                 {/* Contact Info */}
                 <div>
                     <h4 className="mb-6 text-[11px] font-extrabold uppercase tracking-[0.3em] text-gray-950">Contact Us</h4>
-                    <ul className="space-y-4 text-sm text-gray-600">
-                        <li className="flex items-start gap-3">
-                            <span className="mt-1 h-2.5 w-2.5 bg-pink-600" />
-                            <span>123 Beauty Lane,<br />Colombo 03, Sri Lanka</span>
+                    <ul className="space-y-5 text-sm text-gray-600">
+                        <li>
+                            <a
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="group flex items-start gap-3 transition-colors hover:text-pink-600"
+                            >
+                                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
+                                <span>{address}</span>
+                            </a>
                         </li>
-                        <li className="flex items-center gap-3">
-                            <span className="h-2.5 w-2.5 bg-pink-600" />
-                            <span>+94 70 198 4663</span>
+                        <li>
+                            <a
+                                href={`tel:${phone.replace(/\s+/g, "")}`}
+                                className="group flex items-center gap-3 transition-colors hover:text-pink-600"
+                            >
+                                <Phone className="h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
+                                <span>{phone}</span>
+                            </a>
                         </li>
-                        <li className="flex items-center gap-3">
-                            <span className="h-2.5 w-2.5 bg-pink-600" />
-                            <span>hello@beautybliss.com</span>
+                        <li>
+                            <a
+                                href={`mailto:${contactEmail}`}
+                                className="group flex items-center gap-3 transition-colors hover:text-pink-600"
+                            >
+                                <Mail className="h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
+                                <span>{contactEmail}</span>
+                            </a>
                         </li>
                     </ul>
                 </div>
