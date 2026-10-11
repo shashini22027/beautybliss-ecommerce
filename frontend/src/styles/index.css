@@ -69,4 +69,21 @@
     cursor: ew-resize;
     pointer-events: auto;
   }
+
+  .blog-share-link {
+    opacity: 1;
+  }
+
+  @media (hover: hover) {
+    .blog-share-link {
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .blog-share-control:hover .blog-share-link,
+    .blog-share-control:focus-within .blog-share-link {
+      pointer-events: auto;
+      opacity: 1;
+    }
+  }
 }

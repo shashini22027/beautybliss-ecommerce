@@ -1,19 +1,109 @@
 import asyncHandler from '../utils/asyncHandler.js';
+import mongoose from 'mongoose';
 import Blog from '../models/Blog.js';
+import BlogComment from '../models/BlogComment.js';
+
+const findBlogBySlugOrId = (identifier) => {
+  const conditions = [{ slug: identifier }];
+
+  if (mongoose.isValidObjectId(identifier)) {
+    conditions.push({ _id: identifier });
+  }
+
+  return Blog.findOne({ $or: conditions });
+};
 
 // @desc    Get all blogs
 // @route   GET /api/blogs
 // @access  Public
 const getBlogs = asyncHandler(async (req, res) => {
-  const blogs = await Blog.find({}).sort({ date: -1, createdAt: -1 });
-  res.json(blogs);
+  const [blogs, commentCounts] = await Promise.all([
+    Blog.find({}).sort({ date: -1, createdAt: -1 }).lean(),
+    BlogComment.aggregate([
+      { $group: { _id: '$blog', count: { $sum: 1 } } },
+    ]),
+  ]);
+  const countsByBlogId = new Map(
+    commentCounts.map(({ _id, count }) => [String(_id), count])
+  );
+
+  res.json(
+    blogs.map((blog) => ({
+      ...blog,
+      commentCount: countsByBlogId.get(String(blog._id)) || 0,
+    }))
+  );
+});
+
+// @desc    Get comments for a blog
+// @route   GET /api/blogs/:slug/comments
+// @access  Public
+const getBlogComments = asyncHandler(async (req, res) => {
+  const blog = await findBlogBySlugOrId(req.params.slug).select('_id');
+  if (!blog) {
+    res.status(404);
+    throw new Error('Blog not found');
+  }
+
+  const [comments, totalCount] = await Promise.all([
+    BlogComment.find({ blog: blog._id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select('name comment createdAt')
+      .lean(),
+    BlogComment.countDocuments({ blog: blog._id }),
+  ]);
+
+  res.json({ comments: comments.reverse(), totalCount });
+});
+
+// @desc    Add a comment to a blog
+// @route   POST /api/blogs/:slug/comments
+// @access  Public
+const createBlogComment = asyncHandler(async (req, res) => {
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  const comment =
+    typeof req.body?.comment === 'string' ? req.body.comment.trim() : '';
+
+  if (!name || !comment) {
+    res.status(400);
+    throw new Error('Name and comment are required');
+  }
+
+  if (name.length > 60 || comment.length > 1000) {
+    res.status(400);
+    throw new Error('Name must be 60 characters or less and comment 1,000 characters or less');
+  }
+
+  const blog = await findBlogBySlugOrId(req.params.slug).select('_id');
+  if (!blog) {
+    res.status(404);
+    throw new Error('Blog not found');
+  }
+
+  const savedComment = await BlogComment.create({
+    blog: blog._id,
+    name,
+    comment,
+  });
+  const commentCount = await BlogComment.countDocuments({ blog: blog._id });
+
+  res.status(201).json({
+    comment: {
+      _id: savedComment._id,
+      name: savedComment.name,
+      comment: savedComment.comment,
+      createdAt: savedComment.createdAt,
+    },
+    commentCount,
+  });
 });
 
 // @desc    Get blog by slug
 // @route   GET /api/blogs/:slug
 // @access  Public
 const getBlogBySlug = asyncHandler(async (req, res) => {
-  const blog = await Blog.findOne({ slug: req.params.slug });
+  const blog = await findBlogBySlugOrId(req.params.slug);
   if (blog) {
     res.json(blog);
   } else {
@@ -92,6 +182,7 @@ const deleteBlog = asyncHandler(async (req, res) => {
   const blog = await Blog.findById(req.params.id);
 
   if (blog) {
+    await BlogComment.deleteMany({ blog: blog._id });
     await Blog.deleteOne({ _id: req.params.id });
     res.json({ message: 'Blog removed' });
   } else {
@@ -100,4 +191,13 @@ const deleteBlog = asyncHandler(async (req, res) => {
   }
 });
 
-export { getBlogs, getBlogBySlug, getBlogById, createBlog, updateBlog, deleteBlog };
+export {
+  getBlogs,
+  getBlogBySlug,
+  getBlogComments,
+  createBlogComment,
+  getBlogById,
+  createBlog,
+  updateBlog,
+  deleteBlog,
+};

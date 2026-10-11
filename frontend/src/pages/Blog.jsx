@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, PenTool } from "lucide-react";
+import { MessageSquare, Share2, User } from "lucide-react";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     document.title = "Beauty Blog | BeautyBliss";
     fetchBlogs();
@@ -25,6 +25,10 @@ const Blog = () => {
       setLoading(false);
     }
   };
+
+  const getBlogUrl = (post) =>
+    `${window.location.origin}/blog/${encodeURIComponent(post.slug || post._id)}`;
+  const getBlogPath = (post) => `/blog/${encodeURIComponent(post.slug || post._id)}`;
 
   const fallbackImage = "/images/banner.jpg";
 
@@ -102,13 +106,52 @@ const Blog = () => {
                   </div>
 
                   <div className="flex flex-1 flex-col items-center p-8 pt-10 text-center">
-                    <Link to={`/blog/${post.slug}`}>
+                    <Link to={getBlogPath(post)}>
                       <h3 className="mb-4 text-2xl font-medium text-[#1c2c39] hover:text-pink-600 transition-colors leading-tight">
                         {post.title}
                       </h3>
                     </Link>
 
-
+                    <div className="relative mb-5 flex items-center justify-center gap-4 text-sm text-gray-400">
+                      <span className="inline-flex items-center gap-2">
+                        By <User size={18} className="fill-gray-300 text-gray-300" />
+                        <span className="text-gray-500">BeautyBliss.com</span>
+                      </span>
+                      <Link
+                        to={`${getBlogPath(post)}#comments`}
+                        className="relative inline-flex items-center gap-1.5 text-gray-500 transition hover:text-pink-600"
+                        aria-label={`${post.commentCount || 0} comments on ${post.title}`}
+                      >
+                        <MessageSquare size={19} />
+                        <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-gray-300 px-1 text-[10px] font-bold leading-none text-white">
+                          {post.commentCount || 0}
+                        </span>
+                      </Link>
+                      <div className="blog-share-control relative flex items-center gap-2">
+                        <Share2 size={19} aria-hidden="true" className="text-gray-400" />
+                        <span className="sr-only">Share {post.title}</span>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getBlogUrl(post))}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Share ${post.title} on Facebook`}
+                            className="blog-share-link inline-flex h-7 w-7 items-center justify-center rounded-full text-[#1877F2] transition hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                          >
+                            <FaFacebookF aria-hidden="true" size={16} />
+                          </a>
+                          <a
+                            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${post.title} ${getBlogUrl(post)}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Share ${post.title} on WhatsApp`}
+                            className="blog-share-link inline-flex h-7 w-7 items-center justify-center rounded-full text-[#25D366] transition hover:bg-green-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
+                          >
+                            <FaWhatsapp aria-hidden="true" size={18} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
 
                     <p className="mb-6 text-[15px] leading-relaxed text-gray-500 line-clamp-3">
                       {post.excerpt || post.title}
@@ -116,7 +159,7 @@ const Blog = () => {
 
                     <div className="mt-auto">
                       <Link
-                        to={`/blog/${post.slug}`}
+                        to={getBlogPath(post)}
                         className="text-sm font-bold uppercase tracking-widest text-black hover:text-pink-600 transition-colors"
                       >
                         Continue Reading

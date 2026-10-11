@@ -3,6 +3,8 @@ const router = express.Router();
 import {
   getBlogs,
   getBlogBySlug,
+  getBlogComments,
+  createBlogComment,
   getBlogById,
   createBlog,
   updateBlog,
@@ -12,6 +14,7 @@ import { protect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/').get(getBlogs).post(protect, admin, createBlog);
 router.route('/id/:id').get(getBlogById).put(protect, admin, updateBlog).delete(protect, admin, deleteBlog);
+router.route('/:slug/comments').get(getBlogComments).post(createBlogComment);
 router.route('/:slug').get(getBlogBySlug);
 
 export default router;
