@@ -240,20 +240,27 @@ const CartPage = ({ onClose }) => {
             <section className="relative min-h-[420px] overflow-hidden">
                 <img
                     src="/images/banner.jpg"
-                    alt="Shopping Cart"
-                    className="absolute inset-0 h-full w-full object-cover"
+                    alt="Cart"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-black/35" />
-                <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
-                    <h1 className="text-6xl font-bold tracking-tight md:text-7xl uppercase">
-                        Shopping Cart
+                <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-center text-white">
+                    <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
+                        Cart
                     </h1>
+                    <div className="mt-6 flex items-center gap-3 text-base font-medium">
+                        <Link to="/" className="text-white/85 transition hover:text-white">
+                            Home
+                        </Link>
+                        <span>/</span>
+                        <span className="font-bold">Cart</span>
+                    </div>
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1535px] px-6 py-16">
+            <section className="mx-auto max-w-7xl px-6 py-20">
                 {removedItem && (
-                    <div className="mx-auto mb-14 flex max-w-[1490px] items-center gap-6 rounded-xl bg-[#439447] px-8 py-7 text-white">
+                    <div className="mx-auto mb-10 flex items-center gap-6 bg-[#439447] px-8 py-6 text-white">
                         <span className="text-4xl font-light leading-none">✓</span>
                         <p className="text-lg">
                             “{removedItem.name || "Product"}” removed.
@@ -268,96 +275,157 @@ const CartPage = ({ onClose }) => {
                     </div>
                 )}
 
-                <div className="lg:pt-[24px]">
-                    {cartItems.length === 0 ? (
-                        <div className="border border-gray-200 px-8 py-16 text-center">
-                            <Icon name="bag" className="mx-auto h-10 w-10 text-pink-600" />
-                            <h1 className="mt-5 text-3xl font-bold">Your cart is empty</h1>
-                            <Link to="/products" className="mt-8 inline-flex bg-gray-950 px-8 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white hover:bg-pink-600">
-                                Shop Products
-                            </Link>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="hidden grid-cols-[60px_570px_112px_130px_96px] border-b border-[#e5e5e5] pb-[22px] text-[21px] font-extrabold uppercase leading-none lg:grid">
-                                <span />
-                                <span className="text-center">Product</span>
-                                <span>Price</span>
-                                <span>Quantity</span>
-                                <span className="text-right">Subtotal</span>
-                            </div>
-
-                            {cartItems.map((item) => {
-                                const product = getProductData(item);
-                                const id = getItemId(item);
-                                const qty = getItemQty(item);
-                                const lineTotal = getItemPrice(item) * qty;
-
-                                return (
-                                    <article key={id} className="grid gap-5 border-b border-[#e5e5e5] py-[32px] lg:grid-cols-[60px_570px_112px_130px_96px] lg:items-center">
-                                        <button type="button" onClick={() => removeItem(item)} className="text-2xl font-light text-gray-800 hover:text-red-600" aria-label="Remove item">
-                                            ×
-                                        </button>
-
-                                        <div className="grid grid-cols-[120px_1fr] items-center gap-[20px]">
-                                            <Link to={`/product/${id}`} state={{ product }} className="flex h-[78px] w-[78px] items-center justify-center bg-white">
-                                                <img src={getImageUrl(product.image || product.images?.[0])} alt={product.name} className="h-full w-full object-contain" />
-                                            </Link>
-                                            <Link to={`/product/${id}`} state={{ product }} className="max-w-[360px] text-[18px] font-bold leading-6 text-gray-950 hover:text-pink-600">
-                                                {product.name}
-                                            </Link>
-                                        </div>
-
-                                        <span className="text-[18px] text-gray-500 lg:text-left">{typeof product.price === "string" ? product.price : formatPrice(getItemPrice(item))}</span>
-
-                                        <div className="inline-flex h-[52px] w-[100px] items-center border border-[#e6e6e6]">
-                                            <button type="button" onClick={() => updateQuantity(item, qty - 1)} className="h-full w-8 text-gray-500 hover:text-pink-600">-</button>
-                                            <span className="flex-1 text-center text-lg">{qty}</span>
-                                            <button type="button" onClick={() => updateQuantity(item, qty + 1)} className="h-full w-8 text-gray-500 hover:text-pink-600">+</button>
-                                        </div>
-
-                                        <span className="text-right text-[18px] font-bold">{formatPrice(lineTotal)}</span>
-                                    </article>
-                                );
-                            })}
-
-                            <div className="mt-[37px] flex flex-col gap-3 sm:flex-row">
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                <aside className="mx-auto mt-12 h-fit w-full max-w-[760px] rounded-xl border-2 border-[#e5e5e5] px-[42px] py-[40px]">
-                    <h2 className="mb-[42px] text-[30px] font-extrabold uppercase leading-none">Cart Totals</h2>
-                    <div className="space-y-6 text-[18px]">
-                        <div className="flex justify-between border-b border-[#e5e5e5] pb-[21px]">
-                            <span className="font-bold">Subtotal</span>
-                            <span className="text-gray-500">{formatPrice(subtotal)}</span>
-                        </div>
-                        <div className="grid grid-cols-[110px_1fr] gap-5 border-b border-[#e5e5e5] pb-[22px]">
-                            <span className="font-bold">Shipping</span>
-                            <div className="text-right text-gray-600">
-                                <p className="text-gray-950">Free Shipping</p>
-                                <p className="mt-4 text-left">Shipping options will be updated during checkout.</p>
-                                <button type="button" className="mt-4 font-bold text-gray-950 hover:text-pink-600">
-                                    Calculate shipping
-                                </button>
-                            </div>
-                        </div>
-                        <div className="flex justify-between text-[20px]">
-                            <span className="font-bold">Total</span>
-                            <span className="font-bold">{formatPrice(subtotal)}</span>
-                        </div>
+                {cartItems.length === 0 ? (
+                    <div className="flex min-h-[420px] flex-col items-center justify-center text-center">
+                        <ShoppingCart
+                            aria-hidden="true"
+                            className="mb-8 h-36 w-36 stroke-[1.5] text-gray-200"
+                        />
+                        <h2 className="text-4xl font-bold text-stone-900 sm:text-5xl">
+                            Your cart is empty.
+                        </h2>
+                        <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+                            You haven&apos;t added any products to your cart yet. Find something
+                            you love in our Shop.
+                        </p>
+                        <Link
+                            to="/products"
+                            className="mt-7 inline-flex items-center justify-center bg-[#2b2b2b] px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-pink-600"
+                        >
+                            Return to Shop
+                        </Link>
                     </div>
-                    <button type="button" onClick={() => navigate("/checkout")} disabled={!cartItems.length} className="mt-[38px] h-[54px] w-full bg-[#2b2b2b] text-[15px] font-bold uppercase tracking-[0.02em] text-white hover:bg-pink-600 disabled:bg-gray-300">
-                        Proceed to Checkout
-                    </button>
-                </aside>
+                ) : (
+                    <>
+                        <div className="mb-8 border-b border-gray-200 pb-5">
+                            <p className="mb-2 text-sm font-bold uppercase tracking-widest text-rose-600">
+                                Your Beauty Picks
+                            </p>
+                            <h2 className="text-3xl font-bold text-stone-900 sm:text-4xl">
+                                Your Shopping Cart
+                            </h2>
+                        </div>
 
-                <section className="mt-14">
-                    <h2 className="mb-8 text-2xl font-bold uppercase tracking-tight text-gray-950">
-                        You may be interested in
-                    </h2>
+                        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+                            <section className="min-w-0">
+                                <div className="hidden grid-cols-[minmax(0,1fr)_100px_110px_110px] gap-4 border-b border-gray-200 pb-4 text-sm font-extrabold uppercase tracking-wide text-stone-700 md:grid">
+                                    <span>Product</span>
+                                    <span>Price</span>
+                                    <span>Quantity</span>
+                                    <span className="text-right">Subtotal</span>
+                                </div>
+
+                                {cartItems.map((item) => {
+                                    const product = getProductData(item);
+                                    const id = getItemId(item);
+                                    const qty = getItemQty(item);
+                                    const lineTotal = getItemPrice(item) * qty;
+
+                                    return (
+                                        <article
+                                            key={id}
+                                            className="grid gap-4 border-b border-gray-200 py-6 md:grid-cols-[minmax(0,1fr)_100px_110px_110px] md:items-center"
+                                        >
+                                            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
+                                                <Link
+                                                    to={`/product/${id}`}
+                                                    state={{ product }}
+                                                    className="flex h-20 w-20 items-center justify-center border border-gray-100 bg-white p-2"
+                                                >
+                                                    <img
+                                                        src={getImageUrl(product.image || product.images?.[0])}
+                                                        alt={product.name}
+                                                        className="h-full w-full object-contain"
+                                                    />
+                                                </Link>
+                                                <Link
+                                                    to={`/product/${id}`}
+                                                    state={{ product }}
+                                                    className="text-base font-bold leading-6 text-stone-900 transition hover:text-pink-600"
+                                                >
+                                                    {product.name}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeItem(item)}
+                                                    className="flex h-9 w-9 items-center justify-center text-gray-500 transition hover:bg-red-50 hover:text-red-600"
+                                                    aria-label={`Remove ${product.name} from cart`}
+                                                >
+                                                    <Icon name="close" className="h-4 w-4" />
+                                                </button>
+                                            </div>
+
+                                            <span className="text-sm text-stone-600">
+                                                {typeof product.price === "string"
+                                                    ? product.price
+                                                    : formatPrice(getItemPrice(item))}
+                                            </span>
+
+                                            <div className="inline-flex h-11 w-28 items-center border border-gray-200">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateQuantity(item, qty - 1)}
+                                                    className="h-full w-8 text-gray-500 transition hover:text-pink-600"
+                                                    aria-label={`Decrease ${product.name} quantity`}
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="flex-1 text-center text-base">{qty}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateQuantity(item, qty + 1)}
+                                                    className="h-full w-8 text-gray-500 transition hover:text-pink-600"
+                                                    aria-label={`Increase ${product.name} quantity`}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            <span className="text-left text-sm font-bold text-stone-900 md:text-right">
+                                                {formatPrice(lineTotal)}
+                                            </span>
+                                        </article>
+                                    );
+                                })}
+                            </section>
+
+                            <aside className="h-fit border border-gray-200 bg-white p-6 sm:p-8">
+                                <h2 className="mb-7 text-2xl font-bold text-stone-900">
+                                    Cart Totals
+                                </h2>
+                                <div className="space-y-5 text-base">
+                                    <div className="flex justify-between border-b border-gray-200 pb-4">
+                                        <span className="font-bold text-stone-900">Subtotal</span>
+                                        <span className="text-stone-600">{formatPrice(subtotal)}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-gray-200 pb-4">
+                                        <span className="font-bold text-stone-900">Shipping</span>
+                                        <span className="text-stone-600">Free Shipping</span>
+                                    </div>
+                                    <div className="flex justify-between text-lg">
+                                        <span className="font-bold text-stone-900">Total</span>
+                                        <span className="font-bold text-stone-900">{formatPrice(subtotal)}</span>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/checkout")}
+                                    className="mt-8 h-12 w-full bg-[#2b2b2b] text-sm font-bold uppercase tracking-[0.08em] text-white transition hover:bg-pink-600"
+                                >
+                                    Proceed to Checkout
+                                </button>
+                            </aside>
+                        </div>
+
+                        <section className="mt-20">
+                    <div className="mb-8 border-b border-gray-200 pb-5">
+                        <p className="mb-2 text-sm font-bold uppercase tracking-widest text-rose-600">
+                            More to Love
+                        </p>
+                        <h2 className="text-3xl font-bold text-stone-900 sm:text-4xl">
+                            You may be interested in
+                        </h2>
+                    </div>
 
                     <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
                         {suggestedProducts.map((product) => {
@@ -439,10 +507,11 @@ const CartPage = ({ onClose }) => {
                         })}
                     </div>
                 </section>
+                    </>
+                )}
             </section>
         </main>
     );
 };
 
 export default CartPage;
-
