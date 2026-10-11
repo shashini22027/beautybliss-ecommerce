@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { getImageUrl } from '../utils/image';
+import { Maximize2, X } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
 import { useDispatch, useSelector } from 'react-redux';
@@ -141,6 +142,9 @@ const ProductDetailsPage = () => {
   const [relatedPage, setRelatedPage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [imageExpanded, setImageExpanded] = useState(false);
+  const [galleryStageHeight, setGalleryStageHeight] = useState(0);
+  const galleryStageRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const allProducts = useSelector(selectAllProducts);
@@ -264,6 +268,33 @@ const ProductDetailsPage = () => {
     }
   }, [allProducts]);
 
+  useEffect(() => {
+    if (!imageExpanded) return undefined;
+
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setImageExpanded(false);
+      }
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [imageExpanded]);
+
+  useEffect(() => {
+    const imageStage = galleryStageRef.current;
+    if (!imageStage) return undefined;
+
+    const updateStageHeight = () => {
+      setGalleryStageHeight(imageStage.getBoundingClientRect().height);
+    };
+    const observer = new ResizeObserver(updateStageHeight);
+
+    updateStageHeight();
+    observer.observe(imageStage);
+    return () => observer.disconnect();
+  }, [product]);
+
   if (loading) {
     return <div className="py-20 text-center font-serif text-stone-500">Loading beauty details...</div>;
   }
@@ -301,7 +332,13 @@ const ProductDetailsPage = () => {
   const color = hasColorVariants ? getTextValue(selectedVariant?.name) : getTextValue(product.color);
   const country = getTextValue(product.country);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
-  const mainImage = activeImage || selectedVariant?.image || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80';
+  const mainImage = getImageUrl(activeImage || selectedVariant?.image || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80');
+  const activeImageIndex = Math.max(0, allImages.indexOf(getImageUrl(activeImage || mainImage)));
+  const thumbnailStart = Math.min(
+    Math.max(activeImageIndex - 1, 0),
+    Math.max(allImages.length - 3, 0)
+  );
+  const visibleThumbnails = allImages.slice(thumbnailStart, thumbnailStart + 3);
   const hasOldPrice = Boolean(product.oldPrice);
   const filteredRelated = relatedProducts.filter((item) => (item._id || getProductSlug(item)) !== id);
   const relatedPerPage = 4;
@@ -344,56 +381,105 @@ const ProductDetailsPage = () => {
   return (
     <main className="min-h-screen bg-white text-gray-950">
       <section className="mx-auto grid max-w-[1540px] gap-10 px-6 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:py-20">
-        <div className="grid gap-7 md:grid-cols-[150px_1fr]">
-          <div className="order-2 flex gap-4 overflow-x-auto md:order-1 md:flex-col md:items-center md:overflow-visible">
-            {allImages.map((img, index) => (
+        <div className="relative grid gap-4 md:grid-cols-[150px_minmax(0,1fr)]">
+          <div
+            className="order-2 flex gap-4 overflow-x-auto md:order-1 md:grid md:h-[var(--gallery-stage-height)] md:grid-rows-[repeat(3,minmax(0,1fr))_40px] md:gap-3 md:overflow-hidden"
+            style={{
+              '--gallery-stage-height': galleryStageHeight
+                ? `${galleryStageHeight}px`
+                : undefined,
+            }}
+          >
+            {visibleThumbnails.map((img, index) => (
               <button
-                key={`${img}-${index}`}
+                key={img}
                 type="button"
                 onClick={() => setActiveImage(img)}
-                className={`h-24 w-24 shrink-0 overflow-hidden rounded-xl border bg-white transition md:h-[150px] md:w-[150px] ${
-                  activeImage === img ? 'border-gray-950' : 'border-gray-100 hover:border-pink-300'
+                className={`aspect-square h-24 w-24 shrink-0 overflow-hidden rounded-2xl border bg-[#fffafa] transition md:h-full md:w-full md:min-h-0 md:aspect-auto ${
+                  getImageUrl(activeImage) === img ? 'border-gray-950' : 'border-transparent hover:border-pink-300'
                 }`}
               >
-                <img src={img} alt={`${product.name} ${index + 1}`} className="h-full w-full object-cover" />
+                <img src={img} alt={`${product.name} ${thumbnailStart + index + 1}`} className="h-full w-full object-contain" />
               </button>
             ))}
 
-            <div className="hidden gap-2 md:flex">
-              <button
-                type="button"
-                onClick={() => {
-                  const currentIndex = allImages.indexOf(activeImage);
-                  const previousIndex = currentIndex <= 0 ? allImages.length - 1 : currentIndex - 1;
-                  setActiveImage(allImages[previousIndex]);
-                }}
-                className="inline-flex h-10 w-[70px] items-center justify-center rounded-lg bg-gray-50 text-2xl text-gray-500 transition hover:bg-pink-50 hover:text-pink-600"
-                aria-label="Previous image"
-              >
-                ˄
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const currentIndex = allImages.indexOf(activeImage);
-                  const nextIndex = currentIndex >= allImages.length - 1 ? 0 : currentIndex + 1;
-                  setActiveImage(allImages[nextIndex]);
-                }}
-                className="inline-flex h-10 w-[70px] items-center justify-center rounded-lg bg-gray-50 text-2xl text-gray-500 transition hover:bg-pink-50 hover:text-pink-600"
-                aria-label="Next image"
-              >
-                ˅
-              </button>
+            <div className="flex shrink-0 gap-2 md:row-start-4 md:justify-between">
+              {allImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const previousIndex = activeImageIndex <= 0 ? allImages.length - 1 : activeImageIndex - 1;
+                    setActiveImage(allImages[previousIndex]);
+                  }}
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-xl bg-gray-50 text-2xl text-gray-500 transition hover:bg-pink-50 hover:text-pink-600 md:h-full"
+                  aria-label="Previous image"
+                >
+                  <span className="md:hidden">‹</span>
+                  <span className="hidden md:inline">⌃</span>
+                </button>
+              )}
+              {allImages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextIndex = activeImageIndex >= allImages.length - 1 ? 0 : activeImageIndex + 1;
+                    setActiveImage(allImages[nextIndex]);
+                  }}
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-xl bg-gray-50 text-2xl text-gray-500 transition hover:bg-pink-50 hover:text-pink-600 md:h-full"
+                  aria-label="Next image"
+                >
+                  <span className="md:hidden">›</span>
+                  <span className="hidden md:inline">⌄</span>
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="order-1 relative flex min-h-[560px] items-start justify-center bg-white pt-2 md:order-2">
-            {product.soldOut && (
-              <span className="absolute right-8 top-8 z-10 text-sm font-bold uppercase tracking-wide text-black">
-                SOLD OUT
+          <div
+            ref={galleryStageRef}
+            className="order-1 relative aspect-square w-full max-w-[560px] overflow-hidden rounded-2xl bg-[#fffafa] md:order-2"
+          >
+            {(product.isHotDeal || product.soldOut) && (
+              <span className="absolute right-5 top-5 z-10 rounded-full bg-red-600 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white">
+                {product.isHotDeal ? 'HOT' : 'SOLD OUT'}
               </span>
             )}
-            <img src={mainImage} alt={product.name} className="h-[540px] w-full max-w-[680px] object-contain" />
+            <img src={mainImage} alt={product.name} className="h-full w-full object-contain p-5 sm:p-8" />
+            <button
+              type="button"
+              onClick={() => setImageExpanded(true)}
+              className="absolute bottom-5 left-5 z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-white text-gray-700 shadow-md transition hover:text-pink-600"
+              aria-label="Expand product image"
+            >
+              <Maximize2 size={20} />
+            </button>
+            {imageExpanded && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${product.name} image`}
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6"
+                onClick={() => setImageExpanded(false)}
+              >
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setImageExpanded(false);
+                  }}
+                  className="absolute right-6 top-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white text-gray-900"
+                  aria-label="Close expanded image"
+                >
+                  <X size={24} />
+                </button>
+                <img
+                  src={mainImage}
+                  alt={product.name}
+                  onClick={(event) => event.stopPropagation()}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -803,5 +889,3 @@ const ProductDetailsPage = () => {
 };
 
 export default ProductDetailsPage;
-
-
