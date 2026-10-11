@@ -95,7 +95,8 @@ const mergeOrders = (primaryOrders, secondaryOrders) => {
 
   [...primaryOrders, ...secondaryOrders].forEach((order, index) => {
     if (!order) return;
-    orderMap.set(getOrderKey(order, index), order);
+    const key = getOrderKey(order, index);
+    if (!orderMap.has(key)) orderMap.set(key, order);
   });
 
   return [...orderMap.values()];

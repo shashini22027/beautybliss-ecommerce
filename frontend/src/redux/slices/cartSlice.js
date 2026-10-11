@@ -14,6 +14,7 @@ const loadInitialCart = () => {
 
 const initialState = {
   cartItems: loadInitialCart(),
+  addToCartVersion: 0,
 };
 
 export const cartSlice = createSlice({
@@ -32,6 +33,7 @@ export const cartSlice = createSlice({
       } else {
         state.cartItems.push({ ...product, product, qty: finalQty });
       }
+      state.addToCartVersion += 1;
       localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
     },
     removeFromCart: (state, action) => {
@@ -55,6 +57,7 @@ export const { addToCart, removeFromCart, clearCart, setCart } = cartSlice.actio
 // Selectors
 export const selectCartState = (state) => state.cart;
 export const selectCartItems = createSelector(selectCartState, (cart) => cart.cartItems || []);
+export const selectCartAddToCartVersion = (state) => state.cart.addToCartVersion || 0;
 export const selectCartCount = createSelector(selectCartItems, (items) =>
   items.reduce((total, item) => total + Number(item?.qty || item?.quantity || 1), 0)
 );

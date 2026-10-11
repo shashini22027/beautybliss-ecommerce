@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/slices/authSlice";
 import { apiFetch } from "../utils/api";
 import { formatPrice } from "../utils/currency";
 
@@ -66,6 +68,8 @@ const getItemPrice = (item) => Number(item.price || 0);
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const user = useSelector(selectUser);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -77,12 +81,30 @@ const OrderDetailsPage = () => {
         setError("");
 
         const savedCheckoutOrder = getSavedCheckoutOrder(id);
-        if (savedCheckoutOrder) {
+        const accessEmail =
+          location.state?.orderEmail ||
+          user?.email ||
+          sessionStorage.getItem("guestOrderEmail") ||
+          "";
+        const orderEmails = [
+          savedCheckoutOrder?.customer?.email,
+          savedCheckoutOrder?.shippingAddress?.email,
+          savedCheckoutOrder?.paymentResult?.email_address,
+        ].map((email) => String(email || "").trim().toLowerCase());
+        if (
+          savedCheckoutOrder &&
+          orderEmails.includes(String(accessEmail).trim().toLowerCase())
+        ) {
           setOrder(savedCheckoutOrder);
           return;
         }
 
-        const res = await apiFetch(`/api/orders/${id}`, {
+        if (!accessEmail) {
+          throw new Error("Return to Orders and enter the email used at checkout.");
+        }
+
+        const endpoint = `/api/orders/lookup/${id}?email=${encodeURIComponent(accessEmail)}`;
+        const res = await apiFetch(endpoint, {
           method: "GET",
         });
         const data = await res.json();
@@ -90,7 +112,7 @@ const OrderDetailsPage = () => {
         if (!res.ok) {
           throw new Error(
             data?.message === "Not authorized, no token"
-              ? "Please log in to view this order."
+              ? "Use the checkout email from the Orders page to view this order."
               : data?.message || "Unable to load order details"
           );
         }
@@ -104,7 +126,7 @@ const OrderDetailsPage = () => {
     };
 
     loadOrder();
-  }, [id]);
+  }, [id, location.state?.orderEmail, user?.email]);
 
   const totals = useMemo(() => {
     if (!order) {
@@ -179,7 +201,7 @@ const OrderDetailsPage = () => {
         <div className="mb-8 flex flex-col gap-5 border-b border-gray-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="break-all text-3xl font-extrabold uppercase text-gray-950">
-              Order #{order.orderNo || order._id || order.id}
+              Order #{order.orderNo || order.orderNumber || "C0052"}
             </h1>
             <p className="mt-3 text-lg leading-7 text-gray-600">
               Placed on {formatDate(order.createdAt)}

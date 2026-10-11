@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Heart, User, Search, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectCartItems } from '../redux/slices/cartSlice';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
 import { selectUser, logoutUserThunk } from '../redux/slices/authSlice';
+import useCartBadgeCount from '../hooks/useCartBadgeCount';
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,17 +17,12 @@ const Navbar = () => {
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const cartItems = useSelector(selectCartItems);
+  const cartCount = useCartBadgeCount();
   const wishlistItems = useSelector(selectWishlistItems);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
 
-  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
-  const cartCount = safeCartItems.reduce(
-    (acc, item) => acc + Number(item?.qty || item?.quantity || 1),
-    0
-  );
   const wishlistCount = safeWishlistItems.length;
   const isAdmin = Boolean(user?.isAdmin || user?.role === 'admin');
 

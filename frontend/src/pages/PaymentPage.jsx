@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { formatPrice } from "../utils/currency";
 import API from "../services/api";
+import { clearCart } from "../redux/slices/cartSlice";
 
 let stripePromise = null;
 
@@ -111,6 +113,7 @@ const StripeCheckoutForm = ({ order, onSuccess }) => {
 /* ─── Main Payment Page ─── */
 const PaymentPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [order, setOrder] = useState(null);
     const [stripe, setStripe] = useState(null);
     const [clientSecret, setClientSecret] = useState("");
@@ -187,7 +190,11 @@ const PaymentPage = () => {
 
             // Clear pending order and cart
             localStorage.removeItem("pendingPaymentOrder");
-            localStorage.setItem("cartItems", JSON.stringify([]));
+            sessionStorage.setItem(
+                "guestOrderEmail",
+                String(order.customer?.email || "").trim().toLowerCase()
+            );
+            dispatch(clearCart());
             localStorage.setItem("cart", JSON.stringify([]));
 
             navigate("/order-complete", { state: { order: data } });

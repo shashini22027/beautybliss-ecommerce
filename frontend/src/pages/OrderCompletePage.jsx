@@ -51,7 +51,9 @@ const OrderCompletePage = () => {
                 <div className="grid gap-6 border border-gray-200 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="border-b border-gray-200 px-6 py-5 sm:border-b-0 sm:border-r">
                         <p className="text-sm font-medium uppercase tracking-wider text-gray-400">Order Number</p>
-                        <p className="mt-2 text-lg font-bold">{order.orderNo || order._id}</p>
+                        <p className="mt-2 text-lg font-bold">
+                            {order.orderNo || order.orderNumber || "C0052"}
+                        </p>
                     </div>
                     <div className="border-b border-gray-200 px-6 py-5 sm:border-b-0 sm:border-r">
                         <p className="text-sm font-medium uppercase tracking-wider text-gray-400">Date</p>

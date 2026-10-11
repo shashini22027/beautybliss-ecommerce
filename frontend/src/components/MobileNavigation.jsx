@@ -1,22 +1,16 @@
-import React, { useContext } from 'react';
 import { Home, ShoppingBag, Heart, User, ShoppingCart } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectCartItems } from '../redux/slices/cartSlice';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
 import { selectUser } from '../redux/slices/authSlice';
+import useCartBadgeCount from '../hooks/useCartBadgeCount';
 
 const MobileNavigation = () => {
-  const cartItems = useSelector(selectCartItems);
+  const cartCount = useCartBadgeCount();
   const wishlistItems = useSelector(selectWishlistItems);
   const user = useSelector(selectUser);
 
-  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
   const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
-  const cartCount = safeCartItems.reduce(
-    (acc, item) => acc + Number(item?.qty || item?.quantity || 1),
-    0
-  );
   const wishlistCount = safeWishlistItems.length;
 
   const navItems = [

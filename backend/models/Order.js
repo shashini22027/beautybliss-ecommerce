@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
+  orderNo: { type: String, unique: true, sparse: true },
   user: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'User' },
   customer: {
     name: { type: String },
-    email: { type: String },
+    email: { type: String, trim: true, lowercase: true },
     phone: { type: String },
   },
   orderItems: [{
@@ -16,7 +17,7 @@ const orderSchema = new mongoose.Schema({
   }],
   shippingAddress: {
     fullName: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
     phone: { type: String, required: true },
     address: { type: String, required: true },
     city: { type: String, required: true },

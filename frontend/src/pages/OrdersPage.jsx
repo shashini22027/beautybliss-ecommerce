@@ -46,7 +46,6 @@ const getOrderNumber = (order, index) => {
     if (order.orderNo || order.orderNumber) {
         return String(order.orderNo || order.orderNumber).toUpperCase();
     }
-
     return `C${String(52 + index).padStart(4, "0")}`;
 };
 
@@ -92,18 +91,73 @@ const getCheckoutOrders = () => {
     }
 };
 
+const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
+
 const OrdersPage = () => {
-    const [orders, setOrders] = useState(getCheckoutOrders);
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const user = useSelector(selectUser);
+    const [guestEmail, setGuestEmail] = useState(
+        () => sessionStorage.getItem("guestOrderEmail") || ""
+    );
+    const [hasLookedUpOrders, setHasLookedUpOrders] = useState(false);
+
+    const loadGuestOrders = async (email) => {
+        const normalizedEmail = normalizeEmail(email);
+        if (!normalizedEmail) {
+            setOrders([]);
+            setLoading(false);
+            setHasLookedUpOrders(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setError("");
+            const res = await apiFetch(
+                `/api/orders/lookup?email=${encodeURIComponent(normalizedEmail)}`,
+                { method: "GET" }
+            );
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data?.message || "Unable to load orders");
+            }
+
+            const backendOrders = Array.isArray(data) ? data : data.orders || [];
+            const localOrders = getCheckoutOrders().filter((order) =>
+                [
+                    order.customer?.email,
+                    order.shippingAddress?.email,
+                    order.paymentResult?.email_address,
+                ].some((orderEmail) => normalizeEmail(orderEmail) === normalizedEmail)
+            );
+            const mergedOrders = [...backendOrders, ...localOrders].reduce((result, order) => {
+                const orderId = order._id || order.id;
+                if (!result.some((item) => (item._id || item.id) === orderId)) {
+                    result.push(order);
+                }
+                return result;
+            }, []);
+
+            mergedOrders.sort(
+                (first, second) => new Date(second.createdAt) - new Date(first.createdAt)
+            );
+            setOrders(mergedOrders);
+            setHasLookedUpOrders(true);
+        } catch (loadError) {
+            setError(loadError.message || "Unable to load orders");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const loadOrders = async () => {
             if (!user) {
-                const checkoutOrders = getCheckoutOrders();
-                setOrders(checkoutOrders);
-                setLoading(false);
+                const savedEmail = sessionStorage.getItem("guestOrderEmail") || "";
+                setGuestEmail(savedEmail);
+                await loadGuestOrders(savedEmail);
                 return;
             }
 
@@ -118,12 +172,13 @@ const OrdersPage = () => {
                 }
 
                 const backendOrders = Array.isArray(data) ? data : data.orders || [];
-                
-                const localOrders = getCheckoutOrders().filter(
-                    (order) => 
-                        order.customer?.email === user.email || 
-                        order.shippingAddress?.email === user.email ||
-                        order.paymentResult?.email_address === user.email
+                const userEmail = normalizeEmail(user.email);
+                const localOrders = getCheckoutOrders().filter((order) =>
+                    [
+                        order.customer?.email,
+                        order.shippingAddress?.email,
+                        order.paymentResult?.email_address,
+                    ].some((orderEmail) => normalizeEmail(orderEmail) === userEmail)
                 );
 
                 const mergedOrders = [...backendOrders, ...localOrders].reduce((acc, current) => {
@@ -146,7 +201,15 @@ const OrdersPage = () => {
         };
 
         loadOrders();
-    }, []);
+    }, [user?.email]);
+
+    const handleGuestOrderLookup = (event) => {
+        event.preventDefault();
+        const normalizedEmail = normalizeEmail(guestEmail);
+        sessionStorage.setItem("guestOrderEmail", normalizedEmail);
+        setGuestEmail(normalizedEmail);
+        loadGuestOrders(normalizedEmail);
+    };
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
@@ -190,6 +253,31 @@ const OrdersPage = () => {
                     </Link>
                 </div>
 
+                {!user && (
+                    <form
+                        onSubmit={handleGuestOrderLookup}
+                        className="mb-8 flex flex-col gap-3 border border-gray-200 bg-[#f6f6f6] p-5 sm:flex-row sm:items-end"
+                    >
+                        <label className="flex-1 text-sm font-bold uppercase tracking-wide text-gray-700">
+                            Guest order email
+                            <input
+                                type="email"
+                                required
+                                value={guestEmail}
+                                onChange={(event) => setGuestEmail(event.target.value)}
+                                placeholder="Enter the email used at checkout"
+                                className="mt-2 h-12 w-full border border-gray-300 bg-white px-4 text-base font-normal normal-case outline-none focus:border-pink-400"
+                            />
+                        </label>
+                        <button
+                            type="submit"
+                            className="h-12 bg-[#2b2b2b] px-6 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
+                        >
+                            Find Orders
+                        </button>
+                    </form>
+                )}
+
                 {loading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map((item) => (
@@ -209,10 +297,12 @@ const OrdersPage = () => {
                             <Icon name="receipt" className="h-7 w-7" />
                         </div>
                         <h2 className="text-3xl font-extrabold uppercase text-gray-950">
-                            No orders yet
+                            {!user && !hasLookedUpOrders ? "Find your guest orders" : "No orders yet"}
                         </h2>
                         <p className="mx-auto mt-3 max-w-md text-lg leading-7 text-gray-600">
-                            Your BeautyBliss orders will appear here after checkout.
+                            {!user && !hasLookedUpOrders
+                                ? "Enter the email address used at checkout to find your orders."
+                                : "Your BeautyBliss orders will appear here after checkout."}
                         </p>
                         <Link
                             to="/products"
@@ -278,6 +368,12 @@ const OrdersPage = () => {
                                                 </span>
                                                 <Link
                                                     to={id ? `/order/${id}` : "#"}
+                                                    state={{
+                                                        orderEmail:
+                                                            order.customer?.email ||
+                                                            order.shippingAddress?.email ||
+                                                            "",
+                                                    }}
                                                     className="inline-flex h-10 items-center justify-center gap-2 bg-[#2b2b2b] px-4 text-xs font-bold uppercase text-white transition hover:bg-pink-600"
                                                 >
                                                     View

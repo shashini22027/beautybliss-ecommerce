@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { getImageUrl } from "../utils/image";
 import { formatPrice, parsePrice } from "../utils/currency";
 import API from "../services/api";
+import { clearCart } from "../redux/slices/cartSlice";
 
 const getCartItems = () => {
     try {
@@ -180,6 +182,7 @@ const requiredShippingFields = [
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [paymentMethod, setPaymentMethod] = useState("card");
     const [shipDifferent, setShipDifferent] = useState(false);
     const [cartItems, setCartItems] = useState(getCartItems);
@@ -318,7 +321,11 @@ const CheckoutPage = () => {
             try {
                 const { data } = await API.post("/orders", checkoutOrder);
                 localStorage.setItem("checkoutOrders", JSON.stringify([data, ...savedOrders]));
-                localStorage.setItem("cartItems", JSON.stringify([]));
+                sessionStorage.setItem(
+                    "guestOrderEmail",
+                    checkoutOrder.customer.email.trim().toLowerCase()
+                );
+                dispatch(clearCart());
                 localStorage.setItem("cart", JSON.stringify([]));
                 navigate("/order-complete", { state: { order: data } });
             } catch (error) {
