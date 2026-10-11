@@ -15,6 +15,7 @@ const BACKEND_URL = 'https://beautybliss-ecommerce-production.up.railway.app';
 export const getImageUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http') || path.startsWith('data:')) return path;
+  if (import.meta.env.DEV && path.startsWith('/uploads/')) return path;
   return `${BACKEND_URL}${path}`;
 };
 

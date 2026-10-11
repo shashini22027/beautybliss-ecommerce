@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Star } from 'lucide-react';
 import api from '../services/api';
+import { getImageUrl } from '../utils/image';
 
 const fallbackTestimonials = [
   {
@@ -44,6 +45,7 @@ const Testimonials = () => {
               handle: product.name ? `Reviewed ${product.name}` : '@beautybliss_customer',
               rating: Number(review.rating || 5),
               text: review.comment || '',
+              media: (review.media || []).filter((item) => item.type === 'image' && item.url),
               createdAt: review.createdAt,
             }))
           )
@@ -108,6 +110,28 @@ const Testimonials = () => {
             <p className="mb-6 text-sm italic leading-7 text-gray-600">
               "{testimonial.text}"
             </p>
+
+            {testimonial.media?.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                {testimonial.media.map((item, mediaIndex) => (
+                  <a
+                    key={`${item.url}-${mediaIndex}`}
+                    href={getImageUrl(item.url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`View photo shared by ${testimonial.name}`}
+                    className="block overflow-hidden rounded-md"
+                  >
+                    <img
+                      src={getImageUrl(item.url)}
+                      alt={`Customer review photo shared by ${testimonial.name}`}
+                      loading="lazy"
+                      className="h-20 w-20 object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
 
             <div className="border-t border-gray-200 pt-4">
               <h4 className="font-extrabold text-gray-950">{testimonial.name}</h4>

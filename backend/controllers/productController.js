@@ -2,10 +2,15 @@ import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import mongoose from 'mongoose';
+import fs from 'fs';
 import { clearCache } from '../middleware/cacheMiddleware.js';
 
 const MAX_STANDARD_IMAGES = 2;
 const MAX_LIPSTICK_IMAGES = 5;
+
+const removeReviewUploads = async (files = []) => {
+  await Promise.all(files.map((file) => fs.promises.unlink(file.path)));
+};
 
 const normalizeImageValues = (image, images) => {
   const values = [];
@@ -231,36 +236,70 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const createProductReview = asyncHandler(async (req, res) => {
-  const { rating, comment } = req.body;
+  const { rating, comment, name, email } = req.body || {};
   const product = await Product.findById(req.params.id);
 
-  if (product) {
-    const alreadyReviewed = product.reviews.find(
-      (r) => r.user.toString() === req.user._id.toString()
-    );
-
-    if (alreadyReviewed) {
-      return res.status(400).json({ message: 'Product already reviewed' });
-    }
-
-    const review = {
-      name: req.user.name,
-      rating: Number(rating),
-      comment,
-      user: req.user._id,
-    };
-
-    product.reviews.push(review);
-    product.numReviews = product.reviews.length;
-    product.rating =
-      product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
-
-    await product.save();
-    await clearCache('/api/products*');
-    res.status(201).json({ message: 'Review added' });
-  } else {
-    res.status(404).json({ message: 'Product not found' });
+  if (!product) {
+    await removeReviewUploads(req.files);
+    return res.status(404).json({ message: 'Product not found' });
   }
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const reviewerName = String(req.user?.name || name || '').trim();
+  const reviewComment = String(comment || '').trim();
+  const reviewRating = Number(rating);
+
+  if (!reviewerName || reviewerName.length > 100) {
+    await removeReviewUploads(req.files);
+    return res.status(400).json({ message: 'Enter your name (up to 100 characters).' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254) {
+    await removeReviewUploads(req.files);
+    return res.status(400).json({ message: 'Enter a valid email address.' });
+  }
+  if (!Number.isInteger(reviewRating) || reviewRating < 1 || reviewRating > 5) {
+    await removeReviewUploads(req.files);
+    return res.status(400).json({ message: 'Choose a rating from 1 to 5 stars.' });
+  }
+  if (!reviewComment || reviewComment.length > 5000) {
+    await removeReviewUploads(req.files);
+    return res.status(400).json({ message: 'Write a review (up to 5000 characters).' });
+  }
+
+  const alreadyReviewed = product.reviews.find((review) =>
+    review.email?.toLowerCase() === normalizedEmail ||
+    (req.user && review.user?.toString() === req.user._id.toString())
+  );
+  if (alreadyReviewed) {
+    await removeReviewUploads(req.files);
+    return res.status(400).json({ message: 'This email has already reviewed this product.' });
+  }
+
+  const media = (req.files || []).map((file) => ({
+    url: `/uploads/reviews/${file.filename}`,
+    type: file.mimetype.startsWith('video/') ? 'video' : 'image',
+  }));
+  product.reviews.push({
+    name: reviewerName,
+    email: normalizedEmail,
+    rating: reviewRating,
+    comment: reviewComment,
+    user: req.user?._id,
+    media,
+  });
+  product.numReviews = product.reviews.length;
+  product.rating =
+    product.reviews.reduce((total, review) => review.rating + total, 0) /
+    product.reviews.length;
+
+  try {
+    await product.save();
+  } catch (error) {
+    await removeReviewUploads(req.files);
+    throw error;
+  }
+  await clearCache('/api/products*');
+  return res.status(201).json({ message: 'Review added', reviews: product.reviews });
 });
 
 const updateProduct = asyncHandler(async (req, res) => {
