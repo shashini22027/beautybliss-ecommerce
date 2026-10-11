@@ -60,6 +60,17 @@ const getProductImages = (product) => {
     return [...new Set(images)];
 };
 
+const getComparePrice = (product) => {
+    if (product.oldPrice) {
+        return product.oldPrice;
+    }
+
+    const price = parsePrice(product.price);
+    const compareAtPrice = parsePrice(product.compareAtPrice);
+
+    return compareAtPrice > price ? product.compareAtPrice : "";
+};
+
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
         return product._id || product.id || product.slug;
@@ -363,6 +374,7 @@ const ProductsPage = () => {
                         {visibleProducts.map((product) => {
                             const id = getProductId(product);
                             const productPath = `/product/${id}`;
+                            const comparePrice = getComparePrice(product);
                             const productImages = getProductImages(product);
                             const primaryImage =
                                 productImages[0] ||
@@ -455,9 +467,9 @@ const ProductsPage = () => {
                                     </div>
 
                                     <div className="mt-4 flex items-center justify-center gap-2 text-lg font-bold">
-                                        {product.oldPrice && (
+                                        {comparePrice && (
                                             <span className="text-base font-normal text-gray-400 line-through">
-                                                {typeof product.oldPrice === "string" ? product.oldPrice : formatPrice(product.oldPrice)}
+                                                {typeof comparePrice === "string" ? comparePrice : formatPrice(comparePrice)}
                                             </span>
                                         )}
                                         <span className="text-gray-950">
