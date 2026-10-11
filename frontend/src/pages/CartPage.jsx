@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 import { getImageUrl } from "../utils/image";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, addToCart as reduxAddToCart, removeFromCart as reduxRemoveFromCart, setCart } from "../redux/slices/cartSlice";
@@ -398,7 +399,7 @@ const CartPage = ({ onClose }) => {
                                             }}
                                             className="inline-flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                                         >
-                                            <Icon name="bag" className="h-6 w-6" />
+                                            <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                                         </button>
                                         <button
                                             type="button"
@@ -444,5 +445,4 @@ const CartPage = ({ onClose }) => {
 };
 
 export default CartPage;
-
 

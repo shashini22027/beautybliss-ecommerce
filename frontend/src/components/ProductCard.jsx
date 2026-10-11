@@ -77,7 +77,7 @@ const ProductCard = ({ product }) => {
             aria-label="Add to cart"
             title="Add to cart"
           >
-            <ShoppingCart size={22} strokeWidth={2} />
+            <ShoppingCart size={22} strokeWidth={1.7} />
           </button>
           
           <button
@@ -146,7 +146,7 @@ const ProductCard = ({ product }) => {
             aria-label="Add to cart"
             title="Add to cart"
           >
-            <ShoppingCart size={16} />
+            <ShoppingCart size={18} strokeWidth={1.7} />
             Add to Cart
           </button>
         </div>

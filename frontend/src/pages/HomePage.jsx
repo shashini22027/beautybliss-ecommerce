@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { getImageUrl } from '../utils/image';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -564,22 +565,10 @@ const goToNextHotDeals = () => {
                     dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                   }}
                   className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
-                  aria-label="View cart"
-                  title="View cart"
+                  aria-label="Add to cart"
+                  title="Add to cart"
                 >
-                  <svg
-                    aria-hidden="true"
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M6 7h12l-1 13H7L6 7Z" />
-                    <path d="M9 7a3 3 0 0 1 6 0" />
-                  </svg>
+                  <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                 </button>
                 <button
                   type="button"
@@ -740,22 +729,10 @@ const goToNextHotDeals = () => {
                           dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                         }}
                         className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
-                        aria-label="View cart"
-                        title="View cart"
+                        aria-label="Add to cart"
+                        title="Add to cart"
                       >
-                        <svg
-                          aria-hidden="true"
-                          className="h-6 w-6"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M6 7h12l-1 13H7L6 7Z" />
-                          <path d="M9 7a3 3 0 0 1 6 0" />
-                        </svg>
+                        <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                       </button>
                       <button
                         type="button"
@@ -916,22 +893,10 @@ const goToNextHotDeals = () => {
                           dispatch(addToCart({ product: product.originalProduct || product, qty: 1 }));
                         }}
                         className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
-                        aria-label="View cart"
-                        title="View cart"
+                        aria-label="Add to cart"
+                        title="Add to cart"
                       >
-                        <svg
-                          aria-hidden="true"
-                          className="h-6 w-6"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M6 7h12l-1 13H7L6 7Z" />
-                          <path d="M9 7a3 3 0 0 1 6 0" />
-                        </svg>
+                        <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                       </button>
                       <button
                         type="button"
@@ -1037,5 +1002,4 @@ const goToNextHotDeals = () => {
 };
 
 export default HomePage;
-
 

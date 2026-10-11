@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { getImageUrl } from '../utils/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
@@ -136,19 +137,7 @@ const ProductCard = ({ product }) => {
             className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
             aria-label="Add to cart"
           >
-            <svg
-              aria-hidden="true"
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M6 7h12l-1 13H7L6 7Z" />
-              <path d="M9 7a3 3 0 0 1 6 0" />
-            </svg>
+            <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
           </button>
           <button
             type="button"

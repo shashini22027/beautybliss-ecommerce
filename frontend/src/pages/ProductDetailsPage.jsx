@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { getImageUrl } from '../utils/image';
-import { Maximize2, X } from 'lucide-react';
+import { Maximize2, ShoppingCart, X } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 import ReviewSection from '../components/ReviewSection';
 import { useDispatch, useSelector } from 'react-redux';
@@ -107,7 +107,6 @@ const mergeStoredCartItems = (items) => {
 const DetailIcon = ({ name, className = 'h-6 w-6' }) => {
   const paths = {
     heart: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z',
-    bag: 'M6 8h12l-1 13H7L6 8zm3 0a3 3 0 0 1 6 0',
     facebook: 'M15 8h-2a2 2 0 0 0-2 2v2H9v3h2v6h3v-6h2.4l.6-3h-3v-1.5c0-.8.2-1.5 1.4-1.5H17V8h-2z',
     whatsapp: 'M20 11.8a8 8 0 0 1-11.8 7L4 20l1.2-4A8 8 0 1 1 20 11.8zM9.5 8.5c-.2-.5-.4-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.4-1.1 1.1-1.1 2.6s1.1 3 1.2 3.2c.2.2 2.1 3.4 5.2 4.5 2.6.9 3.1.7 3.7.7.6-.1 1.8-.8 2.1-1.5.3-.7.3-1.3.2-1.5-.1-.1-.3-.2-.7-.4l-2.1-1c-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.7.1-.3-.2-1.3-.5-2.5-1.6-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.7.2-.2.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2.1-.4 0-.6l-.9-2.2z',
   };
@@ -815,7 +814,7 @@ const ProductDetailsPage = () => {
                           onClick={addRelatedToCart}
                           className="inline-flex h-14 w-14 items-center justify-center text-2xl text-gray-700 transition hover:bg-pink-50 hover:text-pink-600"
                         >
-                          <DetailIcon name="bag" />
+                          <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                         </button>
                         <button
                           type="button"

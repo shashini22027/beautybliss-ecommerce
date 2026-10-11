@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getImageUrl } from "../utils/image";
 import { useDispatch } from "react-redux";
+import { ShoppingCart } from "lucide-react";
 import { addToCart as reduxAddToCart } from "../redux/slices/cartSlice";
 import { toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
@@ -11,7 +12,6 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
         search: "M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z",
         heart: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z",
-        bag: "M6 8h12l-1 13H7L6 8zm3 0a3 3 0 0 1 6 0",
         shuffle: "M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5",
         star: "M12 2l3 6.2 6.8 1-4.9 4.8 1.2 6.8L12 17.6l-6.1 3.2 1.2-6.8-4.9-4.8 6.8-1L12 2z",
         bottle: "M9 2h6v4l-1 1v13a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V7L9 6V2zM8 12h6",
@@ -476,7 +476,7 @@ const ProductsPage = () => {
                                                     className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to cart"
                                                 >
-                                                    <Icon name="bag" className="h-6 w-6" />
+                                                    <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
                                                 </button>
                                                 <button
                                                     type="button"

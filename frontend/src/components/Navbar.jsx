@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShoppingBag, Heart, User, Search, Menu, X } from 'lucide-react';
+import { ShoppingCart, Heart, User, Search, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
@@ -105,7 +105,7 @@ const Navbar = () => {
               ))}
             </nav>
 
-            <div className="flex items-center justify-end gap-4">
+            <div className="flex items-center justify-end gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -123,11 +123,11 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={handleSearchButtonClick}
-                  className="text-gray-700 transition hover:text-pink-600"
+                  className="flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
                   aria-label="Search"
                   aria-expanded={showSearch}
                 >
-                  <Search size={20} />
+                  <Search size={24} strokeWidth={1.6} />
                 </button>
 
                 {showSearch && (
@@ -155,11 +155,12 @@ const Navbar = () => {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="relative hidden items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600 sm:flex"
+                className="relative hidden h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600 sm:flex"
+                aria-label={`Wishlist${wishlistCount ? `, ${wishlistCount} items` : ''}`}
               >
-                <Heart size={20} />
+                <Heart size={24} strokeWidth={1.6} />
                 {wishlistCount > 0 && (
-                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center bg-pink-600 px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-0 top-0 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-gray-950 px-1 text-[9px] font-bold leading-none text-white">
                     {wishlistCount}
                   </span>
                 )}
@@ -173,10 +174,10 @@ const Navbar = () => {
                     setShowProfileMenu((prev) => !prev);
                     setShowSearch(false);
                   }}
-                  className="text-gray-700 transition hover:text-pink-600"
+                  className="flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
                   aria-label="Profile"
                 >
-                  <User size={20} />
+                  <User size={24} strokeWidth={1.6} />
                 </button>
 
                 {showProfileMenu && (
@@ -241,11 +242,12 @@ const Navbar = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600"
+                className="relative flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
+                aria-label={`Cart${cartCount ? `, ${cartCount} items` : ''}`}
               >
-                <ShoppingBag size={20} />
+                <ShoppingCart size={24} strokeWidth={1.6} />
                 {cartCount > 0 && (
-                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center bg-pink-600 px-1 text-[10px] font-bold text-white">
+                  <span className="absolute right-0 top-0 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-gray-950 px-1 text-[9px] font-bold leading-none text-white">
                     {cartCount}
                   </span>
                 )}
