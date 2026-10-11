@@ -34,4 +34,39 @@
   .bb-storefront-panel {
     @apply border border-gray-200 bg-white shadow-[0_1px_10px_rgba(0,0,0,0.08)];
   }
+
+  .price-range-input {
+    @apply absolute left-0 top-1/2 h-[18px] w-full -translate-y-1/2 appearance-none bg-transparent;
+    pointer-events: none;
+  }
+
+  .price-range-input::-webkit-slider-runnable-track {
+    height: 2px;
+    background: transparent;
+  }
+
+  .price-range-input::-webkit-slider-thumb {
+    width: 6px;
+    height: 18px;
+    margin-top: -8px;
+    appearance: none;
+    background: #111827;
+    cursor: ew-resize;
+    pointer-events: auto;
+  }
+
+  .price-range-input::-moz-range-track {
+    height: 2px;
+    background: transparent;
+  }
+
+  .price-range-input::-moz-range-thumb {
+    width: 6px;
+    height: 18px;
+    border: 0;
+    border-radius: 0;
+    background: #111827;
+    cursor: ew-resize;
+    pointer-events: auto;
+  }
 }

@@ -71,6 +71,14 @@ const getComparePrice = (product) => {
     return compareAtPrice > price ? product.compareAtPrice : "";
 };
 
+const isSpecialOffer = (product) =>
+    Boolean(
+        product.discount ||
+        product.discountLabel ||
+        product.isHotDeal ||
+        parsePrice(getComparePrice(product)) > parsePrice(product.price)
+    );
+
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
         return product._id || product.id || product.slug;
@@ -92,6 +100,8 @@ const getCartProduct = (product) => {
     };
 };
 
+const MAX_PRODUCT_PRICE = 9490;
+
 const ProductsPage = () => {
     const dispatch = useDispatch();
     const [products, setProducts] = useState([]);
@@ -100,6 +110,9 @@ const ProductsPage = () => {
     const [activeCategory, setActiveCategory] = useState("All");
     const [currentPage, setCurrentPage] = useState(0);
     const [sortOrder, setSortOrder] = useState("default");
+    const [priceMin, setPriceMin] = useState(0);
+    const [priceMax, setPriceMax] = useState(MAX_PRODUCT_PRICE);
+    const [appliedPriceRange, setAppliedPriceRange] = useState([0, MAX_PRODUCT_PRICE]);
     const productsPerPage = 6;
 
     const location = useLocation();
@@ -131,7 +144,7 @@ const ProductsPage = () => {
 
     useEffect(() => {
         setCurrentPage(0);
-    }, [activeCategory]);
+    }, [activeCategory, appliedPriceRange]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -162,6 +175,8 @@ const ProductsPage = () => {
 
     const filteredProducts = useMemo(() => {
         const filtered = products.filter((product) => {
+            const isSpecialOffersCategory =
+                activeCategory.toLowerCase().replace(/[^a-z]/g, "") === "specialoffers";
             const category = getTextValue(product.category);
             const categoryId = getCategoryId(product.category);
             const normalizedActiveCategory = activeCategory.toLowerCase().replace(/\s+/g, "");
@@ -170,7 +185,9 @@ const ProductsPage = () => {
             const aliases = categoryAliases[normalizedActiveCategory] || [
                 normalizedActiveCategory,
             ];
-            const matchesCategory =
+            const matchesCategory = isSpecialOffersCategory
+                ? isSpecialOffer(product)
+                : (
                 activeCategory === "All" ||
                 category === activeCategory ||
                 categoryId === activeCategory ||
@@ -180,9 +197,12 @@ const ProductsPage = () => {
                         normalizedCategoryId === alias ||
                         normalizedCategory.includes(alias) ||
                         normalizedCategoryId.includes(alias)
-                );
+                ));
+            const price = parsePrice(product.price);
+            const matchesPrice =
+                price >= appliedPriceRange[0] && price <= appliedPriceRange[1];
 
-            return matchesCategory;
+            return matchesCategory && matchesPrice;
         });
 
         switch (sortOrder) {
@@ -203,7 +223,7 @@ const ProductsPage = () => {
         }
 
         return filtered;
-    }, [activeCategory, categoryAliases, products, sortOrder]);
+    }, [activeCategory, appliedPriceRange, categoryAliases, products, sortOrder]);
 
     const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
     const visibleProducts = filteredProducts.slice(
@@ -227,11 +247,14 @@ const ProductsPage = () => {
             { name: "FRAGRANCES", value: "fragrances", icon: "oil" },
             { name: "BATH & BODY", value: "bath & body", icon: "face" },
             { name: "BEAUTY TOOLS", value: "beauty tools", icon: "star" },
+            { name: "SPECIAL OFFERS", value: "special offers", icon: "gift" },
         ];
 
         return featuredCategories.map((category) => ({
             ...category,
-            count: products.filter((product) => {
+            count: category.value === "special offers"
+                ? products.filter(isSpecialOffer).length
+                : products.filter((product) => {
                 const productCategory = getTextValue(product.category);
                 const productCategoryId = getCategoryId(product.category);
                 const normalizedName = productCategory.toLowerCase().replace(/\s+/g, "");
@@ -249,6 +272,11 @@ const ProductsPage = () => {
             }).length,
         }));
     }, [categoryAliases, products]);
+
+    const formatRangePrice = (price) =>
+        `₨${price.toLocaleString("en-US")}`;
+    const priceMinPosition = (priceMin / MAX_PRODUCT_PRICE) * 100;
+    const priceMaxPosition = (priceMax / MAX_PRODUCT_PRICE) * 100;
 
     return (
         <main className="bb-products-page min-h-screen bg-white text-gray-950">
@@ -290,41 +318,62 @@ const ProductsPage = () => {
                 </div>
             </section>
 
-            <section className="mx-auto grid max-w-[1540px] gap-10 px-6 py-16 lg:grid-cols-[270px_1fr] lg:py-20">
+            <section className="mx-auto grid max-w-[1540px] gap-10 px-6 py-16 lg:grid-cols-[350px_1fr] lg:py-20">
                 <aside className="h-fit border border-gray-200 bg-white px-6 py-7">
-                    <h2 className="border-b border-gray-200 pb-4 text-lg font-extrabold uppercase tracking-tight">
-                        Categories
+                    <h2 className="text-lg font-extrabold uppercase tracking-tight">
+                        Filter by Price
                     </h2>
-                    <div className="mt-5 space-y-1 text-base font-semibold text-gray-600">
-                        {[
-                            ["All", "All"],
-                            ["Skincare", "skincare"],
-                            ["Haircare", "haircare"],
-                            ["Makeup", "makeup"],
-                            ["Fragrances", "fragrances"],
-                            ["Bath & Body", "bath & body"],
-                            ["Beauty Tools", "beauty tools"],
-                        ].map(([label, value]) => (
-                            <button
-                                key={value}
-                                type="button"
-                                onClick={() => setActiveCategory(value)}
-                                className={`block w-full border-b border-gray-100 px-1 py-3 text-left transition hover:text-pink-600 ${
-                                    activeCategory === value ? "text-gray-950" : ""
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
+                    <div className="relative mt-7 h-5" aria-label="Price range">
+                        <div
+                            className="absolute top-1/2 h-[2px] -translate-y-1/2 bg-gray-200"
+                            style={{
+                                left: `${priceMinPosition}%`,
+                                width: `${priceMaxPosition - priceMinPosition}%`,
+                                backgroundColor: "#111827",
+                            }}
+                        />
+                        <input
+                            type="range"
+                            min="0"
+                            max={MAX_PRODUCT_PRICE}
+                            step="1"
+                            value={priceMin}
+                            onChange={(event) =>
+                                setPriceMin(Math.min(Number(event.target.value), priceMax - 1))
+                            }
+                            className="price-range-input"
+                            style={{ zIndex: priceMin > MAX_PRODUCT_PRICE / 2 ? 5 : 3 }}
+                            aria-label="Minimum price"
+                            aria-valuetext={formatRangePrice(priceMin)}
+                        />
+                        <input
+                            type="range"
+                            min="0"
+                            max={MAX_PRODUCT_PRICE}
+                            step="1"
+                            value={priceMax}
+                            onChange={(event) =>
+                                setPriceMax(Math.max(Number(event.target.value), priceMin + 1))
+                            }
+                            className="price-range-input"
+                            style={{ zIndex: priceMin > MAX_PRODUCT_PRICE / 2 ? 3 : 5 }}
+                            aria-label="Maximum price"
+                            aria-valuetext={formatRangePrice(priceMax)}
+                        />
                     </div>
-
-                    <div className="mt-8 border-t border-gray-200 pt-6">
-                        <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-gray-400">
-                            Delivery
+                    <div className="mt-8 flex items-center justify-between gap-3">
+                        <p className="text-sm text-gray-600">
+                            Price: <span className="font-serif italic text-gray-950">
+                                {formatRangePrice(priceMin)} — {formatRangePrice(priceMax)}
+                            </span>
                         </p>
-                        <p className="mt-3 text-sm leading-6 text-gray-600">
-                            Free delivery above Rs. 6,000. Cash on delivery available.
-                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setAppliedPriceRange([priceMin, priceMax])}
+                            className="shrink-0 rounded-full bg-gray-100 px-5 py-3 text-xs font-bold uppercase tracking-wide text-gray-950 transition hover:bg-gray-200"
+                        >
+                            Filter
+                        </button>
                     </div>
                 </aside>
 
@@ -527,5 +576,3 @@ const ProductsPage = () => {
 };
 
 export default ProductsPage;
-
-
