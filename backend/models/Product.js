@@ -39,6 +39,7 @@ const productSchema = new mongoose.Schema({
   isBestSeller: { type: Boolean, default: false },
   isNewArrival: { type: Boolean, default: false },
   isHotDeal: { type: Boolean, default: false },
+  isSpecialOffer: { type: Boolean, default: false },
   reviews: [reviewSchema],
 }, { timestamps: true });
 

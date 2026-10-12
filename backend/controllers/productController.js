@@ -96,6 +96,9 @@ const normalizeVariants = (variants) => {
 const sumVariantStock = (variants) =>
   variants.reduce((total, variant) => total + (Number.isFinite(variant.countInStock) ? variant.countInStock : 0), 0);
 
+const isSpecialOffersCategory = (category) =>
+  category?.name?.trim().toLowerCase() === 'special offers';
+
 const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category;
   const subcategory = req.query.subcategory;
@@ -168,6 +171,7 @@ const createProduct = asyncHandler(async (req, res) => {
     isBestSeller,
     isNewArrival,
     isHotDeal,
+    isSpecialOffer,
     rating,
     variants,
   } = req.body;
@@ -227,6 +231,7 @@ const createProduct = asyncHandler(async (req, res) => {
     isBestSeller,
     isNewArrival,
     isHotDeal,
+    isSpecialOffer: Boolean(isSpecialOffer) || isSpecialOffersCategory(categoryDoc),
     rating: rating === undefined || rating === null || rating === '' ? undefined : Number(rating),
   });
 
@@ -320,6 +325,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     isBestSeller,
     isNewArrival,
     isHotDeal,
+    isSpecialOffer,
     rating,
     variants,
   } = req.body;
@@ -388,6 +394,8 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.isBestSeller = isBestSeller === undefined ? product.isBestSeller : isBestSeller;
     product.isNewArrival = isNewArrival === undefined ? product.isNewArrival : isNewArrival;
     product.isHotDeal = isHotDeal === undefined ? product.isHotDeal : isHotDeal;
+    product.isSpecialOffer =
+      Boolean(isSpecialOffer ?? product.isSpecialOffer) || isSpecialOffersCategory(categoryDoc);
     product.rating =
       rating === undefined || rating === null || rating === '' ? product.rating : Number(rating);
 

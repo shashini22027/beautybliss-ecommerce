@@ -34,6 +34,10 @@ const getStoredUser = () => {
 const getProductImage = (product) =>
   getImageUrl(product.image || product.images?.[0] || product.thumbnail || "");
 
+const isSpecialOfferProduct = (product) =>
+  Boolean(product.isSpecialOffer) ||
+  getTextValue(product.category).trim().toLowerCase() === "special offers";
+
 const ProductListScreen = () => {
   const navigate = useNavigate();
   const [userInfo] = useState(getStoredUser);
@@ -53,6 +57,9 @@ const ProductListScreen = () => {
       return products.filter(
         (product) => product.isBestSeller || product.isNewArrival || product.isHotDeal
       );
+    }
+    if (filter === "Special Offers") {
+      return products.filter(isSpecialOfferProduct);
     }
     return products;
   }, [products, filter]);
@@ -87,8 +94,13 @@ const ProductListScreen = () => {
       0
     );
     const featured = products.filter(
-      (product) => product.isBestSeller || product.isNewArrival || product.isHotDeal
+      (product) =>
+        product.isBestSeller ||
+        product.isNewArrival ||
+        product.isHotDeal ||
+        isSpecialOfferProduct(product)
     ).length;
+    const specialOffers = products.filter(isSpecialOfferProduct).length;
 
     return {
       total: products.length,
@@ -96,6 +108,7 @@ const ProductListScreen = () => {
       outOfStock,
       totalValue,
       featured,
+      specialOffers,
     };
   }, [products]);
 
@@ -166,15 +179,16 @@ const ProductListScreen = () => {
               </button>
             </div>
 
-            <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="mt-10 grid min-w-0 gap-6 sm:grid-cols-2 xl:grid-cols-6">
               {[
                 ["Items", stats.total],
                 ["Low Stock", stats.lowStock],
                 ["Out of Stock", stats.outOfStock],
                 ["Stock Value", formatPrice(stats.totalValue)],
                 ["Featured", stats.featured],
+                ["Special Offers", stats.specialOffers],
               ].map(([label, value]) => {
-                const isFilterable = ["Items", "Low Stock", "Out of Stock", "Featured"].includes(label);
+                const isFilterable = ["Items", "Low Stock", "Out of Stock", "Featured", "Special Offers"].includes(label);
                 const filterKey = label === "Items" ? "All" : label;
                 const isActive = isFilterable && filter === filterKey;
 
@@ -275,8 +289,8 @@ const ProductListScreen = () => {
                           <th className="w-[110px] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                             Brand
                           </th>
-                          <th className="w-[120px] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
-                            Homepage
+                          <th className="w-[140px] px-4 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
+                            Promotions
                           </th>
                           <th className="w-[92px] px-4 py-5 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                             Actions
@@ -379,7 +393,12 @@ const ProductListScreen = () => {
                                       Hot Deal
                                     </span>
                                   )}
-                                  {!product.isBestSeller && !product.isNewArrival && !product.isHotDeal && (
+                                  {isSpecialOfferProduct(product) && (
+                                    <span className="inline-flex items-center border border-pink-100 bg-pink-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-pink-700">
+                                      Special Offers
+                                    </span>
+                                  )}
+                                  {!product.isBestSeller && !product.isNewArrival && !product.isHotDeal && !isSpecialOfferProduct(product) && (
                                     <span className="text-xs text-gray-400">
                                       Not featured
                                     </span>

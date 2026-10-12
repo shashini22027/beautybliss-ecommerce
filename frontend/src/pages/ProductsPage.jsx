@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getImageUrl } from "../utils/image";
 import { useDispatch } from "react-redux";
 import { ShoppingCart } from "lucide-react";
@@ -72,12 +72,8 @@ const getComparePrice = (product) => {
 };
 
 const isSpecialOffer = (product) =>
-    Boolean(
-        product.discount ||
-        product.discountLabel ||
-        product.isHotDeal ||
-        parsePrice(getComparePrice(product)) > parsePrice(product.price)
-    );
+    Boolean(product.isSpecialOffer) ||
+    getTextValue(product.category).trim().toLowerCase() === "special offers";
 
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
@@ -116,6 +112,7 @@ const ProductsPage = () => {
     const productsPerPage = 6;
 
     const location = useLocation();
+    const navigate = useNavigate();
     const categoryQuery = useMemo(
         () => new URLSearchParams(location.search).get("category") || "",
         [location.search]
@@ -298,7 +295,10 @@ const ProductsPage = () => {
                             <button
                                 key={category.name}
                                 type="button"
-                                onClick={() => setActiveCategory(category.value)}
+                                onClick={() => {
+                                    setActiveCategory(category.value);
+                                    navigate(`/products?category=${encodeURIComponent(category.value)}`);
+                                }}
                                 className={`group flex items-center gap-4 text-left transition ${
                                     activeCategory === category.value
                                         ? "opacity-100"

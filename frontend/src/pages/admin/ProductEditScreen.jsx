@@ -126,6 +126,7 @@ const ProductEditScreen = () => {
   const [isBestSeller, setIsBestSeller] = useState(useFloralBloomTemplate);
   const [isNewArrival, setIsNewArrival] = useState(useFloralBloomTemplate);
   const [isHotDeal, setIsHotDeal] = useState(useFloralBloomTemplate);
+  const [isSpecialOffer, setIsSpecialOffer] = useState(false);
   const [variants, setVariants] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -163,11 +164,40 @@ const ProductEditScreen = () => {
     const fetchCategories = async () => {
       try {
         const { data } = await api.get("/categories");
-        // data may be an array directly or { categories: [...] }
-        const cats = Array.isArray(data) ? data : data.categories || [];
+        let cats = Array.isArray(data) ? data : data.categories || [];
+        let specialOffersCategory = cats.find(
+          (cat) => (cat.name || "").trim().toLowerCase() === "special offers"
+        );
+
+        if (!specialOffersCategory) {
+          try {
+            const { data: createdCategory } = await api.post("/categories", {
+              name: "Special Offers",
+              description: "Products featured in the Special Offers collection.",
+            });
+            cats = [...cats, createdCategory];
+          } catch (createError) {
+            const { data: refreshedData } = await api.get("/categories");
+            cats = Array.isArray(refreshedData)
+              ? refreshedData
+              : refreshedData.categories || [];
+            specialOffersCategory = cats.find(
+              (cat) => (cat.name || "").trim().toLowerCase() === "special offers"
+            );
+
+            if (!specialOffersCategory) {
+              throw createError;
+            }
+          }
+        }
+
         setCategories(cats);
       } catch (err) {
-        console.error("Failed to fetch categories", err);
+        setError(
+          err?.response?.data?.message ||
+            err.message ||
+            "Failed to load product categories."
+        );
       }
     };
     fetchCategories();
@@ -243,6 +273,12 @@ const ProductEditScreen = () => {
         setIsBestSeller(Boolean(product.isBestSeller));
         setIsNewArrival(Boolean(product.isNewArrival));
         setIsHotDeal(Boolean(product.isHotDeal));
+        const productCategory =
+          typeof product.category === "object" ? product.category?.name : "";
+        setIsSpecialOffer(
+          Boolean(product.isSpecialOffer) ||
+            productCategory?.trim().toLowerCase() === "special offers"
+        );
         setVariants(
           Array.isArray(product.variants) && product.variants.length
             ? product.variants.map((variant) => ({
@@ -417,6 +453,7 @@ const ProductEditScreen = () => {
         isBestSeller,
         isNewArrival,
         isHotDeal,
+        isSpecialOffer,
         variants: isVariantProduct ? normalizedVariants : [],
       };
 
@@ -941,9 +978,18 @@ const ProductEditScreen = () => {
                           <select
                             value={category}
                             required
-                            onChange={(event) =>
-                              setCategory(event.target.value)
-                            }
+                            onChange={(event) => {
+                              const nextCategory = categories.find(
+                                (cat) => cat._id === event.target.value
+                              );
+                              setCategory(event.target.value);
+                              if (
+                                nextCategory?.name?.trim().toLowerCase() ===
+                                "special offers"
+                              ) {
+                                setIsSpecialOffer(true);
+                              }
+                            }}
                             className="w-full appearance-none border border-gray-300 bg-white py-4 pl-12 pr-4 text-base font-medium outline-none transition focus:border-pink-500"
                           >
                             <option value="">Select a category</option>
@@ -1020,7 +1066,7 @@ const ProductEditScreen = () => {
                         onChange={setDiscountLabel}
                       />
 
-                      <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <ToggleField
                           label="Best Selling"
                           checked={isBestSeller}
@@ -1037,6 +1083,12 @@ const ProductEditScreen = () => {
                           label="Hot Deal"
                           checked={isHotDeal}
                           onChange={setIsHotDeal}
+                        />
+
+                        <ToggleField
+                          label="Special Offers"
+                          checked={isSpecialOffer}
+                          onChange={setIsSpecialOffer}
                         />
                       </div>
                     </div>
