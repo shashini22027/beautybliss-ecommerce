@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingBag,
   Star,
+  Trash2,
   User,
   Users,
 } from "lucide-react";
@@ -37,6 +38,8 @@ const ReviewListScreen = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [deletingReviewId, setDeletingReviewId] = useState(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -64,6 +67,28 @@ const ReviewListScreen = () => {
 
     fetchReviews();
   }, []);
+
+  const deleteReviewHandler = async (review) => {
+    if (!window.confirm("Delete this customer review? This action cannot be undone.")) {
+      return;
+    }
+
+    setActionError(null);
+    setDeletingReviewId(review._id);
+    try {
+      await api.delete(`/products/${review.productId}/reviews/${review._id}`);
+      setReviews((currentReviews) =>
+        currentReviews.filter(
+          (item) =>
+            item._id !== review._id || item.productId !== review.productId
+        )
+      );
+    } catch (err) {
+      setActionError(err?.response?.data?.message || err.message || "Failed to delete review.");
+    } finally {
+      setDeletingReviewId(null);
+    }
+  };
 
   const stats = useMemo(() => {
     const averageRating = reviews.length
@@ -138,6 +163,12 @@ const ReviewListScreen = () => {
             <div className="mt-12">
               <h2 className="text-3xl font-extrabold uppercase">Customer Reviews</h2>
 
+              {actionError && !loading && (
+                <div className="mt-5 border border-red-100 bg-red-50 px-6 py-4 text-sm font-medium text-red-700">
+                  {actionError}
+                </div>
+              )}
+
               {loading ? (
                 <div className="mt-7 border border-gray-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
                   Loading reviews...
@@ -179,13 +210,25 @@ const ReviewListScreen = () => {
                                 {review.productName || "BeautyBliss product"} • {formatDate(review.createdAt)}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1 text-yellow-500">
-                              {Array.from({ length: 5 }).map((_, index) => (
-                                <Star
-                                  key={index}
-                                  className={`h-5 w-5 ${index < Number(review.rating || 0) ? "fill-current" : ""}`}
-                                />
-                              ))}
+                            <div className="flex items-center justify-between gap-5">
+                              <div className="flex items-center gap-1 text-yellow-500">
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                  <Star
+                                    key={index}
+                                    className={`h-5 w-5 ${index < Number(review.rating || 0) ? "fill-current" : ""}`}
+                                  />
+                                ))}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => deleteReviewHandler(review)}
+                                disabled={!review._id || deletingReviewId === review._id}
+                                className="inline-flex h-10 items-center justify-center gap-2 border border-red-100 bg-red-50 px-3 text-xs font-bold uppercase tracking-wide text-red-700 transition hover:border-red-200 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                aria-label={`Delete review by ${review.name || "customer"}`}
+                              >
+                                <Trash2 size={15} />
+                                {deletingReviewId === review._id ? "Deleting..." : "Delete"}
+                              </button>
                             </div>
                           </div>
                           <p className="mt-4 text-base leading-7 text-gray-600">{review.comment}</p>

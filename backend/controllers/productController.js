@@ -307,6 +307,33 @@ const createProductReview = asyncHandler(async (req, res) => {
   return res.status(201).json({ message: 'Review added', reviews: product.reviews });
 });
 
+const deleteProductReview = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.reviewId)) {
+    return res.status(400).json({ message: 'Invalid review ID' });
+  }
+
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return res.status(404).json({ message: 'Product not found' });
+  }
+
+  if (!product.reviews.id(req.params.reviewId)) {
+    return res.status(404).json({ message: 'Review not found' });
+  }
+
+  product.reviews.pull(req.params.reviewId);
+  product.numReviews = product.reviews.length;
+  product.rating = product.numReviews
+    ? product.reviews.reduce((total, item) => total + Number(item.rating || 0), 0) /
+      product.numReviews
+    : 0;
+
+  await product.save();
+  await clearCache('/api/products*');
+  return res.json({ message: 'Review deleted successfully' });
+});
+
 const updateProduct = asyncHandler(async (req, res) => {
   const {
     name,
@@ -423,6 +450,7 @@ export {
   getProductById,
   createProduct,
   createProductReview,
+  deleteProductReview,
   updateProduct,
   deleteProduct,
 };
