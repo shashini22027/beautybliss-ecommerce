@@ -1,7 +1,17 @@
-import { useMemo, useState } from 'react';
-import { CalendarDays, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  CalendarDays,
+  CheckCircle2,
+  AlertCircle,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  X,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import VirtualMakeupTryOn from '../components/VirtualMakeupTryOn';
 
 const concerns = [
   {
@@ -9,28 +19,24 @@ const concerns = [
     title: 'Acne & Breakouts',
     description: 'Support for clogged pores, recurring pimples, and post-blemish marks.',
     routine: ['Gentle cleanser', 'Niacinamide serum', 'Oil-free moisturiser', 'Daily sunscreen'],
-    search: '/search?q=acne%20skincare',
   },
   {
     id: 'dryness',
     title: 'Dryness & Barrier Care',
     description: 'Comfort-focused care for tight, flaky, or easily irritated skin.',
     routine: ['Cream cleanser', 'Hyaluronic acid', 'Ceramide moisturiser', 'Nourishing night cream'],
-    search: '/search?q=hydrating%20skincare',
   },
   {
     id: 'dark-spots',
     title: 'Dark Spots & Uneven Tone',
     description: 'Brightening routines for pigmentation, dullness, and uneven texture.',
     routine: ['Vitamin C serum', 'Exfoliating toner', 'Spot corrector', 'Broad-spectrum sunscreen'],
-    search: '/search?q=brightening%20skincare',
   },
   {
     id: 'sensitive',
     title: 'Sensitive Skin',
     description: 'Simple, low-fragrance routines for redness, stinging, or reactive skin.',
     routine: ['Mild cleanser', 'Soothing toner', 'Barrier repair cream', 'Mineral sunscreen'],
-    search: '/search?q=sensitive%20skin',
   },
 ];
 
@@ -59,6 +65,16 @@ const SkinConsultationPage = () => {
     notes: '',
   });
   const [submitStatus, setSubmitStatus] = useState('idle');
+
+  useEffect(() => {
+    if (submitStatus !== 'success' && submitStatus !== 'error') {
+      return undefined;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const timeout = window.setTimeout(() => setSubmitStatus('idle'), 6000);
+    return () => window.clearTimeout(timeout);
+  }, [submitStatus]);
 
   const activeConcern = useMemo(
     () => concerns.find((concern) => concern.id === selectedConcern) || concerns[0],
@@ -111,6 +127,37 @@ const SkinConsultationPage = () => {
 
   return (
     <main className="min-h-screen bg-white text-gray-950">
+      {(submitStatus === 'success' || submitStatus === 'error') && (
+        <div
+          className={`fixed left-1/2 top-4 z-[60] flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 items-start gap-3 border px-5 py-4 shadow-lg ${
+            submitStatus === 'success'
+              ? 'border-green-200 bg-green-50 text-green-800'
+              : 'border-red-200 bg-red-50 text-red-800'
+          }`}
+          role={submitStatus === 'error' ? 'alert' : 'status'}
+          aria-live={submitStatus === 'error' ? 'assertive' : 'polite'}
+        >
+          {submitStatus === 'success' ? (
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+          ) : (
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+          )}
+          <p className="flex-1 text-sm font-semibold leading-6">
+            {submitStatus === 'success'
+              ? 'Appointment request sent. Our consultant will contact you to confirm.'
+              : 'We could not send the request. Please try again or call the consultant directly.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => setSubmitStatus('idle')}
+            className="shrink-0 p-1 transition hover:opacity-70"
+            aria-label="Dismiss notification"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       <section className="relative min-h-[420px] overflow-hidden">
         <img
           src="/images/banner.jpg"
@@ -187,7 +234,7 @@ const SkinConsultationPage = () => {
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description}</p>
               </div>
               <Link
-                to={activeConcern.search}
+                to={`/products?skinConcern=${activeConcern.id}`}
                 className="shrink-0 bg-gray-950 px-6 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600"
               >
                 Shop Matches
@@ -219,9 +266,29 @@ const SkinConsultationPage = () => {
               <h3 className="text-2xl font-extrabold text-gray-950">{consultant.name}</h3>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-pink-600">{consultant.role}</p>
               <div className="space-y-3 pt-2 text-sm text-gray-600">
-                <p className="flex items-center gap-3"><Phone size={18} /> {consultant.phone}</p>
-                <p className="flex items-center gap-3"><Mail size={18} /> {consultant.email}</p>
-                <p className="flex items-center gap-3"><MapPin size={18} /> {consultant.location}</p>
+                <a
+                  href={`tel:${consultant.phone.replace(/\s+/g, '')}`}
+                  className="flex items-center gap-3 transition hover:text-pink-600"
+                >
+                  <Phone size={18} className="shrink-0" />
+                  <span>{consultant.phone}</span>
+                </a>
+                <a
+                  href={`mailto:${consultant.email}`}
+                  className="flex items-center gap-3 transition hover:text-pink-600"
+                >
+                  <Mail size={18} className="shrink-0" />
+                  <span>{consultant.email}</span>
+                </a>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consultant.location)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 transition hover:text-pink-600"
+                >
+                  <MapPin size={18} className="shrink-0" />
+                  <span>{consultant.location}</span>
+                </a>
                 <p className="flex items-center gap-3"><CalendarDays size={18} /> {consultant.hours}</p>
               </div>
             </div>
@@ -271,17 +338,6 @@ const SkinConsultationPage = () => {
               />
             </div>
 
-            {submitStatus === 'success' && (
-              <div className="mt-5 border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-700">
-                Appointment request sent. Our consultant will contact you to confirm.
-              </div>
-            )}
-            {submitStatus === 'error' && (
-              <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
-                We could not send the request. Please try again or call the consultant directly.
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={submitStatus === 'sending'}
@@ -293,6 +349,8 @@ const SkinConsultationPage = () => {
           </form>
         </div>
       </section>
+
+      <VirtualMakeupTryOn />
     </main>
   );
 };

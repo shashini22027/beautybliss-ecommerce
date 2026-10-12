@@ -75,6 +75,49 @@ const isSpecialOffer = (product) =>
     Boolean(product.isSpecialOffer) ||
     getTextValue(product.category).trim().toLowerCase() === "special offers";
 
+const skinConcernKeywords = {
+    acne: [
+        "acne",
+        "pimple",
+        "breakout",
+        "blemish",
+        "salicylic",
+        "tea tree",
+        "pore",
+        "oil-free",
+    ],
+    dryness: [
+        "dry skin",
+        "hydrating",
+        "hydration",
+        "moistur",
+        "hyaluronic",
+        "ceramide",
+        "barrier",
+        "nourishing",
+    ],
+    "dark-spots": [
+        "dark spot",
+        "pigmentation",
+        "brightening",
+        "vitamin c",
+        "uneven tone",
+        "spot correct",
+        "turmeric",
+    ],
+    sensitive: [
+        "sensitive",
+        "soothing",
+        "gentle",
+        "calming",
+        "aloe",
+        "irritation",
+        "redness",
+        "fragrance-free",
+        "barrier repair",
+    ],
+};
+
 const getProductId = (product) => {
     if (product._id || product.id || product.slug) {
         return product._id || product.id || product.slug;
@@ -115,6 +158,10 @@ const ProductsPage = () => {
     const navigate = useNavigate();
     const categoryQuery = useMemo(
         () => new URLSearchParams(location.search).get("category") || "",
+        [location.search]
+    );
+    const skinConcernQuery = useMemo(
+        () => new URLSearchParams(location.search).get("skinConcern") || "",
         [location.search]
     );
 
@@ -195,11 +242,25 @@ const ProductsPage = () => {
                         normalizedCategory.includes(alias) ||
                         normalizedCategoryId.includes(alias)
                 ));
+            const concernKeywords = skinConcernKeywords[skinConcernQuery];
+            const productSearchText = [
+                product.name,
+                product.description,
+                getTextValue(product.category),
+                product.subcategory,
+                product.brand,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+            const matchesConcern =
+                !concernKeywords ||
+                concernKeywords.some((keyword) => productSearchText.includes(keyword));
             const price = parsePrice(product.price);
             const matchesPrice =
                 price >= appliedPriceRange[0] && price <= appliedPriceRange[1];
 
-            return matchesCategory && matchesPrice;
+            return matchesCategory && matchesConcern && matchesPrice;
         });
 
         switch (sortOrder) {
@@ -220,7 +281,7 @@ const ProductsPage = () => {
         }
 
         return filtered;
-    }, [activeCategory, appliedPriceRange, categoryAliases, products, sortOrder]);
+    }, [activeCategory, appliedPriceRange, categoryAliases, products, skinConcernQuery, sortOrder]);
 
     const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
     const visibleProducts = filteredProducts.slice(
