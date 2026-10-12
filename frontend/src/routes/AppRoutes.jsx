@@ -27,6 +27,8 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
 import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
+import ShippingDeliveryScreen from '../pages/ShippingDeliveryScreen';
+import ReturnRefundPolicyScreen from '../pages/ReturnRefundPolicyScreen';
 import TermsConditionsScreen from '../pages/TermsConditionsScreen';
 import OrderListScreen from '../pages/admin/OrderListScreen';
 import ProductEditScreen from '../pages/admin/ProductEditScreen';
@@ -70,6 +72,8 @@ const AppRoutes = () => {
           <Route path="/search" element={<SearchResultsPage />} />
           <Route path="/offers" element={<OffersPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/shipping-delivery" element={<ShippingDeliveryScreen />} />
+          <Route path="/return-refund-policy" element={<ReturnRefundPolicyScreen />} />
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
           <Route path="/admin/sales" element={<SalesReportScreen />} />

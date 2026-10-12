@@ -117,8 +117,8 @@ const Footer = () => {
                     <ul className="space-y-4 text-sm text-gray-600">
                         <li><Link to="/track-order" className="transition-colors hover:text-pink-600">Track Order</Link></li>
                         <li><Link to="/privacy-policy" className="transition-colors hover:text-pink-600">Privacy Policy</Link></li>
-                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Shipping and Delivery</Link></li>
-                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Return & Refund Policy</Link></li>
+                        <li><Link to="/shipping-delivery" className="transition-colors hover:text-pink-600">Shipping and Delivery</Link></li>
+                        <li><Link to="/return-refund-policy" className="transition-colors hover:text-pink-600">Return & Refund Policy</Link></li>
                         <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Terms and Conditions</Link></li>
                     </ul>
                 </div>
