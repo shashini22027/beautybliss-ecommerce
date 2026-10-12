@@ -80,6 +80,19 @@ const OrderDetailsPage = () => {
         setLoading(true);
         setError("");
 
+        const trackedOrderNumber = String(location.state?.orderNo || "").trim();
+        if (trackedOrderNumber) {
+          const directRes = await apiFetch(`/api/orders/track/${encodeURIComponent(trackedOrderNumber)}`, {
+            method: "GET",
+          });
+          const directData = await directRes.json();
+
+          if (directRes.ok) {
+            setOrder(directData.order || directData);
+            return;
+          }
+        }
+
         const savedCheckoutOrder = getSavedCheckoutOrder(id);
         const accessEmail =
           location.state?.orderEmail ||

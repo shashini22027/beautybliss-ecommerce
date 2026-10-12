@@ -9,6 +9,7 @@ import CartPage from '../pages/CartPage';
 import WishlistPage from '../pages/WishlistPage';
 import CheckoutPage from '../pages/CheckoutPage';
 import OrdersPage from '../pages/OrdersPage';
+import TrackOrderPage from '../pages/TrackOrderPage';
 import OrderDetailsPage from '../pages/OrderDetailsPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
@@ -61,6 +62,7 @@ const AppRoutes = () => {
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/track-order" element={<TrackOrderPage />} />
           <Route path="/order/:id" element={<OrderDetailsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

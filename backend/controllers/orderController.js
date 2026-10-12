@@ -168,6 +168,22 @@ const getGuestOrderById = asyncHandler(async (req, res) => {
   return res.status(404).json({ message: 'Order not found' });
 });
 
+const getOrderByNumber = asyncHandler(async (req, res) => {
+  await ensureOrderNumbers();
+  const orderNo = String(req.params.orderNo || req.query.orderNo || '').trim().toUpperCase();
+
+  if (!orderNo) {
+    return res.status(400).json({ message: 'Order number is required' });
+  }
+
+  const order = await Order.findOne({ orderNo });
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+
+  return res.json(order);
+});
+
 const getMyOrders = asyncHandler(async (req, res) => {
   await ensureOrderNumbers();
   let orders;
@@ -229,6 +245,7 @@ export {
   addOrderItems,
   getOrderById,
   getGuestOrderById,
+  getOrderByNumber,
   getOrdersByEmail,
   getMyOrders,
   updateOrderToDelivered,

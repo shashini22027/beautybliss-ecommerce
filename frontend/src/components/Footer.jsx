@@ -115,11 +115,11 @@ const Footer = () => {
                 <div>
                     <h4 className="mb-6 text-[11px] font-extrabold uppercase tracking-[0.3em] text-gray-950">Customer Care</h4>
                     <ul className="space-y-4 text-sm text-gray-600">
+                        <li><Link to="/track-order" className="transition-colors hover:text-pink-600">Track Order</Link></li>
                         <li><Link to="/privacy-policy" className="transition-colors hover:text-pink-600">Privacy Policy</Link></li>
-                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Terms & Conditions</Link></li>
-                        <li><Link to="/skin-consultation" className="transition-colors hover:text-pink-600">Skin Consultation</Link></li>
-                        <li><Link to="/about" className="transition-colors hover:text-pink-600">About Us</Link></li>
-                        <li><Link to="/contact" className="transition-colors hover:text-pink-600">Contact Support</Link></li>
+                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Shipping and Delivery</Link></li>
+                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Return & Refund Policy</Link></li>
+                        <li><Link to="/terms-conditions" className="transition-colors hover:text-pink-600">Terms and Conditions</Link></li>
                     </ul>
                 </div>
 
