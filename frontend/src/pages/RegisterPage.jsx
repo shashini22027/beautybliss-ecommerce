@@ -117,15 +117,15 @@ const RegisterPage = () => {
                 />
                 <div className="absolute inset-0 bg-black/35" />
                 <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
-                    <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
-                        My account
+                    <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
+                        MY ACCOUNT
                     </h1>
-                    <div className="mt-6 flex items-center gap-3 text-lg font-medium">
+                    <div className="mt-6 flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em]">
                         <Link to="/" className="text-white/85 transition hover:text-white">
-                            Home
+                            HOME
                         </Link>
                         <span>/</span>
-                        <span className="font-bold">My account</span>
+                        <span>MY ACCOUNT</span>
                     </div>
                 </div>
             </section>
