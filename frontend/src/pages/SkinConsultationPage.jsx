@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToCart } from '../redux/slices/cartSlice';
+import { selectUser } from '../redux/slices/authSlice';
+import { formatPrice, parsePrice } from '../utils/currency';
 import {
   CalendarDays,
   CheckCircle2,
@@ -49,6 +53,18 @@ const concerns = [
 ];
 
 const skinTypes = ['Oily', 'Dry', 'Combination', 'Sensitive', 'Not sure'];
+const routineSteps = {
+  cleanser: { label: 'Cleanser', terms: ['cleanser', 'face wash', 'cleansing'] },
+  serum: { label: 'Treatment serum', terms: ['serum', 'niacinamide', 'vitamin c', 'hyaluronic'] },
+  moisturizer: { label: 'Moisturiser', terms: ['moistur', 'cream', 'lotion', 'hydrating'] },
+  sunscreen: { label: 'Sunscreen', terms: ['sunscreen', 'sun screen', 'spf', 'sunblock'] },
+};
+const concernStepOrder = {
+  acne: ['cleanser', 'serum', 'moisturizer', 'sunscreen'],
+  dryness: ['cleanser', 'serum', 'moisturizer', 'sunscreen'],
+  'dark-spots': ['cleanser', 'serum', 'moisturizer', 'sunscreen'],
+  sensitive: ['cleanser', 'moisturizer', 'sunscreen'],
+};
 const appointmentModes = ['In-store consultation', 'Phone call', 'Video consultation'];
 
 const consultant = {
@@ -61,9 +77,18 @@ const consultant = {
 };
 
 const SkinConsultationPage = () => {
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+  const products = useSelector((state) => state.products?.items || []);
+  const [catalogProducts, setCatalogProducts] = useState([]);
   const [step, setStep] = useState(1);
   const [selectedConcern, setSelectedConcern] = useState(concerns[0].id);
   const [skinType, setSkinType] = useState(skinTypes[0]);
+  const [sensitivity, setSensitivity] = useState('Not sure');
+  const [fragrancePreference, setFragrancePreference] = useState('No preference');
+  const [savedRoutine, setSavedRoutine] = useState(false);
+  const [routineNotice, setRoutineNotice] = useState('');
+  const [savedRoutineData, setSavedRoutineData] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -74,6 +99,16 @@ const SkinConsultationPage = () => {
     notes: '',
   });
   const [submitStatus, setSubmitStatus] = useState('idle');
+
+  useEffect(() => {
+    let active = true;
+    api.get('/products')
+      .then(({ data }) => {
+        if (active && Array.isArray(data)) setCatalogProducts(data);
+      })
+      .catch((error) => console.error('Could not load consultation product matches', error));
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (submitStatus !== 'success' && submitStatus !== 'error') {
@@ -89,6 +124,76 @@ const SkinConsultationPage = () => {
     () => concerns.find((concern) => concern.id === selectedConcern) || concerns[0],
     [selectedConcern]
   );
+
+  const productRecommendations = useMemo(() => {
+    const order = concernStepOrder[activeConcern.id] || concernStepOrder.acne;
+    const productCatalog = products.length ? products : catalogProducts;
+    return order.map((stepKey) => {
+      const stepInfo = routineSteps[stepKey];
+      const matches = productCatalog.filter((product) => {
+        const searchable = [product.name, product.description, product.category?.name || product.category, product.subcategory, product.brand]
+          .filter(Boolean).join(' ').toLowerCase();
+        const matchedTerm = stepInfo.terms.some((term) => searchable.includes(term));
+        const sensitivityMatch = sensitivity !== 'Sensitive' || !/strong exfol|retinol|fragrance/i.test(searchable);
+        return matchedTerm && sensitivityMatch;
+      });
+      const preferredProduct = fragrancePreference === 'Fragrance-free preferred'
+        ? matches.find((item) => /fragrance.free|unscented|no fragrance/i.test(`${item.name} ${item.description || ''}`))
+        : null;
+      const product = preferredProduct || matches.find((item) => Number(item.countInStock ?? 1) > 0) || matches[0] || null;
+      const fragranceVerified = !product || fragrancePreference !== 'Fragrance-free preferred' || Boolean(preferredProduct);
+      return { key: stepKey, label: stepInfo.label, product, fragranceVerified };
+    });
+  }, [activeConcern.id, catalogProducts, fragrancePreference, products, sensitivity]);
+
+  const routineStorageKey = `beautybliss-routine-${user?._id || user?.id || user?.email || 'guest'}`;
+
+  useEffect(() => {
+    try {
+      const storedRoutine = JSON.parse(localStorage.getItem(routineStorageKey) || 'null');
+      setSavedRoutineData(storedRoutine);
+      setSavedRoutine(Boolean(storedRoutine));
+    } catch {
+      setSavedRoutineData(null);
+      setSavedRoutine(false);
+    }
+  }, [routineStorageKey]);
+
+  const saveCurrentRoutine = () => {
+    const routine = {
+      concernId: activeConcern.id,
+      concernTitle: activeConcern.title,
+      skinType,
+      sensitivity,
+      fragrancePreference,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(routineStorageKey, JSON.stringify(routine));
+    setSavedRoutineData(routine);
+    setSavedRoutine(true);
+    setRoutineNotice('Routine saved in this browser for this account.');
+  };
+
+  const loadSavedRoutine = () => {
+    if (!savedRoutineData) return;
+    setSelectedConcern(savedRoutineData.concernId);
+    setSkinType(savedRoutineData.skinType);
+    setSensitivity(savedRoutineData.sensitivity || 'Not sure');
+    setFragrancePreference(savedRoutineData.fragrancePreference || 'No preference');
+    setStep(2);
+    setRoutineNotice('Your saved routine is loaded.');
+  };
+
+  const addRoutineToCart = () => {
+    const available = productRecommendations.filter(({ product }) => product && Number(product.countInStock ?? 1) > 0);
+    available.forEach(({ product }) => dispatch(addToCart({ product, qty: 1 })));
+    setRoutineNotice(available.length ? `${available.length} recommended ${available.length === 1 ? 'product added' : 'products added'} to your cart.` : 'No matching in-stock products are available for this routine yet.');
+  };
+
+  const addProductToCart = (product) => {
+    dispatch(addToCart({ product, qty: 1 }));
+    setRoutineNotice(`${product.name} added to your cart.`);
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -243,18 +348,28 @@ const SkinConsultationPage = () => {
           </div>
 
           <div className="rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-6">
-            <p className="text-sm font-semibold text-gray-950">3. Optional: choose your focus</p>
-            <p className="mt-1 text-xs leading-5 text-gray-500">Your answers shape a general routine suggestion and stay in this session.</p>
-            <div className="mt-4 flex flex-wrap gap-2">{activeConcern.ingredients.map((ingredient) => <span key={ingredient} className="rounded-full bg-[#fbf3f1] px-3 py-1.5 text-xs font-medium text-[#884252]">{ingredient}</span>)}</div>
+            <p className="text-sm font-semibold text-gray-950">3. Product preferences</p>
+            <label className="mt-3 block text-xs font-medium text-gray-600" htmlFor="sensitivity">Sensitivity</label>
+            <select id="sensitivity" value={sensitivity} onChange={(event) => setSensitivity(event.target.value)} className="mt-1 h-10 w-full border border-gray-200 bg-white px-3 text-sm"><option>Not sure</option><option>Not sensitive</option><option>Sensitive</option></select>
+            <label className="mt-3 block text-xs font-medium text-gray-600" htmlFor="fragrancePreference">Fragrance preference</label>
+            <select id="fragrancePreference" value={fragrancePreference} onChange={(event) => setFragrancePreference(event.target.value)} className="mt-1 h-10 w-full border border-gray-200 bg-white px-3 text-sm"><option>No preference</option><option>Fragrance-free preferred</option></select>
+            {savedRoutine && <button type="button" onClick={loadSavedRoutine} className="mt-4 text-sm font-medium text-[#884252] underline">Load my saved routine</button>}
           </div>
         </div>
         <button type="button" onClick={() => setStep(2)} className="mt-6 min-h-12 rounded-sm bg-[#292526] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#a94f61]">See my routine</button>
         </>}
 
         {step === 2 && <div className="rounded-sm border border-[#eee5e1] bg-[#fdfaf8] p-5 sm:p-7">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a94f61]">Suggested for {skinType.toLowerCase()} skin</p><h3 className="mt-2 text-xl font-semibold text-gray-950">{activeConcern.title}</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description} These are general suggestions; check each product label and patch test if you have sensitivities.</p></div><Link to={`/products?skinConcern=${activeConcern.id}`} className="inline-flex min-h-11 items-center justify-center rounded-sm bg-[#292526] px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#a94f61]">Browse matching products</Link></div>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a94f61]">Suggested for {skinType.toLowerCase()} skin · {sensitivity.toLowerCase()} sensitivity</p><h3 className="mt-2 text-xl font-semibold text-gray-950">{activeConcern.title}</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description} These are general cosmetic suggestions, not treatment or diagnosis. Review each product label for full ingredients and allergens before use.</p></div><Link to={`/products?skinConcern=${activeConcern.id}`} className="inline-flex min-h-11 items-center justify-center rounded-sm bg-[#292526] px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#a94f61]">Browse matching products</Link></div>
           <div className="mt-6 grid gap-5 lg:grid-cols-2">
             {[['Morning routine', activeConcern.morning], ['Evening routine', activeConcern.evening]].map(([title, routine]) => <div key={title} className="rounded-sm border border-[#eee5e1] bg-white p-5"><h4 className="font-semibold text-gray-900">{title}</h4><ol className="mt-4 space-y-3">{routine.map((item, index) => <li key={`${title}-${item}`} className="flex gap-3 text-sm text-gray-700"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f8e8e9] text-xs font-semibold text-[#884252]">{index + 1}</span><span className="pt-0.5">{item}</span></li>)}</ol></div>)}
+          </div>
+          <div className="mt-5 rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-6">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h4 className="font-semibold text-gray-900">Products for your routine</h4><p className="mt-1 text-xs text-gray-500">Matched from current catalog names and descriptions. Ingredient details are shown only where supplied by the product listing.</p></div><button type="button" onClick={addRoutineToCart} disabled={!productRecommendations.some(({ product }) => product && Number(product.countInStock ?? 1) > 0)} className="min-h-10 rounded-sm bg-[#292526] px-4 text-xs font-semibold uppercase tracking-wide text-white hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50">Add available set to cart</button></div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{productRecommendations.map(({ key, label, product, fragranceVerified }) => <article key={key} className="rounded border border-[#eee5e1] bg-[#fdfaf8] p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#a94f61]">{label}</p>{product ? <><h5 className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold text-gray-900">{product.name}</h5><p className="mt-2 text-sm font-semibold text-gray-900">{typeof product.price === 'number' ? formatPrice(product.price) : product.price || 'See product page'}</p><p className="mt-2 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-gray-600">{product.description || 'Review the product page and packaging for ingredients and suitability.'}</p><p className="mt-2 text-[11px] font-medium text-gray-500">{Number(product.countInStock ?? 1) > 0 ? 'Available' : 'Currently out of stock'}</p>{!fragranceVerified && <p className="mt-2 text-[11px] leading-4 text-amber-800">Fragrance status is not listed; check the package before use.</p>}<div className="mt-3 flex flex-wrap gap-2"><Link to={`/product/${product._id || product.id}`} state={{ product }} className="text-xs font-medium text-[#884252] underline">Details</Link>{Number(product.countInStock ?? 1) > 0 && <button type="button" onClick={() => addProductToCart(product)} className="text-xs font-semibold text-gray-800 underline">Add to cart</button>}</div></> : <p className="mt-3 text-xs leading-5 text-gray-500">No suitable catalog match found. Browse the store or ask our consultant for help.</p>}</article>)}</div>
+            <p className="mt-4 border-t border-[#eee5e1] pt-3 text-xs leading-5 text-amber-800">Ingredient lists and allergy information may be incomplete in online listings. Always check the package for full ingredients and avoid known allergens. Stop use if irritation occurs.</p>
+            <div className="mt-4 flex flex-wrap gap-3"><button type="button" onClick={saveCurrentRoutine} className="min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">{savedRoutine ? 'Update saved routine' : 'Save this routine'}</button>{savedRoutine && <button type="button" onClick={loadSavedRoutine} className="min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">Reopen saved routine</button>}</div>
+            {routineNotice && <p className="mt-3 text-sm font-medium text-[#884252]" role="status">{routineNotice}</p>}
           </div>
           <div className="mt-5 rounded-sm border border-[#eee5e1] bg-white p-5"><h4 className="text-sm font-semibold text-gray-900">Ingredients to explore</h4><div className="mt-3 flex flex-wrap gap-2">{activeConcern.ingredients.map((ingredient) => <span key={ingredient} className="rounded-full bg-[#fbf3f1] px-3 py-1.5 text-xs font-medium text-[#884252]">{ingredient}</span>)}</div><p className="mt-3 text-xs leading-5 text-gray-500">Recommendations are educational and cosmetic, not a diagnosis. Product availability and ingredient lists vary by item.</p></div>
           <button type="button" onClick={() => setStep(1)} className="mt-5 min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">Back to skin profile</button>
