@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { selectUser, logoutUserThunk } from "../redux/slices/authSlice";
@@ -47,6 +47,13 @@ const AdminDashboardPage = () => {
   const user = useSelector(selectUser);
   const stats = useSelector(selectAdminDashboardStats);
   const dashboardError = useSelector((state) => state.adminDashboard.error);
+  const dashboardLoading = useSelector((state) => state.adminDashboard.loading);
+  const [dateRange, setDateRange] = useState(() => {
+    const today = new Date();
+    const from = new Date(today);
+    from.setDate(from.getDate() - 29);
+    return { from: from.toISOString().slice(0, 10), to: today.toISOString().slice(0, 10) };
+  });
 
   useEffect(() => {
     if (!user?.isAdmin) {
@@ -54,60 +61,13 @@ const AdminDashboardPage = () => {
       return;
     }
 
-    dispatch(fetchAdminDashboardData());
-  }, [dispatch, navigate, user]);
+    dispatch(fetchAdminDashboardData(dateRange));
+  }, [dispatch, navigate, user, dateRange]);
 
   const logoutHandler = () => {
     dispatch(logoutUserThunk());
     navigate("/login");
   };
-
-  const statCards = useMemo(
-    () => [
-      {
-        title: "Customers",
-        value: stats.users,
-        detail: "BeautyBliss accounts",
-        icon: "users",
-        link: "/admin/userlist",
-        color: "text-sky-700",
-        bg: "bg-sky-50",
-      },
-      {
-        title: "Products",
-        value: stats.products,
-        detail: "Catalog items",
-        icon: "products",
-        link: "/admin/productlist",
-        color: "text-emerald-700",
-        bg: "bg-emerald-50",
-      },
-      {
-        title: "Orders",
-        value: stats.orders,
-        detail: "Customer purchases",
-        icon: "orders",
-        link: "/admin/orderlist",
-        color: "text-amber-700",
-        bg: "bg-amber-50",
-      },
-      {
-        title: "Sales",
-        value: formatPrice(stats.sales),
-        detail: `${stats.soldItems} sold items`,
-        highlights: [
-          ["Profit", formatPrice(stats.profit)],
-          ["Paid", formatPrice(stats.paidIncome)],
-          ["Delivered", formatPrice(stats.deliveredIncome)],
-        ],
-        icon: "sales",
-        link: "/admin/sales",
-        color: "text-pink-700",
-        bg: "bg-pink-50",
-      },
-    ],
-    [stats]
-  );
 
   const sidebarItems = [
     { name: "Dashboard", icon: "dashboard", link: "/admin-dashboard", active: true },
@@ -115,6 +75,8 @@ const AdminDashboardPage = () => {
     { name: "Products", icon: "products", link: "/admin/productlist" },
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },
     { name: "Sales", icon: "sales", link: "/admin/sales" },
+    { name: "Appointments", icon: "orders", link: "/admin/appointments" },
+    { name: "Audit Log", icon: "shield", link: "/admin/audit-logs" },
     { name: "Blogs", icon: "dashboard", link: "/admin/bloglist" },
     { name: "Messages", icon: "dashboard", link: "/admin/messages" },
   ];
@@ -201,43 +163,100 @@ const AdminDashboardPage = () => {
               </div>
             )}
 
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {statCards.map((stat) => (
-                <Link
-                  key={stat.title}
-                  to={stat.link}
-                  className="group flex min-h-[176px] flex-col justify-between border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition hover:border-gray-300 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <Icon
-                      name={stat.icon}
-                      className="h-12 w-12 text-gray-300 transition group-hover:text-gray-950"
-                    />
-                    <Icon
-                      name="arrow"
-                      className="h-5 w-5 text-gray-300 transition group-hover:translate-x-1 group-hover:text-pink-600"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold">{stat.title}</p>
-                    <p className="mt-2 text-3xl font-extrabold text-gray-950">
-                      {stat.value}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-500">{stat.detail}</p>
-                    {stat.highlights && (
-                      <div className="mt-4 grid gap-2 text-xs font-bold uppercase tracking-wide text-gray-500">
-                        {stat.highlights.map(([label, value]) => (
-                          <p key={label} className="flex items-center justify-between gap-3">
-                            <span>{label}</span>
-                            <span className="text-gray-950">{value}</span>
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              ))}
+            <div className="mt-9 flex flex-col gap-4 border border-gray-200 bg-white p-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Business overview</h2>
+                <p className="mt-1 text-sm text-gray-500">Revenue includes paid orders in the selected period.</p>
+              </div>
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  From
+                  <input type="date" value={dateRange.from} max={dateRange.to} onChange={(event) => setDateRange((range) => ({ ...range, from: event.target.value }))} className="h-10 border border-gray-300 px-3 text-sm text-gray-900" />
+                </label>
+                <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  To
+                  <input type="date" value={dateRange.to} min={dateRange.from} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setDateRange((range) => ({ ...range, to: event.target.value }))} className="h-10 border border-gray-300 px-3 text-sm text-gray-900" />
+                </label>
+              </div>
             </div>
+
+            {dashboardLoading && !stats.totalOrders && !dashboardError ? (
+              <div className="mt-6 border border-gray-200 px-6 py-12 text-center text-sm text-gray-500">Loading live business records…</div>
+            ) : stats.period ? (
+              <>
+                <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    { title: "Customers", value: stats.totalCustomers, detail: "Registered customer accounts", icon: "users", link: "/admin/userlist" },
+                    { title: "Products", value: stats.totalProducts, detail: `${stats.lowStockCount} at or below ${stats.lowStockThreshold} units`, icon: "products", link: "/admin/productlist" },
+                    { title: "Orders", value: stats.totalOrders, detail: `${stats.pendingOrders} awaiting payment`, icon: "orders", link: "/admin/orderlist" },
+                    { title: "Paid revenue", value: formatPrice(stats.revenue), detail: `Average order ${formatPrice(stats.averageOrderValue)} · ${stats.paidOrders} paid`, icon: "sales", link: "/admin/sales" },
+                  ].map((stat) => (
+                    <Link key={stat.title} to={stat.link} className="group border border-gray-200 bg-white p-6 shadow-sm transition hover:border-pink-300 hover:shadow-md">
+                      <div className="flex items-center justify-between">
+                        <Icon name={stat.icon} className="h-9 w-9 text-gray-300 group-hover:text-pink-600" />
+                        <Icon name="arrow" className="h-5 w-5 text-gray-300 group-hover:text-pink-600" />
+                      </div>
+                      <p className="mt-5 text-sm font-semibold text-gray-600">{stat.title}</p>
+                      <p className="mt-1 text-3xl font-extrabold text-gray-950">{stat.value}</p>
+                      <p className="mt-2 text-xs text-gray-500">{stat.detail}</p>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="mt-8 grid gap-6 xl:grid-cols-2">
+                  <section className="border border-gray-200 bg-white p-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div><h2 className="text-xl font-bold">Low stock</h2><p className="mt-1 text-sm text-gray-500">Products with 5 or fewer units remaining.</p></div>
+                      <Link to="/admin/productlist" className="text-sm font-bold text-pink-700 hover:underline">Manage inventory</Link>
+                    </div>
+                    {stats.lowStockProducts?.length ? <div className="mt-5 divide-y divide-gray-100">
+                      {stats.lowStockProducts.map((product) => <div key={product._id} className="flex items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0 truncate font-medium">{product.name}</span><span className={`shrink-0 font-bold ${product.countInStock === 0 ? "text-red-700" : "text-amber-700"}`}>{product.countInStock} left</span></div>)}
+                    </div> : <p className="mt-5 text-sm text-gray-500">No products are below the low-stock threshold.</p>}
+                  </section>
+                  <section className="border border-gray-200 bg-white p-6">
+                    <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-bold">Recent orders</h2><p className="mt-1 text-sm text-gray-500">Latest orders recorded in the store.</p></div><Link to="/admin/orderlist" className="text-sm font-bold text-pink-700 hover:underline">All orders</Link></div>
+                    {stats.recentOrders?.length ? <div className="mt-5 divide-y divide-gray-100">
+                      {stats.recentOrders.map((order) => <div key={order._id} className="flex items-center justify-between gap-3 py-3 text-sm"><div className="min-w-0"><p className="truncate font-semibold">{order.orderNo || "Order"} · {order.customer?.name || order.shippingAddress?.fullName || "Customer"}</p><p className="mt-1 text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString()} · {order.isPaid ? "Paid" : "Payment pending"} · {order.isDelivered ? "Delivered" : "Processing"}</p></div><span className="shrink-0 font-bold">{formatPrice(order.totalPrice)}</span></div>)}
+                    </div> : <p className="mt-5 text-sm text-gray-500">No orders have been recorded.</p>}
+                  </section>
+                </div>
+
+                <div className="mt-6 grid gap-6 xl:grid-cols-2">
+                  <section className="border border-gray-200 bg-white p-6">
+                    <h2 className="text-xl font-bold">Product performance</h2>
+                    <p className="mt-1 text-sm text-gray-500">Top products by units sold in the selected period (paid orders).</p>
+                    {stats.topProducts?.length ? <div className="mt-5 space-y-4">
+                      {stats.topProducts.map((product) => {
+                        const maxUnits = Math.max(...stats.topProducts.map((item) => item.unitsSold), 1);
+                        return <div key={product._id || product.name}>
+                          <div className="mb-1 flex justify-between gap-3 text-sm"><span className="truncate font-medium">{product.name}</span><span className="shrink-0 text-gray-500">{product.unitsSold} sold · {formatPrice(product.revenue)}</span></div>
+                          <div className="h-2 bg-gray-100"><div className="h-full bg-rose-400" style={{ width: `${Math.max(4, (product.unitsSold / maxUnits) * 100)}%` }} /></div>
+                        </div>;
+                      })}
+                    </div> : <p className="mt-5 text-sm text-gray-500">No paid product sales in this period.</p>}
+                  </section>
+                  <section className="border border-gray-200 bg-white p-6">
+                    <h2 className="text-xl font-bold">Daily paid revenue</h2>
+                    <p className="mt-1 text-sm text-gray-500">Revenue by order date for the selected period.</p>
+                    {stats.salesByDay?.length ? <div className="mt-5 space-y-3">
+                      {stats.salesByDay.slice(-10).map((day) => {
+                        const maxRevenue = Math.max(...stats.salesByDay.map((item) => item.revenue), 1);
+                        return <div key={day.date || day._id} className="grid grid-cols-[82px_1fr_auto] items-center gap-3 text-xs">
+                          <span className="text-gray-500">{new Date(`${day.date || day._id}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                          <div className="h-2 bg-gray-100"><div className="h-full bg-[#37302e]" style={{ width: `${Math.max(3, (day.revenue / maxRevenue) * 100)}%` }} /></div>
+                          <span className="font-semibold">{formatPrice(day.revenue)}</span>
+                        </div>;
+                      })}
+                    </div> : <p className="mt-5 text-sm text-gray-500">No paid revenue in this period.</p>}
+                  </section>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <Link to="/admin/appointments" className="flex items-center justify-between border border-gray-200 bg-white p-5 hover:border-pink-300"><span><span className="block font-bold">Appointment requests</span><span className="mt-1 block text-sm text-gray-500">Review, confirm, or cancel pending requests.</span></span><span className="ml-3 rounded-full bg-rose-50 px-3 py-1 text-sm font-bold text-rose-700">{stats.pendingAppointments || 0} pending</span></Link>
+                  <Link to="/admin/messages" className="flex items-center justify-between border border-gray-200 bg-white p-5 hover:border-pink-300"><span><span className="block font-bold">Customer messages</span><span className="mt-1 block text-sm text-gray-500">Open the support inbox.</span></span><span className="ml-3 rounded-full bg-rose-50 px-3 py-1 text-sm font-bold text-rose-700">{stats.unreadMessages || 0} unread</span></Link>
+                </div>
+              </>
+            ) : null}
 
             <div className="mt-12 grid gap-12 xl:grid-cols-[1fr_360px]">
               <section>

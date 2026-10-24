@@ -24,6 +24,8 @@ import BlogPostDetail from '../pages/BlogPostDetail';
 import ContactScreen from "../pages/ContactScreen";
 import SkinConsultationPage from '../pages/SkinConsultationPage';
 import AppointmentManagePage from '../pages/AppointmentManagePage';
+import AppointmentAdminScreen from '../pages/admin/AppointmentAdminScreen';
+import AdminAuditLogScreen from '../pages/admin/AdminAuditLogScreen';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import AccountSupportPage from '../pages/AccountSupportPage';
@@ -77,6 +79,8 @@ const AppRoutes = () => {
           <Route path="/return-refund-policy" element={<ReturnRefundPolicyScreen />} />
           <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
+          <Route path="/admin/appointments" element={<AppointmentAdminScreen />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogScreen />} />
           <Route path="/admin/sales" element={<SalesReportScreen />} />
           <Route path="/admin/productlist" element={<ProductListScreen />} />
           <Route path="/admin/homepage-merchandising" element={<HomepageMerchandisingScreen />} />

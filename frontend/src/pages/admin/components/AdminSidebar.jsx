@@ -11,6 +11,8 @@ import {
   FileText,
   Mail,
   DollarSign,
+  CalendarDays,
+  Shield,
 } from 'lucide-react';
 import { logoutUserThunk } from '../../../redux/slices/authSlice';
 
@@ -35,6 +37,8 @@ const AdminSidebar = () => {
     { name: 'Customers', icon: Users, link: '/admin/userlist' },
     { name: 'Products', icon: Package, link: '/admin/productlist' },
     { name: 'Orders', icon: ShoppingBag, link: '/admin/orderlist' },
+    { name: 'Appointments', icon: CalendarDays, link: '/admin/appointments' },
+    { name: 'Audit log', icon: Shield, link: '/admin/audit-logs' },
     { name: 'Blogs', icon: FileText, link: '/admin/bloglist' },
     { name: 'Messages', icon: Mail, link: '/admin/messages' },
     { name: 'Sales', icon: DollarSign, link: '/admin/sales' },

@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import apiLimiter from './middleware/rateLimiter.js';
+import adminAuditMiddleware from './middleware/adminAuditMiddleware.js';
 
 import userRoutes from './routes/userRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -60,6 +61,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/api/', apiLimiter);
+app.use(adminAuditMiddleware);
 
 // 🔍 DATABASE TEST ROUTE (ප්‍රශ්නය හඳුනාගැනීම සඳහා අලුතින් එකතු කරන ලදී)
 app.get('/api/test-db', async (req, res) => {

@@ -78,6 +78,19 @@ const UserListScreen = () => {
     }
   };
 
+  const updateRoleHandler = async (user) => {
+    const isAdmin = !user.isAdmin;
+    const roleName = isAdmin ? "administrator" : "customer";
+    if (!window.confirm(`Change ${user.name}'s role to ${roleName}?`)) return;
+    try {
+      setError(null);
+      const { data } = await api.put(`/users/${user._id}/role`, { isAdmin });
+      setUsers((current) => current.map((item) => item._id === data._id ? { ...item, ...data } : item));
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Unable to update account role.");
+    }
+  };
+
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
     navigate("/login");
@@ -206,6 +219,16 @@ const UserListScreen = () => {
                               )}
                             </td>
                             <td className="space-x-3 px-6 py-5 text-right">
+                              {user._id !== userInfo?._id && (
+                                <button
+                                  type="button"
+                                  onClick={() => updateRoleHandler(user)}
+                                  className="inline-flex h-9 items-center justify-center border border-gray-200 px-3 text-xs font-bold text-gray-700 transition hover:border-pink-300 hover:text-pink-700"
+                                  aria-label={`${user.isAdmin ? "Remove administrator role from" : "Grant administrator role to"} ${user.name}`}
+                                >
+                                  {user.isAdmin ? "Demote" : "Make admin"}
+                                </button>
+                              )}
                               <Link
                                 to={`/admin/user/${user._id}/edit`}
                                 className="inline-flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-pink-100 hover:text-pink-700"

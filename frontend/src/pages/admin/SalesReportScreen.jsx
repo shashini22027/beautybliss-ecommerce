@@ -18,8 +18,6 @@ import api from "../../services/api";
 import { formatPrice, parsePrice } from "../../utils/currency";
 import AdminSidebar from "./components/AdminSidebar";
 
-const PROFIT_MARGIN = 0.35;
-
 const formatDate = (date) => {
   if (!date) return "Pending";
   return new Date(date).toLocaleDateString(undefined, {
@@ -56,29 +54,8 @@ const getOrderNumber = (order, index) => {
   return `C${String(52 + index).padStart(4, "0")}`;
 };
 
-const getCheckoutOrders = () => {
-  try {
-    const orders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
-    return Array.isArray(orders) ? orders : [];
-  } catch {
-    return [];
-  }
-};
-
 const getOrderKey = (order, index) =>
   order._id || order.id || order.orderNo || order.orderNumber || `checkout-${index}`;
-
-const mergeOrders = (primaryOrders, secondaryOrders) => {
-  const orderMap = new Map();
-
-  [...primaryOrders, ...secondaryOrders].forEach((order, index) => {
-    if (!order) return;
-    const key = getOrderKey(order, index);
-    if (!orderMap.has(key)) orderMap.set(key, order);
-  });
-
-  return [...orderMap.values()];
-};
 
 const getStoredUser = () => {
   try {
@@ -91,7 +68,14 @@ const getStoredUser = () => {
 const SalesReportScreen = () => {
   const navigate = useNavigate();
   const [userInfo] = useState(getStoredUser);
-  const [orders, setOrders] = useState(getCheckoutOrders);
+  const [orders, setOrders] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [dateRange, setDateRange] = useState(() => {
+    const today = new Date();
+    const from = new Date(today);
+    from.setDate(from.getDate() - 29);
+    return { from: from.toISOString().slice(0, 10), to: today.toISOString().slice(0, 10) };
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -102,56 +86,37 @@ const SalesReportScreen = () => {
       try {
         setLoading(true);
         setError(null);
-        const { data } = await api.get("/orders");
-        const apiOrders = Array.isArray(data) ? data : data.orders || [];
-        setOrders(mergeOrders(apiOrders, getCheckoutOrders()));
+        const [ordersResponse, summaryResponse] = await Promise.all([
+          api.get("/orders"),
+          api.get("/admin/stats", { params: dateRange }),
+        ]);
+        const data = ordersResponse.data;
+        setOrders(Array.isArray(data) ? data : data.orders || []);
+        setSummary(summaryResponse.data);
       } catch (err) {
-        const checkoutOrders = getCheckoutOrders();
-        if (checkoutOrders.length) {
-          setOrders(checkoutOrders);
-          setError(null);
-        } else {
-          setError(err?.response?.data?.message || err.message);
-        }
+        setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [dateRange]);
 
   const stats = useMemo(() => {
-    const totalIncome = orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
-    const paidIncome = orders
-      .filter((order) => order.isPaid || order.paidAt)
-      .reduce((sum, order) => sum + getOrderTotal(order), 0);
-    const deliveredIncome = orders
-      .filter((order) => order.isDelivered || order.deliveredAt)
-      .reduce((sum, order) => sum + getOrderTotal(order), 0);
-    const pendingIncome = Math.max(totalIncome - paidIncome, 0);
-    const soldItems = orders.reduce(
-      (sum, order) => sum + getOrderItems(order).reduce((itemSum, item) => itemSum + getItemQty(item), 0),
-      0
-    );
-    const estimatedProfit = totalIncome * PROFIT_MARGIN;
-    const estimatedCost = totalIncome - estimatedProfit;
-
     return {
-      totalIncome,
-      paidIncome,
-      pendingIncome,
-      deliveredIncome,
-      estimatedCost,
-      estimatedProfit,
-      soldItems,
-      averageOrderValue: orders.length ? totalIncome / orders.length : 0,
+      totalIncome: summary?.revenue || 0,
+      paidIncome: summary?.revenue || 0,
+      deliveredIncome: summary?.deliveredRevenue || 0,
+      soldItems: summary?.soldItems || 0,
+      averageOrderValue: summary?.averageOrderValue || 0,
+      paidOrders: summary?.paidOrders || 0,
     };
-  }, [orders]);
+  }, [summary]);
 
   const recentOrders = useMemo(
     () =>
-      [...orders]
+      orders.filter((order) => order.isPaid || order.paidAt)
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 6),
     [orders]
@@ -194,7 +159,7 @@ const SalesReportScreen = () => {
           <section className="min-w-0 lg:pl-1">
             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
               <p className="max-w-3xl text-lg leading-8 text-gray-600">
-                Review income, estimated profit, sold items, and recent order performance from the same orders used in admin order records.
+                Review paid revenue and product sales from database orders. Select a date range to filter the sales metrics.
               </p>
               <Link
                 to="/admin/orderlist"
@@ -211,16 +176,24 @@ const SalesReportScreen = () => {
               </div>
             )}
 
+            <div className="mt-7 flex flex-wrap items-end gap-3 border border-gray-200 p-5">
+              <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">From<input type="date" value={dateRange.from} max={dateRange.to} onChange={(event) => setDateRange((range) => ({ ...range, from: event.target.value }))} className="h-10 border border-gray-300 px-3 text-sm text-gray-900" /></label>
+              <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500">To<input type="date" value={dateRange.to} min={dateRange.from} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setDateRange((range) => ({ ...range, to: event.target.value }))} className="h-10 border border-gray-300 px-3 text-sm text-gray-900" /></label>
+              <span className="text-sm text-gray-500">Metrics include paid orders from {summary?.period?.from || dateRange.from} to {summary?.period?.to || dateRange.to}.</span>
+            </div>
+
             {loading ? (
               <div className="mt-10 border border-gray-200 bg-white py-20 text-center text-sm font-bold uppercase tracking-widest text-gray-400 shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
                 Loading sales report...
               </div>
+            ) : error && !summary ? (
+              <div className="mt-7 border border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-600">Sales metrics are unavailable until the database request succeeds.</div>
             ) : (
               <>
                 <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
                   {[
-                    ["Total Income", formatPrice(stats.totalIncome), Wallet],
-                    ["Estimated Profit", formatPrice(stats.estimatedProfit), TrendingUp],
+                    ["Paid Revenue", formatPrice(stats.totalIncome), Wallet],
+                    ["Average Paid Order", formatPrice(stats.averageOrderValue), TrendingUp],
                     ["Paid Income", formatPrice(stats.paidIncome), CreditCard],
                     ["Sold Items", stats.soldItems, Package],
                   ].map(([label, value, Icon]) => (
@@ -234,12 +207,11 @@ const SalesReportScreen = () => {
 
                 <div className="mt-8 grid gap-6 lg:grid-cols-3">
                   {[
-                    ["Estimated Cost", formatPrice(stats.estimatedCost)],
-                    ["Pending Income", formatPrice(stats.pendingIncome)],
-                    ["Delivered Income", formatPrice(stats.deliveredIncome)],
+                    ["Paid Orders", stats.paidOrders],
+                    ["Unpaid Orders", summary?.pendingOrders || 0],
+                    ["Delivered Revenue", formatPrice(stats.deliveredIncome)],
                     ["Average Order", formatPrice(stats.averageOrderValue)],
-                    ["Orders", orders.length],
-                    ["Profit Margin", `${Math.round(PROFIT_MARGIN * 100)}%`],
+                    ["Orders in Period", summary?.paidOrders || 0],
                   ].map(([label, value]) => (
                     <div key={label} className="border border-gray-200 bg-[#f8f8f8] px-6 py-5">
                       <p className="text-2xl font-extrabold text-gray-950">{value}</p>
@@ -249,7 +221,7 @@ const SalesReportScreen = () => {
                 </div>
 
                 <div className="mt-12">
-                  <h2 className="text-3xl font-extrabold uppercase">Recent Sales</h2>
+                  <h2 className="text-3xl font-extrabold uppercase">Recent Paid Orders</h2>
 
                   {recentOrders.length === 0 ? (
                     <div className="mt-7 bg-[#f6f6f6] px-6 py-16 text-center">

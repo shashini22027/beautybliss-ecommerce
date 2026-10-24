@@ -9,15 +9,14 @@ import sendEmail from '../utils/sendEmail.js';
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   const userExists = await User.findOne({ email });
 
   if (userExists) {
     return res.status(400).json({ message: 'User already exists' });
   }
 
-  const isAdmin = role === 'admin';
-  const user = await User.create({ name, email, password, isAdmin });
+  const user = await User.create({ name, email, password, isAdmin: false });
 
   if (user) {
     res.status(201).json({
@@ -130,8 +129,27 @@ const deleteUserRoutine = asyncHandler(async (req, res) => {
 // @route   GET /api/users
 // @access  Private/Admin
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({});
+  const users = await User.find({}).select('-password -resetPasswordToken -resetPasswordExpire');
   res.json(users);
+});
+
+const updateUserRole = asyncHandler(async (req, res) => {
+  const { isAdmin } = req.body;
+  if (typeof isAdmin !== 'boolean') {
+    return res.status(400).json({ message: 'Choose a valid account role.' });
+  }
+  if (String(req.user._id) === req.params.id) {
+    return res.status(400).json({ message: 'You cannot change your own administrator role.' });
+  }
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: 'User not found.' });
+  if (user.isAdmin && !isAdmin && await User.countDocuments({ isAdmin: true }) <= 1) {
+    return res.status(409).json({ message: 'At least one administrator account must remain.' });
+  }
+  user.isAdmin = isAdmin;
+  await user.save();
+  res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin });
 });
 
 // @desc    Delete user
@@ -292,6 +310,7 @@ export {
   saveUserRoutine,
   deleteUserRoutine,
   getAllUsers,
+  updateUserRole,
   deleteUser,
   forgotPassword,
   resetPassword,
