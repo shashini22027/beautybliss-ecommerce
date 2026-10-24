@@ -334,7 +334,7 @@ const CheckoutPage = () => {
         const checkoutOrder = {
             checkoutKey: (() => {
                 let key = sessionStorage.getItem("checkoutKey");
-                if (!key) { key = `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`; sessionStorage.setItem("checkoutKey", key); }
+                if (!key || key.length < 32) { key = crypto.randomUUID(); sessionStorage.setItem("checkoutKey", key); }
                 return key;
             })(),
             orderItems,

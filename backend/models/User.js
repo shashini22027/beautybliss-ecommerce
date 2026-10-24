@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
     addresses: {
       billing: { type: mongoose.Schema.Types.Mixed, default: null },
       shipping: { type: mongoose.Schema.Types.Mixed, default: null },

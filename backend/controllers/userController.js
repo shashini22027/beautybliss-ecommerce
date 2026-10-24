@@ -4,19 +4,27 @@ import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import jwt from 'jsonwebtoken';
 import sendEmail from '../utils/sendEmail.js';
+import { getJwtSecret, validateJwtSecrets } from '../utils/jwtSecrets.js';
 
 // @desc    Register new user
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
-  const userExists = await User.findOne({ email });
+  const normalizedName = typeof name === 'string' ? name.trim() : '';
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (normalizedName.length < 2 || normalizedName.length > 120
+    || !/^\S+@\S+\.\S+$/.test(normalizedEmail)
+    || typeof password !== 'string' || password.length < 8 || password.length > 128) {
+    return res.status(400).json({ message: 'Enter a name, valid email address, and password between 8 and 128 characters.' });
+  }
+  const userExists = await User.findOne({ email: normalizedEmail });
 
   if (userExists) {
     return res.status(400).json({ message: 'User already exists' });
   }
 
-  const user = await User.create({ name, email, password, isAdmin: false });
+  const user = await User.create({ name: normalizedName, email: normalizedEmail, password, isAdmin: false });
 
   if (user) {
     res.status(201).json({
@@ -36,7 +44,8 @@ const registerUser = asyncHandler(async (req, res) => {
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ email: normalizedEmail }).select('+tokenVersion');
 
   if (user && (await user.matchPassword(password))) {
     res.json({
@@ -44,7 +53,7 @@ const authUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
-      token: generateToken(res, user._id),
+      token: generateToken(res, user),
     });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
@@ -72,7 +81,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 const updateUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user._id).select('+tokenVersion');
   if (!user) return res.status(404).json({ message: 'User not found' });
   const { name, email, addresses, currentPassword, newPassword } = req.body;
   const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : user.email;
@@ -93,6 +102,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     if (typeof newPassword !== 'string' || newPassword.length < 8) return res.status(400).json({ message: 'New password must be at least 8 characters.' });
     user.password = newPassword;
   }
+  if (changesSensitiveData) user.tokenVersion = Number(user.tokenVersion || 0) + 1;
 
   try {
     await user.save();
@@ -100,7 +110,15 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     if (error.code === 11000) return res.status(409).json({ message: 'That email address is already registered.' });
     throw error;
   }
-  res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, addresses: user.addresses, savedRoutines: user.savedRoutines });
+  res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    addresses: user.addresses,
+    savedRoutines: user.savedRoutines,
+    ...(changesSensitiveData ? { token: generateToken(res, user) } : {}),
+  });
 });
 
 const saveUserRoutine = asyncHandler(async (req, res) => {
@@ -142,12 +160,13 @@ const updateUserRole = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'You cannot change your own administrator role.' });
   }
 
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).select('+tokenVersion');
   if (!user) return res.status(404).json({ message: 'User not found.' });
   if (user.isAdmin && !isAdmin && await User.countDocuments({ isAdmin: true }) <= 1) {
     return res.status(409).json({ message: 'At least one administrator account must remain.' });
   }
   user.isAdmin = isAdmin;
+  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
   await user.save();
   res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin });
 });
@@ -233,6 +252,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
 // @route   PUT /api/users/reset-password/:token
 // @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
+  if (typeof req.body.password !== 'string' || req.body.password.length < 8 || req.body.password.length > 128) {
+    return res.status(400).json({ message: 'Password must be between 8 and 128 characters.' });
+  }
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.token)
@@ -241,7 +263,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
     resetPasswordExpire: { $gt: Date.now() },
-  });
+  }).select('+tokenVersion');
 
   if (!user) {
     return res.status(400).json({ message: 'Invalid or expired token.' });
@@ -250,6 +272,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
+  user.tokenVersion = Number(user.tokenVersion || 0) + 1;
   await user.save();
 
   // Return the same payload as login so the frontend can auto-login
@@ -258,7 +281,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     name: user.name,
     email: user.email,
     isAdmin: user.isAdmin,
-    token: generateToken(res, user._id),
+    token: generateToken(res, user),
     message: 'Password has been reset successfully.',
   });
 });
@@ -274,18 +297,16 @@ const refreshToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'refreshsecret123');
-    const user = await User.findById(decoded.id).select('-password');
+    validateJwtSecrets();
+    const decoded = jwt.verify(token, getJwtSecret('JWT_REFRESH_SECRET'));
+    const user = await User.findById(decoded.id).select('-password +tokenVersion');
 
-    if (!user) {
+    if (!user || Number(decoded.version || 0) !== Number(user.tokenVersion || 0)) {
       return res.status(401).json({ message: 'Not authorized, user not found' });
     }
-
-    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret123', {
-      expiresIn: '15m',
-    });
-
-    res.json({ token: accessToken });
+    user.tokenVersion = Number(user.tokenVersion || 0) + 1;
+    await user.save({ validateBeforeSave: false });
+    res.json({ token: generateToken(res, user) });
   } catch (error) {
     res.status(401).json({ message: 'Not authorized, refresh token failed' });
   }
@@ -295,9 +316,14 @@ const refreshToken = asyncHandler(async (req, res) => {
 // @route   POST /api/users/logout
 // @access  Private
 const logoutUser = asyncHandler(async (req, res) => {
+  req.user.tokenVersion = Number(req.user.tokenVersion || 0) + 1;
+  await req.user.save({ validateBeforeSave: false });
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
   });
   res.status(200).json({ message: 'Logged out successfully' });
 });

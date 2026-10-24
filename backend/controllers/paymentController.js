@@ -27,14 +27,54 @@ const getStripe = () => {
   return stripeInstance;
 };
 
+const canAccessOrder = (req, order, checkoutKey) => {
+  const isOrderOwner = req.user && order.user && String(req.user._id) === String(order.user);
+  const hasGuestCheckoutKey = typeof checkoutKey === 'string'
+    && typeof order.checkoutKey === 'string'
+    && checkoutKey.length >= 32
+    && checkoutKey === order.checkoutKey;
+  return Boolean(isOrderOwner || hasGuestCheckoutKey);
+};
+
+const adjustProductStock = (item, amount) => item.variantId
+  ? Product.updateOne(
+      { _id: item.product, variants: { $elemMatch: { _id: item.variantId, ...(amount < 0 ? { countInStock: { $gte: -amount } } : {}) } } },
+      { $inc: { 'variants.$.countInStock': amount, countInStock: amount } }
+    )
+  : Product.updateOne(
+      { _id: item.product, ...(amount < 0 ? { countInStock: { $gte: -amount } } : {}) },
+      { $inc: { countInStock: amount } }
+    );
+
+const reserveStock = async (items) => {
+  const reserved = [];
+  try {
+    for (const item of items) {
+      const result = await adjustProductStock(item, -item.qty);
+      if (!result.modifiedCount) {
+        await Promise.allSettled(reserved.map((reservedItem) => adjustProductStock(reservedItem, reservedItem.qty)));
+        return item;
+      }
+      reserved.push(item);
+    }
+    return null;
+  } catch (error) {
+    await Promise.allSettled(reserved.map((reservedItem) => adjustProductStock(reservedItem, reservedItem.qty)));
+    throw error;
+  }
+};
+
 // @desc    Create a Stripe PaymentIntent
 // @route   POST /api/payment/create-payment-intent
 // @access  Public
 export const createPaymentIntent = async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, checkoutKey } = req.body;
     const order = await Order.findById(orderId);
-    if (!order || order.paymentMethod !== 'card' || order.isPaid) {
+    if (!order || !canAccessOrder(req, order, checkoutKey)) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+    if (order.paymentMethod !== 'card' || order.isPaid) {
       return res.status(400).json({ message: 'A pending card order is required.' });
     }
     if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({ message: 'Card payments are not configured.' });
@@ -74,11 +114,14 @@ export const createCheckoutOrder = async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) return res.status(503).json({ message: 'Checkout is temporarily unavailable. Please try again shortly.' });
     const { orderItems, customer, shippingAddress, paymentMethod = 'card', orderNotes = '', checkoutKey } = req.body;
+    if (typeof checkoutKey !== 'string' || checkoutKey.length < 32 || checkoutKey.length > 128) {
+      return res.status(400).json({ message: 'Refresh checkout and try again.' });
+    }
     if (checkoutKey) {
       const existingOrder = await Order.findOne({ checkoutKey });
       if (existingOrder) return res.status(200).json(existingOrder);
     }
-    if (!Array.isArray(orderItems) || orderItems.length === 0) return res.status(400).json({ message: 'Add at least one item to your order.' });
+    if (!Array.isArray(orderItems) || orderItems.length === 0 || orderItems.length > 50) return res.status(400).json({ message: 'Add between 1 and 50 items to your order.' });
     if (!customer?.name || !customer?.email || !customer?.phone || !shippingAddress?.address || !shippingAddress?.city) {
       return res.status(400).json({ message: 'Complete your contact and delivery details.' });
     }
@@ -94,8 +137,13 @@ export const createCheckoutOrder = async (req, res) => {
       const product = await Product.findById(productId);
       if (!product) return res.status(400).json({ message: 'A product in your cart is no longer available.' });
       let variant = null;
-      if (item.variantId && product.variants?.length) variant = product.variants.id(item.variantId);
-      if (!variant && item.color && product.variants?.length) variant = product.variants.find((entry) => entry.name === item.color);
+      if (product.variants?.length) {
+        if (item.variantId) variant = product.variants.id(item.variantId);
+        if (!variant && item.color) variant = product.variants.find((entry) => entry.name === item.color);
+        if (!variant) return res.status(400).json({ message: `Choose an available shade for ${product.name}.` });
+      } else if (item.variantId || item.color) {
+        return res.status(400).json({ message: `The selected shade for ${product.name} is no longer available.` });
+      }
       const availableStock = variant ? variant.countInStock : product.countInStock;
       if (availableStock < quantity) return res.status(409).json({ message: `${product.name}${variant ? ` (${variant.name})` : ''} does not have enough stock.` });
       verifiedItems.push({ product: product._id, name: product.name, qty: quantity, image: variant?.image || product.image || product.images?.[0] || '', price: product.price, color: variant?.name || '', variantId: variant?._id });
@@ -118,14 +166,16 @@ export const createCheckoutOrder = async (req, res) => {
       orderNotes,
     });
     if (paymentMethod === 'cod') {
-      for (const item of verifiedItems) {
-        const result = item.variantId
-          ? await Product.updateOne({ _id: item.product, variants: { $elemMatch: { _id: item.variantId, countInStock: { $gte: item.qty } } } }, { $inc: { 'variants.$.countInStock': -item.qty, countInStock: -item.qty } })
-          : await Product.updateOne({ _id: item.product, countInStock: { $gte: item.qty } }, { $inc: { countInStock: -item.qty } });
-        if (!result.modifiedCount) {
-          await Order.deleteOne({ _id: order._id });
-          return res.status(409).json({ message: `${item.name} stock changed before order placement. Refresh your cart and try again.` });
-        }
+      let unavailableItem;
+      try {
+        unavailableItem = await reserveStock(verifiedItems);
+      } catch (stockError) {
+        await Order.deleteOne({ _id: order._id });
+        throw stockError;
+      }
+      if (unavailableItem) {
+        await Order.deleteOne({ _id: order._id });
+        return res.status(409).json({ message: `${unavailableItem.name} stock changed before order placement. Refresh your cart and try again.` });
       }
       try {
         await sendEmail({ to: email, subject: `BeautyBliss order ${order.orderNo} received`, html: `<p>Thank you, ${customer.name}. We received order <strong>${order.orderNo}</strong>.</p><p>Total: ${order.totalPrice}</p><p>You can track your order from the Track Order page.</p>` });
@@ -144,8 +194,9 @@ export const verifyPayment = async (req, res) => {
   try {
     const orderId = req.body.orderId || req.query.orderId;
     const paymentIntentId = req.body.paymentIntentId || req.query.paymentIntentId;
+    const checkoutKey = req.body.checkoutKey || req.query.checkoutKey;
     const order = await Order.findById(orderId);
-    if (!order || order.paymentMethod !== 'card') return res.status(404).json({ message: 'Order not found.' });
+    if (!order || !canAccessOrder(req, order, checkoutKey) || order.paymentMethod !== 'card') return res.status(404).json({ message: 'Order not found.' });
     if (!paymentIntentId || typeof paymentIntentId !== 'string') return res.status(400).json({ message: 'Payment reference is missing.' });
     const stripe = getStripe();
     const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -154,22 +205,55 @@ export const verifyPayment = async (req, res) => {
     }
     if (intent.status !== 'succeeded') return res.status(409).json({ message: 'Payment has not succeeded.', status: intent.status });
     if (order.isPaid) return res.json(order);
-    order.isPaid = true;
-    order.paidAt = new Date(intent.created * 1000);
-    order.paymentResult = { ...(order.paymentResult?.toObject?.() || order.paymentResult || {}), id: intent.id, status: intent.status };
-    await order.save();
-    for (const item of order.orderItems) {
-      const stockUpdate = item.variantId
-        ? await Product.updateOne({ _id: item.product, variants: { $elemMatch: { _id: item.variantId, countInStock: { $gte: item.qty } } } }, { $inc: { 'variants.$.countInStock': -item.qty, countInStock: -item.qty } })
-        : await Product.updateOne({ _id: item.product, countInStock: { $gte: item.qty } }, { $inc: { countInStock: -item.qty } });
-      if (!stockUpdate.modifiedCount) {
-        console.error(`Paid order ${order.orderNo} could not reserve stock for ${item.product}`);
+
+    const claimedOrder = await Order.findOneAndUpdate(
+      { _id: order._id, isPaid: false, 'paymentResult.status': { $nin: ['verifying', 'succeeded', 'refunded', 'refund_pending'] } },
+      { $set: { 'paymentResult.id': intent.id, 'paymentResult.status': 'verifying' } },
+      { new: true }
+    );
+    if (!claimedOrder) {
+      const latestOrder = await Order.findById(order._id);
+      if (latestOrder?.isPaid) return res.json(latestOrder);
+      if (latestOrder?.paymentResult?.status === 'refunded') {
+        return res.status(409).json({ message: 'Inventory changed and a refund was initiated for this payment.' });
+      }
+      if (latestOrder?.paymentResult?.status === 'refund_pending') {
+        return res.status(502).json({ message: 'A refund needs support review. Please contact customer support.' });
+      }
+      return res.status(409).json({ message: 'Payment verification is already in progress. Please retry shortly.' });
+    }
+
+    const unavailableItem = await reserveStock(claimedOrder.orderItems);
+    if (unavailableItem) {
+      try {
+        const refund = await stripe.refunds.create(
+          { payment_intent: intent.id },
+          { idempotencyKey: `beautybliss-stock-refund-${claimedOrder._id}` }
+        );
+        claimedOrder.paymentResult = {
+          id: intent.id,
+          status: 'refunded',
+          refundId: refund.id,
+          refundStatus: refund.status,
+        };
+        await claimedOrder.save();
+        return res.status(409).json({ message: `${unavailableItem.name} became unavailable. A refund has been initiated.` });
+      } catch (refundError) {
+        claimedOrder.paymentResult.status = 'refund_pending';
+        await claimedOrder.save();
+        console.error('Refund after inventory conflict failed:', refundError.message);
+        return res.status(502).json({ message: 'Payment completed, but inventory could not be reserved. Contact support to complete your refund.' });
       }
     }
+
+    claimedOrder.isPaid = true;
+    claimedOrder.paidAt = new Date(intent.created * 1000);
+    claimedOrder.paymentResult = { id: intent.id, status: intent.status };
+    await claimedOrder.save();
     try {
-      await sendEmail({ to: order.customer.email, subject: `BeautyBliss order ${order.orderNo} confirmed`, html: `<p>Thank you, ${order.customer.name}. Your payment is confirmed for order <strong>${order.orderNo}</strong>.</p><p>Total: ${order.totalPrice}</p><p>You can track your order from the Track Order page.</p>` });
+      await sendEmail({ to: claimedOrder.customer.email, subject: `BeautyBliss order ${claimedOrder.orderNo} confirmed`, html: `<p>Thank you, ${claimedOrder.customer.name}. Your payment is confirmed for order <strong>${claimedOrder.orderNo}</strong>.</p><p>Total: ${claimedOrder.totalPrice}</p><p>You can track your order from the Track Order page.</p>` });
     } catch (emailError) { console.error('Order confirmation email failed:', emailError.message); }
-    return res.json(order);
+    return res.json(claimedOrder);
   } catch (error) {
     console.error('Stripe payment verification error:', error.message);
     return res.status(500).json({ message: 'Unable to verify payment right now.' });

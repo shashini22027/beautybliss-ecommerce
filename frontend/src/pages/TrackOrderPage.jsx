@@ -23,6 +23,7 @@ const TrackOrderPage = () => {
   const user = useSelector(selectUser);
   const orderInputRef = useRef(null);
   const [orderNumber, setOrderNumber] = useState("");
+  const [orderEmail, setOrderEmail] = useState("");
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -70,6 +71,7 @@ const TrackOrderPage = () => {
   const handleTryAgain = () => {
     setError("");
     setOrderNumber("");
+    setOrderEmail("");
     orderInputRef.current?.focus();
   };
 
@@ -77,9 +79,14 @@ const TrackOrderPage = () => {
     event.preventDefault();
 
     const normalizedOrderNumber = orderNumber.trim().toUpperCase();
+    const normalizedEmail = (orderEmail || user?.email || "").trim().toLowerCase();
 
     if (!normalizedOrderNumber) {
       setError("Please enter your order number.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError("Enter the email address used at checkout to verify your order.");
       return;
     }
 
@@ -89,10 +96,16 @@ const TrackOrderPage = () => {
       return key === normalizedOrderNumber || orderId === normalizedOrderNumber;
     });
 
+    if (matchedOrder) {
+      const orderEmails = [matchedOrder.customer?.email, matchedOrder.shippingAddress?.email]
+        .map((email) => String(email || "").trim().toLowerCase());
+      if (!orderEmails.includes(normalizedEmail)) matchedOrder = null;
+    }
+
     if (!matchedOrder) {
       try {
         setLoading(true);
-        const response = await apiFetch(`/api/orders/track/${encodeURIComponent(normalizedOrderNumber)}`, {
+        const response = await apiFetch(`/api/orders/track/${encodeURIComponent(normalizedOrderNumber)}?email=${encodeURIComponent(normalizedEmail)}`, {
           method: "GET",
         });
         const data = await response.json();
@@ -144,7 +157,7 @@ const TrackOrderPage = () => {
       <section className="mx-auto max-w-[1460px] px-6 py-12 lg:py-16">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-xl font-medium uppercase leading-9 text-gray-700 sm:text-2xl">
-            To track your order please enter your Order ID in the box below and press the “Track” button. This was given to you on your receipt and in the confirmation email you should have received.
+            Enter the order number and the email address used at checkout. We use both details to protect your order information.
           </p>
 
           <div className="mt-8 space-y-4 text-base uppercase leading-7 text-gray-600">
@@ -155,12 +168,13 @@ const TrackOrderPage = () => {
           </div>
 
           <form onSubmit={handleTrackOrder} className="mt-8 max-w-[760px]">
-            <label className="block text-lg font-semibold uppercase tracking-[0.08em] text-gray-800">
+            <label htmlFor="tracking-order-number" className="block text-lg font-semibold uppercase tracking-[0.08em] text-gray-800">
               Your Order No <span className="text-red-500">(required)</span>
             </label>
 
             <input
               ref={orderInputRef}
+              id="tracking-order-number"
               type="text"
               value={orderNumber}
               onChange={(event) => {
@@ -169,6 +183,22 @@ const TrackOrderPage = () => {
               }}
               placeholder="Enter your order number"
               className="mt-4 h-14 w-full border border-gray-300 bg-[#f8f8f8] px-4 text-base uppercase text-gray-900 shadow-sm outline-none transition placeholder:normal-case focus:border-[#2b2b2b] focus:ring-2 focus:ring-pink-100"
+            />
+
+            <label htmlFor="tracking-email" className="mt-6 block text-lg font-semibold uppercase tracking-[0.08em] text-gray-800">
+              Checkout Email <span className="text-red-500">(required)</span>
+            </label>
+            <input
+              id="tracking-email"
+              type="email"
+              autoComplete="email"
+              value={orderEmail || user?.email || ""}
+              onChange={(event) => {
+                setOrderEmail(event.target.value);
+                if (error) setError("");
+              }}
+              placeholder="Email used at checkout"
+              className="mt-4 h-14 w-full border border-gray-300 bg-[#f8f8f8] px-4 text-base text-gray-900 shadow-sm outline-none transition placeholder:normal-case focus:border-[#2b2b2b] focus:ring-2 focus:ring-pink-100"
             />
 
             <button

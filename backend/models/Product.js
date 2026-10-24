@@ -16,7 +16,7 @@ const variantSchema = new mongoose.Schema({
   name: { type: String, required: true },
   hex: { type: String, default: '' },
   image: { type: String, default: '' },
-  countInStock: { type: Number, default: 0 },
+  countInStock: { type: Number, min: 0, default: 0 },
 }, { _id: true });
 
 const productSchema = new mongoose.Schema({
@@ -30,9 +30,9 @@ const productSchema = new mongoose.Schema({
   color: { type: String },
   variants: [variantSchema],
   country: { type: String },
-  price: { type: Number, required: true, default: 0 },
-  compareAtPrice: { type: Number, default: null },
-  countInStock: { type: Number, required: true, default: 0 },
+  price: { type: Number, min: 0, required: true, default: 0 },
+  compareAtPrice: { type: Number, min: 0, default: null },
+  countInStock: { type: Number, min: 0, required: true, default: 0 },
   rating: { type: Number, required: true, default: 0 },
   numReviews: { type: Number, required: true, default: 0 },
   discountLabel: { type: String, default: '' },

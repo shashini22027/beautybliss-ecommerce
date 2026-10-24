@@ -1,50 +1,50 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
-import HomePage from '../pages/HomePage';
-import ProductsPage from '../pages/ProductsPage';
-import ProductDetailsPage from '../pages/ProductDetailsPage';
-import CategoryPage from '../pages/CategoryPage';
-import CartPage from '../pages/CartPage';
-import WishlistPage from '../pages/WishlistPage';
-import CheckoutPage from '../pages/CheckoutPage';
-import OrdersPage from '../pages/OrdersPage';
-import TrackOrderPage from '../pages/TrackOrderPage';
-import OrderDetailsPage from '../pages/OrderDetailsPage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import ProfilePage from '../pages/ProfilePage';
-import SearchResultsPage from '../pages/SearchResultsPage';
-import ErrorPage from '../pages/ErrorPage';
-import AdminDashboardPage from '../pages/AdminDashboardPage';
-import OffersPage from '../pages/OffersPage';
-import AboutPage from '../pages/AboutPage';
-import Blog from '../pages/Blog';
-import BlogPostDetail from '../pages/BlogPostDetail';
-import ContactScreen from "../pages/ContactScreen";
-import SkinConsultationPage from '../pages/SkinConsultationPage';
-import AppointmentManagePage from '../pages/AppointmentManagePage';
-import AppointmentAdminScreen from '../pages/admin/AppointmentAdminScreen';
-import AdminAuditLogScreen from '../pages/admin/AdminAuditLogScreen';
-import ForgotPasswordPage from '../pages/ForgotPasswordPage';
-import ResetPasswordPage from '../pages/ResetPasswordPage';
-import AccountSupportPage from '../pages/AccountSupportPage';
-import PrivacyPolicyScreen from '../pages/PrivacyPolicyScreen';
-import ShippingDeliveryScreen from '../pages/ShippingDeliveryScreen';
-import ReturnRefundPolicyScreen from '../pages/ReturnRefundPolicyScreen';
-import TermsConditionsScreen from '../pages/TermsConditionsScreen';
-import OrderListScreen from '../pages/admin/OrderListScreen';
-import ProductEditScreen from '../pages/admin/ProductEditScreen';
-import ProductListScreen from '../pages/admin/ProductListScreen';
-import HomepageMerchandisingScreen from '../pages/admin/HomepageMerchandisingScreen';
-import ReviewListScreen from '../pages/admin/ReviewListScreen';
-import SalesReportScreen from '../pages/admin/SalesReportScreen';
-import UserListScreen from '../pages/admin/UserListScreen';
-import BlogListScreen from '../pages/admin/BlogListScreen';
-import BlogEditScreen from '../pages/admin/BlogEditScreen';
-import MessageListScreen from '../pages/admin/MessageListScreen';
-import PaymentPage from '../pages/PaymentPage';
-import OrderCompletePage from '../pages/OrderCompletePage';
+const HomePage = lazy(() => import('../pages/HomePage'));
+const ProductsPage = lazy(() => import('../pages/ProductsPage'));
+const ProductDetailsPage = lazy(() => import('../pages/ProductDetailsPage'));
+const CategoryPage = lazy(() => import('../pages/CategoryPage'));
+const CartPage = lazy(() => import('../pages/CartPage'));
+const WishlistPage = lazy(() => import('../pages/WishlistPage'));
+const CheckoutPage = lazy(() => import('../pages/CheckoutPage'));
+const OrdersPage = lazy(() => import('../pages/OrdersPage'));
+const TrackOrderPage = lazy(() => import('../pages/TrackOrderPage'));
+const OrderDetailsPage = lazy(() => import('../pages/OrderDetailsPage'));
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+const ProfilePage = lazy(() => import('../pages/ProfilePage'));
+const SearchResultsPage = lazy(() => import('../pages/SearchResultsPage'));
+const ErrorPage = lazy(() => import('../pages/ErrorPage'));
+const AdminDashboardPage = lazy(() => import('../pages/AdminDashboardPage'));
+const OffersPage = lazy(() => import('../pages/OffersPage'));
+const AboutPage = lazy(() => import('../pages/AboutPage'));
+const Blog = lazy(() => import('../pages/Blog'));
+const BlogPostDetail = lazy(() => import('../pages/BlogPostDetail'));
+const ContactScreen = lazy(() => import('../pages/ContactScreen'));
+const SkinConsultationPage = lazy(() => import('../pages/SkinConsultationPage'));
+const AppointmentManagePage = lazy(() => import('../pages/AppointmentManagePage'));
+const AppointmentAdminScreen = lazy(() => import('../pages/admin/AppointmentAdminScreen'));
+const AdminAuditLogScreen = lazy(() => import('../pages/admin/AdminAuditLogScreen'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
+const AccountSupportPage = lazy(() => import('../pages/AccountSupportPage'));
+const PrivacyPolicyScreen = lazy(() => import('../pages/PrivacyPolicyScreen'));
+const ShippingDeliveryScreen = lazy(() => import('../pages/ShippingDeliveryScreen'));
+const ReturnRefundPolicyScreen = lazy(() => import('../pages/ReturnRefundPolicyScreen'));
+const TermsConditionsScreen = lazy(() => import('../pages/TermsConditionsScreen'));
+const OrderListScreen = lazy(() => import('../pages/admin/OrderListScreen'));
+const ProductEditScreen = lazy(() => import('../pages/admin/ProductEditScreen'));
+const ProductListScreen = lazy(() => import('../pages/admin/ProductListScreen'));
+const HomepageMerchandisingScreen = lazy(() => import('../pages/admin/HomepageMerchandisingScreen'));
+const ReviewListScreen = lazy(() => import('../pages/admin/ReviewListScreen'));
+const SalesReportScreen = lazy(() => import('../pages/admin/SalesReportScreen'));
+const UserListScreen = lazy(() => import('../pages/admin/UserListScreen'));
+const BlogListScreen = lazy(() => import('../pages/admin/BlogListScreen'));
+const BlogEditScreen = lazy(() => import('../pages/admin/BlogEditScreen'));
+const MessageListScreen = lazy(() => import('../pages/admin/MessageListScreen'));
+const PaymentPage = lazy(() => import('../pages/PaymentPage'));
+const OrderCompletePage = lazy(() => import('../pages/OrderCompletePage'));
 import ScrollToTop from '../components/ScrollToTop';
 
 const AppRoutes = () => {
@@ -57,6 +57,7 @@ const AppRoutes = () => {
     >
       <ScrollToTop />
       <MainLayout>
+        <Suspense fallback={<div role="status" className="mx-auto max-w-7xl px-6 py-16 text-center text-sm text-gray-500">Loading page…</div>}>
         <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/category/:categorySlug" element={<CategoryPage />} />
@@ -107,6 +108,7 @@ const AppRoutes = () => {
           <Route path="/privacy-policy" element={<PrivacyPolicyScreen />} />
           <Route path="/terms-conditions" element={<TermsConditionsScreen />} />
         </Routes>
+        </Suspense>
       </MainLayout>
     </Router>
   );

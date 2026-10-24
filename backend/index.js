@@ -12,6 +12,7 @@ import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import apiLimiter from './middleware/rateLimiter.js';
 import adminAuditMiddleware from './middleware/adminAuditMiddleware.js';
+import { validateJwtSecrets } from './utils/jwtSecrets.js';
 
 import userRoutes from './routes/userRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
@@ -31,6 +32,7 @@ import appointmentRoutes from './routes/appointmentRoutes.js';
 import { sendAppointmentReminders } from './controllers/appointmentController.js';
 
 dotenv.config();
+validateJwtSecrets();
 connectDB();
 
 const app = express();
@@ -39,9 +41,19 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
+const allowedOrigins = new Set(
+  [process.env.CLIENT_URL, ...(process.env.CLIENT_ORIGINS || '').split(',')]
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean)
+);
+if (process.env.NODE_ENV !== 'production') {
+  ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173']
+    .forEach((origin) => allowedOrigins.add(origin));
+}
 app.use(cors({
   origin: function(origin, callback) {
-    callback(null, true);
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error('Origin is not allowed by CORS.'));
   },
   credentials: true
 }));

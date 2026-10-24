@@ -11,11 +11,11 @@ const orderSchema = new mongoose.Schema({
   },
   orderItems: [{
     name: { type: String, required: true },
-    qty: { type: Number, required: true },
+    qty: { type: Number, required: true, min: 1, max: 20 },
     image: { type: String, required: true },
     color: { type: String, default: '' },
     variantId: { type: mongoose.Schema.Types.ObjectId, required: false },
-    price: { type: Number, required: true },
+    price: { type: Number, required: true, min: 0 },
     product: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' }
   }],
   shippingAddress: {
@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema({
     country: { type: String, required: true },
   },
   paymentMethod: { type: String, required: true, default: 'Cash On Delivery' },
-  paymentResult: { id: String, status: String, update_time: String, email_address: String },
+  paymentResult: { id: String, status: String, update_time: String, email_address: String, refundId: String, refundStatus: String },
   taxPrice: { type: Number, required: true, default: 0.0 },
   shippingPrice: { type: Number, required: true, default: 0.0 },
   totalPrice: { type: Number, required: true, default: 0.0 },

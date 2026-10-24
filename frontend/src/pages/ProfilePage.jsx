@@ -267,7 +267,7 @@ const ProfilePage = () => {
                 currentPassword: accountDetails.currentPassword,
                 newPassword: accountDetails.newPassword || undefined,
             });
-            dispatch(loginSuccess({ ...storedUser, ...data, token: storedUser.token }));
+            dispatch(loginSuccess({ ...storedUser, ...data, token: data.token || storedUser.token }));
             setAccountDetails((currentDetails) => ({ ...currentDetails, currentPassword: "", newPassword: "", confirmPassword: "" }));
             setAccountMessage("Account details saved to your account.");
         } catch (error) {

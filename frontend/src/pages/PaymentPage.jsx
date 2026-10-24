@@ -145,7 +145,10 @@ const PaymentPage = () => {
                 setStripe(sp);
 
                 // 2. Create Payment Intent
-                const { data } = await API.post("/payment/create-payment-intent", { orderId: pendingOrder._id });
+                const { data } = await API.post("/payment/create-payment-intent", {
+                    orderId: pendingOrder._id,
+                    checkoutKey: sessionStorage.getItem("checkoutKey"),
+                });
 
                 setClientSecret(data.clientSecret);
             } catch (err) {
@@ -160,7 +163,12 @@ const PaymentPage = () => {
     const handlePaymentSuccess = async (paymentIntentId) => {
         setVerificationIntentId(paymentIntentId);
         try {
-            const { data } = await API.post("/payment/verify", { orderId: order._id, paymentIntentId });
+            const { data } = await API.post("/payment/verify", {
+                orderId: order._id,
+                paymentIntentId,
+                checkoutKey: sessionStorage.getItem("checkoutKey"),
+            });
+            sessionStorage.removeItem("checkoutKey");
 
             // Save to checkout orders
             try {

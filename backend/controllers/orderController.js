@@ -1,7 +1,6 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import Order from '../models/Order.js';
 import OrderSequence from '../models/OrderSequence.js';
-import Product from '../models/Product.js';
 import mongoose from 'mongoose';
 
 const ORDER_NUMBER_SEQUENCE_ID = 'order-number';
@@ -59,45 +58,6 @@ const getNextOrderNumber = async () => {
   );
   return `C${String(sequence.value).padStart(4, '0')}`;
 };
-
-const addOrderItems = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, paymentMethod, customer } = req.body;
-  if (orderItems && orderItems.length === 0) {
-    res.status(400).json({ message: 'No order items' });
-    return;
-  }
-
-  const orderNo = await getNextOrderNumber();
-
-  // Deduct inventory
-  for (const item of orderItems) {
-    const product = await Product.findById(item.product);
-    if (product) {
-      product.countInStock = Math.max(0, product.countInStock - item.qty);
-      if (product.variants && product.variants.length > 0) {
-        // Find matching variant based on name
-        const variant = product.variants.find(v => item.name.endsWith(`- ${v.name}`));
-        if (variant) {
-          variant.countInStock = Math.max(0, variant.countInStock - item.qty);
-        }
-      }
-      await product.save();
-    }
-  }
-
-  const order = new Order({
-    orderNo,
-    user: req.user ? req.user._id : undefined,
-    customer,
-    orderItems,
-    shippingAddress,
-    totalPrice,
-    paymentMethod: paymentMethod || 'Cash On Delivery',
-    isPaid: false,
-  });
-  const createdOrder = await order.save();
-  res.status(201).json(createdOrder);
-});
 
 const getOrderById = asyncHandler(async (req, res) => {
   await ensureOrderNumbers();
@@ -169,12 +129,22 @@ const getGuestOrderById = asyncHandler(async (req, res) => {
 const getOrderByNumber = asyncHandler(async (req, res) => {
   await ensureOrderNumbers();
   const orderNo = String(req.params.orderNo || req.query.orderNo || '').trim().toUpperCase();
+  const email = String(req.query.email || '').trim().toLowerCase();
 
-  if (!orderNo) {
-    return res.status(400).json({ message: 'Order number is required' });
+  if (!orderNo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: 'Enter the order number and checkout email address.' });
   }
 
-  const order = await Order.findOne({ orderNo });
+  const escapedEmail = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const emailRegex = new RegExp(`^${escapedEmail}$`, 'i');
+  const order = await Order.findOne({
+    orderNo,
+    $or: [
+      { 'customer.email': emailRegex },
+      { 'shippingAddress.email': emailRegex },
+      { 'paymentResult.email_address': emailRegex },
+    ],
+  });
   if (!order) {
     return res.status(404).json({ message: 'Order not found' });
   }
@@ -241,7 +211,6 @@ const deleteOrder = asyncHandler(async (req, res) => {
 });
 
 export {
-  addOrderItems,
   getOrderById,
   getGuestOrderById,
   getOrderByNumber,
