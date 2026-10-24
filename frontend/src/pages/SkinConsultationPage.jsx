@@ -438,10 +438,12 @@ const SkinConsultationPage = () => {
         </div>}
       </section>
 
+      <VirtualMakeupTryOn />
+
       <section id="appointment" className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
         <div className="mx-auto grid max-w-7xl gap-7 px-5 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-9">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Step 2</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Step 3 · Optional</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Book a beauty consultation</h2>
             <p className="mt-5 text-sm leading-7 text-gray-600">
               Share your skin concern and preferred time. The consultant can confirm the appointment and recommend products before checkout.
@@ -541,7 +543,6 @@ const SkinConsultationPage = () => {
         </div>
       </section>
 
-      <VirtualMakeupTryOn />
     </main>
   );
 };

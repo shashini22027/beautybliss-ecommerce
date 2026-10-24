@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, RotateCcw, Sparkles, Trash2, Upload, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const makeupTypes = {
   lipstick: {
@@ -302,7 +303,7 @@ const VirtualMakeupTryOn = () => {
       : 0.3;
 
   return (
-    <section className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
+    <section id="virtual-makeup-preview" className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
       <div className="mx-auto max-w-7xl px-5 sm:px-6">
         <div className="mb-8 max-w-3xl border-b border-[#e9ded9] pb-5">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">
@@ -568,6 +569,13 @@ const VirtualMakeupTryOn = () => {
                 </button>
               ))}
             </div>
+
+            <Link
+              to={`/products?q=${encodeURIComponent(selectedShade.name)}`}
+              className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-sm bg-[#292526] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#a94f61]"
+            >
+              Find {selectedShade.name} in the shop
+            </Link>
 
             <div className="mt-6 border-t border-[#eee5e1] pt-5 text-sm leading-6 text-gray-500">
               This is a shade preview to help compare colors, not a guarantee of exact color or

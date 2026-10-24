@@ -276,6 +276,8 @@ const ProductsPage = () => {
                 getTextValue(product.category),
                 product.subcategory,
                 product.brand,
+                getTextValue(product.color),
+                ...(Array.isArray(product.variants) ? product.variants.map((variant) => getTextValue(variant?.name)) : []),
             ]
                 .filter(Boolean)
                 .join(" ")
