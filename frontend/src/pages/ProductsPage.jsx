@@ -146,6 +146,7 @@ const ProductsPage = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [loadAttempt, setLoadAttempt] = useState(0);
     const [activeCategory, setActiveCategory] = useState("All");
     const [currentPage, setCurrentPage] = useState(0);
     const [sortOrder, setSortOrder] = useState("default");
@@ -222,7 +223,21 @@ const ProductsPage = () => {
         };
 
         fetchProducts();
-    }, []);
+    }, [loadAttempt]);
+
+    const resetFilters = () => {
+        setActiveCategory("All");
+        setBrandFilter("All");
+        setRatingFilter(0);
+        setInStockOnly(false);
+        setSearchText("");
+        setPriceMin(0);
+        setPriceMax(MAX_PRODUCT_PRICE);
+        setAppliedPriceRange([0, MAX_PRODUCT_PRICE]);
+        setSortOrder("default");
+        setCurrentPage(0);
+        if (categoryQuery || searchQuery || skinConcernQuery) navigate("/products");
+    };
 
     // Scroll to top whenever the page changes
     useEffect(() => {
@@ -361,7 +376,7 @@ const ProductsPage = () => {
 
     return (
         <main className="bb-products-page min-h-screen bg-white text-gray-950">
-            <section className="relative min-h-[420px] overflow-hidden">
+            <section className="relative min-h-[320px] overflow-hidden sm:min-h-[380px]">
                 <img
                     src="/images/banner.jpg"
                     alt="Beauty products"
@@ -369,12 +384,12 @@ const ProductsPage = () => {
                 />
                 <div className="absolute inset-0 bg-black/35" />
 
-                <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
-                    <h1 className="mb-10 text-6xl font-bold uppercase tracking-tight md:text-7xl">
+                <div className="relative z-10 mx-auto flex min-h-[320px] max-w-[1540px] flex-col items-center justify-center px-5 py-12 text-white sm:min-h-[380px] sm:px-6 sm:py-16">
+                    <h1 className="mb-8 text-5xl font-semibold tracking-tight sm:mb-10 sm:text-6xl md:text-7xl">
                         Shop
                     </h1>
 
-                    <div className="flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-8">
+                    <div className="flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-5 sm:gap-x-10 sm:gap-y-8">
                         {categoryHeroItems.map((category) => (
                             <button
                                 key={category.name}
@@ -393,7 +408,7 @@ const ProductsPage = () => {
                                     name={category.icon}
                                     className="h-9 w-9 shrink-0 text-white"
                                 />
-                                <span className="block text-xl font-extrabold uppercase leading-6 text-white md:text-2xl">
+                                <span className="block text-sm font-semibold uppercase leading-5 text-white sm:text-lg md:text-xl">
                                     {category.name}
                                 </span>
                             </button>
@@ -402,9 +417,9 @@ const ProductsPage = () => {
                 </div>
             </section>
 
-            <section className="mx-auto grid max-w-[1540px] gap-10 px-6 py-16 lg:grid-cols-[350px_1fr] lg:py-20">
-                <aside className="h-fit border border-gray-200 bg-white px-6 py-7">
-                    <h2 className="text-lg font-extrabold uppercase tracking-tight">
+            <section className="mx-auto grid max-w-[1540px] gap-6 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[300px_1fr] lg:gap-10 lg:py-16">
+                <aside className="h-fit border border-gray-200 bg-[#fbf8f5] px-4 py-5 sm:px-6 sm:py-7 lg:sticky lg:top-24">
+                    <h2 className="text-base font-semibold tracking-tight sm:text-lg">
                         Filter by Price
                     </h2>
                     <div className="relative mt-7 h-5" aria-label="Price range">
@@ -462,17 +477,20 @@ const ProductsPage = () => {
                 </aside>
 
                 <div>
-                <div className="mb-10 flex flex-col gap-4 border-b border-gray-200 pb-6">
+                <div className="mb-7 flex flex-col gap-4 border-b border-gray-200 pb-5 sm:mb-10 sm:pb-6">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm font-semibold text-gray-500">Showing {visibleProducts.length} of {filteredProducts.length} products</p>
-                    <input value={searchText} onChange={(event) => { setSearchText(event.target.value); setCurrentPage(0); }} placeholder="Search names, brands, categories, keywords" aria-label="Search products" className="h-11 w-full border border-gray-200 bg-white px-4 text-sm sm:max-w-sm" />
+                    <p className="text-sm text-gray-600" aria-live="polite">Showing {visibleProducts.length} of {filteredProducts.length} products</p>
+                    <label className="w-full sm:max-w-sm">
+                      <span className="sr-only">Search products by name, brand, category, or keyword</span>
+                      <input value={searchText} onChange={(event) => { setSearchText(event.target.value); setCurrentPage(0); }} placeholder="Search products" aria-label="Search products" className="h-11 w-full border border-gray-300 bg-white px-4 text-sm" />
+                    </label>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                    <select value={brandFilter} onChange={(event) => { setBrandFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by brand" className="h-10 border border-gray-200 bg-white px-3 text-sm"><option value="All">All brands</option>{availableBrands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
-                    <select value={ratingFilter} onChange={(event) => { setRatingFilter(Number(event.target.value)); setCurrentPage(0); }} aria-label="Minimum rating" className="h-10 border border-gray-200 bg-white px-3 text-sm"><option value={0}>Any rating</option><option value={4}>4 stars & up</option><option value={3}>3 stars & up</option></select>
-                    <label className="inline-flex h-10 items-center gap-2 border border-gray-200 px-3 text-sm"><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} />In stock</label>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <select value={brandFilter} onChange={(event) => { setBrandFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by brand" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value="All">All brands</option>{availableBrands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
+                    <select value={ratingFilter} onChange={(event) => { setRatingFilter(Number(event.target.value)); setCurrentPage(0); }} aria-label="Minimum rating" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value={0}>Any rating</option><option value={4}>4 stars & up</option><option value={3}>3 stars & up</option></select>
+                    <label className="inline-flex min-h-10 items-center gap-2 border border-gray-300 px-3 text-sm"><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} />In stock</label>
                     <select
-                        className="h-10 border border-gray-200 bg-white px-3 text-sm font-medium text-gray-600 outline-none focus:border-gray-950"
+                        className="h-10 w-full border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 outline-none focus:border-gray-950 sm:w-auto"
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
                         aria-label="Sort products"
@@ -484,6 +502,7 @@ const ProductsPage = () => {
                         <option value="price-low">Sort by price: low to high</option>
                         <option value="price-high">Sort by price: high to low</option>
                     </select>
+                    <button type="button" onClick={resetFilters} className="h-10 px-3 text-left text-sm font-medium text-[#8f4656] underline-offset-4 hover:underline sm:ml-auto sm:text-center">Clear filters</button>
                     </div>
                 </div>
                 {loading ? (
@@ -496,8 +515,9 @@ const ProductsPage = () => {
                         ))}
                     </div>
                 ) : error ? (
-                    <div className="mx-auto max-w-3xl rounded-lg border border-red-100 bg-red-50 px-5 py-4 text-center text-sm font-medium text-red-700">
-                        {error}
+                    <div className="mx-auto max-w-3xl rounded-lg border border-red-200 bg-red-50 px-5 py-6 text-center" role="alert">
+                        <p className="text-sm font-medium text-red-800">{error}</p>
+                        <button type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)} className="mt-4 rounded-sm bg-[#292526] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#a94f61]">Try again</button>
                     </div>
                 ) : filteredProducts.length === 0 ? (
                     <div className="mx-auto max-w-3xl rounded-lg border border-gray-200 bg-gray-50 px-5 py-16 text-center">
@@ -507,6 +527,7 @@ const ProductsPage = () => {
                         <p className="mt-3 text-sm text-gray-500">
                             Try a different search term or category.
                         </p>
+                        <button type="button" onClick={resetFilters} className="mt-5 rounded-sm border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-[#a94f61] hover:text-[#8f4656]">Clear filters</button>
                     </div>
                 ) : (
                     <>
