@@ -49,6 +49,7 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, min: 0, required: true, default: 0 },
   compareAtPrice: { type: Number, min: 0, default: null },
   countInStock: { type: Number, min: 0, required: true, default: 0 },
+  lowStockThreshold: { type: Number, min: 0, default: 5 },
   rating: { type: Number, required: true, default: 0 },
   numReviews: { type: Number, required: true, default: 0 },
   discountLabel: { type: String, default: '' },

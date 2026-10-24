@@ -73,6 +73,7 @@ const AdminDashboardPage = () => {
     { name: "Dashboard", icon: "dashboard", link: "/admin-dashboard", active: true },
     { name: "Customers", icon: "users", link: "/admin/userlist" },
     { name: "Products", icon: "products", link: "/admin/productlist" },
+    { name: "Inventory", icon: "products", link: "/admin/inventory" },
     { name: "Orders", icon: "orders", link: "/admin/orderlist" },
     { name: "Sales", icon: "sales", link: "/admin/sales" },
     { name: "Appointments", icon: "orders", link: "/admin/appointments" },
@@ -187,7 +188,7 @@ const AdminDashboardPage = () => {
                 <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
                   {[
                     { title: "Customers", value: stats.totalCustomers, detail: "Registered customer accounts", icon: "users", link: "/admin/userlist" },
-                    { title: "Products", value: stats.totalProducts, detail: `${stats.lowStockCount} at or below ${stats.lowStockThreshold} units`, icon: "products", link: "/admin/productlist" },
+                    { title: "Products", value: stats.totalProducts, detail: `${stats.lowStockCount} at or below stock thresholds`, icon: "products", link: "/admin/inventory" },
                     { title: "Orders", value: stats.totalOrders, detail: `${stats.pendingOrders} awaiting payment`, icon: "orders", link: "/admin/orderlist" },
                     { title: "Paid revenue", value: formatPrice(stats.revenue), detail: `Average order ${formatPrice(stats.averageOrderValue)} · ${stats.paidOrders} paid`, icon: "sales", link: "/admin/sales" },
                   ].map((stat) => (
@@ -206,8 +207,8 @@ const AdminDashboardPage = () => {
                 <div className="mt-8 grid gap-6 xl:grid-cols-2">
                   <section className="border border-gray-200 bg-white p-6">
                     <div className="flex items-start justify-between gap-4">
-                      <div><h2 className="text-xl font-bold">Low stock</h2><p className="mt-1 text-sm text-gray-500">Products with 5 or fewer units remaining.</p></div>
-                      <Link to="/admin/productlist" className="text-sm font-bold text-pink-700 hover:underline">Manage inventory</Link>
+                      <div><h2 className="text-xl font-bold">Low stock</h2><p className="mt-1 text-sm text-gray-500">Products at or below their individual stock thresholds.</p></div>
+                      <Link to="/admin/inventory" className="text-sm font-bold text-pink-700 hover:underline">Manage inventory</Link>
                     </div>
                     {stats.lowStockProducts?.length ? <div className="mt-5 divide-y divide-gray-100">
                       {stats.lowStockProducts.map((product) => <div key={product._id} className="flex items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0 truncate font-medium">{product.name}</span><span className={`shrink-0 font-bold ${product.countInStock === 0 ? "text-red-700" : "text-amber-700"}`}>{product.countInStock} left</span></div>)}

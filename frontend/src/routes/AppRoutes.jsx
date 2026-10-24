@@ -26,6 +26,7 @@ const SkinConsultationPage = lazy(() => import('../pages/SkinConsultationPage'))
 const AppointmentManagePage = lazy(() => import('../pages/AppointmentManagePage'));
 const AppointmentAdminScreen = lazy(() => import('../pages/admin/AppointmentAdminScreen'));
 const AdminAuditLogScreen = lazy(() => import('../pages/admin/AdminAuditLogScreen'));
+const InventoryScreen = lazy(() => import('../pages/admin/InventoryScreen'));
 const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
 const AccountSupportPage = lazy(() => import('../pages/AccountSupportPage'));
@@ -82,6 +83,7 @@ const AppRoutes = () => {
           <Route path="/admin/orderlist" element={<OrderListScreen />} />
           <Route path="/admin/appointments" element={<AppointmentAdminScreen />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogScreen />} />
+          <Route path="/admin/inventory" element={<InventoryScreen />} />
           <Route path="/admin/sales" element={<SalesReportScreen />} />
           <Route path="/admin/productlist" element={<ProductListScreen />} />
           <Route path="/admin/homepage-merchandising" element={<HomepageMerchandisingScreen />} />

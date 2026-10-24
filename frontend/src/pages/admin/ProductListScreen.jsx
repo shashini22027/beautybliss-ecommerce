@@ -84,7 +84,7 @@ const ProductListScreen = () => {
   }, []);
 
   const stats = useMemo(() => {
-    const lowStock = products.filter((product) => Number(product.countInStock || 0) <= 5)
+    const lowStock = products.filter((product) => Number(product.countInStock || 0) <= Number(product.lowStockThreshold ?? 5))
       .length;
     const outOfStock = products.filter((product) => Number(product.countInStock || 0) === 0)
       .length;
@@ -300,6 +300,7 @@ const ProductListScreen = () => {
                       <tbody className="divide-y divide-gray-200">
                         {filteredProducts.map((product, index) => {
                           const stock = Number(product.countInStock || 0);
+                          const lowStockThreshold = Number(product.lowStockThreshold ?? 5);
                           const image = getProductImage(product);
                           const productId = product._id || product.id;
 
@@ -362,7 +363,7 @@ const ProductListScreen = () => {
                                   className={`inline-flex border px-3 py-2 text-[10px] font-bold uppercase tracking-wide ${
                                     stock === 0
                                       ? "border-red-100 bg-red-50 text-red-700"
-                                      : stock <= 5
+                                      : stock <= lowStockThreshold
                                         ? "border-rose-100 bg-rose-50 text-rose-700"
                                         : "border-emerald-100 bg-emerald-50 text-emerald-700"
                                   }`}

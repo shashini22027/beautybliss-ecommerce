@@ -55,12 +55,12 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       { $match: { ...paidRange, isDelivered: true } },
       { $group: { _id: null, revenue: { $sum: '$totalPrice' } } },
     ]),
-    Product.find({ countInStock: { $lte: 5 } })
-      .select('name image countInStock price')
+    Product.find({ $expr: { $lte: ['$countInStock', { $ifNull: ['$lowStockThreshold', 5] }] } })
+      .select('name image countInStock lowStockThreshold price')
       .sort({ countInStock: 1, name: 1 })
       .limit(8)
       .lean(),
-    Product.countDocuments({ countInStock: { $lte: 5 } }),
+    Product.countDocuments({ $expr: { $lte: ['$countInStock', { $ifNull: ['$lowStockThreshold', 5] }] } }),
     Appointment.countDocuments({ status: 'pending' }),
     Message.countDocuments({ isRead: false }),
     Order.find({}).select('orderNo customer shippingAddress totalPrice isPaid isDelivered createdAt')
@@ -106,7 +106,6 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     deliveredRevenue: deliveredRevenue[0]?.revenue || 0,
     averageOrderValue: paidOrders ? revenue / paidOrders : 0,
     soldItems: soldItems[0]?.quantity || 0,
-    lowStockThreshold: 5,
     lowStockCount,
     lowStockProducts,
     pendingAppointments,

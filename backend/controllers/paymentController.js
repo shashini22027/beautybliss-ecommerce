@@ -2,6 +2,8 @@ import Stripe from "stripe";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import OrderSequence from "../models/OrderSequence.js";
+import StockMovement from "../models/StockMovement.js";
+import { clearCache } from "../middleware/cacheMiddleware.js";
 import sendEmail from "../utils/sendEmail.js";
 import mongoose from "mongoose";
 
@@ -46,7 +48,7 @@ const adjustProductStock = (item, amount) => item.variantId
       { $inc: { countInStock: amount } }
     );
 
-const reserveStock = async (items) => {
+const reserveStock = async (items, order) => {
   const reserved = [];
   try {
     for (const item of items) {
@@ -57,8 +59,25 @@ const reserveStock = async (items) => {
       }
       reserved.push(item);
     }
+    try {
+      await StockMovement.insertMany(items.map((item) => ({
+        product: item.product,
+        productName: item.name,
+        variantId: item.variantId || null,
+        variantName: item.color || '',
+        type: 'order',
+        quantityChange: -item.qty,
+        reason: `Stock reserved for order ${order.orderNo || order._id}`,
+        order: order._id,
+      })));
+    } catch (movementError) {
+      await StockMovement.deleteMany({ order: order._id, type: 'order' }).catch(() => {});
+      console.error(`Could not record stock movement for order ${order.orderNo || order._id}:`, movementError.message);
+    }
+    await clearCache('/api/products*');
     return null;
   } catch (error) {
+    if (order?._id) await StockMovement.deleteMany({ order: order._id, type: 'order' }).catch(() => {});
     await Promise.allSettled(reserved.map((reservedItem) => adjustProductStock(reservedItem, reservedItem.qty)));
     throw error;
   }
@@ -168,7 +187,7 @@ export const createCheckoutOrder = async (req, res) => {
     if (paymentMethod === 'cod') {
       let unavailableItem;
       try {
-        unavailableItem = await reserveStock(verifiedItems);
+        unavailableItem = await reserveStock(verifiedItems, order);
       } catch (stockError) {
         await Order.deleteOne({ _id: order._id });
         throw stockError;
@@ -223,7 +242,7 @@ export const verifyPayment = async (req, res) => {
       return res.status(409).json({ message: 'Payment verification is already in progress. Please retry shortly.' });
     }
 
-    const unavailableItem = await reserveStock(claimedOrder.orderItems);
+    const unavailableItem = await reserveStock(claimedOrder.orderItems, claimedOrder);
     if (unavailableItem) {
       try {
         const refund = await stripe.refunds.create(

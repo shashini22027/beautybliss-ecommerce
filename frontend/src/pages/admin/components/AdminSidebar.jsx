@@ -36,6 +36,7 @@ const AdminSidebar = () => {
     { name: 'Dashboard', icon: LayoutDashboard, link: '/admin-dashboard' },
     { name: 'Customers', icon: Users, link: '/admin/userlist' },
     { name: 'Products', icon: Package, link: '/admin/productlist' },
+    { name: 'Inventory', icon: Package, link: '/admin/inventory' },
     { name: 'Orders', icon: ShoppingBag, link: '/admin/orderlist' },
     { name: 'Appointments', icon: CalendarDays, link: '/admin/appointments' },
     { name: 'Audit log', icon: Shield, link: '/admin/audit-logs' },

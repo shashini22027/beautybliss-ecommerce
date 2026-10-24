@@ -2,6 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 import Order from '../models/Order.js';
+import StockMovement from '../models/StockMovement.js';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import { clearCache } from '../middleware/cacheMiddleware.js';
@@ -118,6 +119,16 @@ const normalizeVariants = (variants) => {
 
 const sumVariantStock = (variants) =>
   variants.reduce((total, variant) => total + (Number.isFinite(variant.countInStock) ? variant.countInStock : 0), 0);
+
+const recordStockMovements = async (movements) => {
+  const nonZeroMovements = movements.filter((movement) => movement.quantityChange !== 0);
+  if (!nonZeroMovements.length) return;
+  try {
+    await StockMovement.insertMany(nonZeroMovements);
+  } catch (error) {
+    console.error('Could not record product stock movements:', error.message);
+  }
+};
 
 const isSpecialOffersCategory = (category) =>
   category?.name?.trim().toLowerCase() === 'special offers';
@@ -271,6 +282,25 @@ const createProduct = asyncHandler(async (req, res) => {
   });
 
   const createdProduct = await product.save();
+  await recordStockMovements(isVariantProduct
+    ? normalizedVariants.map((variant) => ({
+      product: createdProduct._id,
+      productName: createdProduct.name,
+      variantId: createdProduct.variants.find((entry) => entry.name === variant.name)?._id || null,
+      variantName: variant.name,
+      type: 'adjustment',
+      quantityChange: variant.countInStock,
+      reason: 'Initial stock entered when product was created',
+      actor: req.user?._id || null,
+    }))
+    : [{
+      product: createdProduct._id,
+      productName: createdProduct.name,
+      type: 'adjustment',
+      quantityChange: resolvedCountInStock,
+      reason: 'Initial stock entered when product was created',
+      actor: req.user?._id || null,
+    }]);
   await clearCache('/api/products*');
   res.status(201).json(createdProduct);
 });
@@ -432,6 +462,12 @@ const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id).populate('category');
 
   if (product) {
+    const previousStock = Number(product.countInStock) || 0;
+    const previousVariants = (product.variants || []).map((variant) => ({
+      id: variant._id,
+      name: variant.name,
+      countInStock: Number(variant.countInStock) || 0,
+    }));
     let categoryId;
     let categoryDoc = product.category || null;
 
@@ -500,6 +536,34 @@ const updateProduct = asyncHandler(async (req, res) => {
       rating === undefined || rating === null || rating === '' ? product.rating : Number(rating);
 
     const updatedProduct = await product.save();
+    if (isVariantProduct) {
+      const previousByName = new Map(previousVariants.map((variant) => [variant.name, variant]));
+      const nextByName = new Map(normalizedVariants.map((variant) => [variant.name, variant]));
+      const variantNames = new Set([...previousByName.keys(), ...nextByName.keys()]);
+      await recordStockMovements([...variantNames].map((variantName) => {
+        const previous = previousByName.get(variantName);
+        const next = nextByName.get(variantName);
+        return {
+          product: updatedProduct._id,
+          productName: updatedProduct.name,
+          variantId: updatedProduct.variants.find((variant) => variant.name === variantName)?._id || previous?.id || null,
+          variantName,
+          type: 'adjustment',
+          quantityChange: (Number(next?.countInStock) || 0) - (Number(previous?.countInStock) || 0),
+          reason: 'Stock updated in product editor',
+          actor: req.user?._id || null,
+        };
+      }));
+    } else if (!isVariantProduct && variants === undefined && countInStock !== undefined && Number(countInStock) !== previousStock) {
+      await recordStockMovements([{
+        product: updatedProduct._id,
+        productName: updatedProduct.name,
+        type: 'adjustment',
+        quantityChange: Number(countInStock) - previousStock,
+        reason: 'Stock updated in product editor',
+        actor: req.user?._id || null,
+      }]);
+    }
     await clearCache('/api/products*');
     res.json(updatedProduct);
   } else {
