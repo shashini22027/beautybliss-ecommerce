@@ -1,22 +1,52 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { formatPrice } from "../utils/currency";
+import API from "../services/api";
 
 const OrderCompletePage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [order, setOrder] = useState(null);
+    const [confirmationError, setConfirmationError] = useState("");
 
     useEffect(() => {
         const stateOrder = location.state?.order;
-        if (stateOrder) {
+        const params = new URLSearchParams(location.search);
+        const paymentIntentId = params.get("payment_intent");
+        let pendingOrder = null;
+        try { pendingOrder = JSON.parse(localStorage.getItem("pendingPaymentOrder") || "null"); } catch { pendingOrder = null; }
+        if (paymentIntentId && pendingOrder?._id) {
+            API.post("/payment/verify", { orderId: pendingOrder._id, paymentIntentId })
+                .then(({ data }) => {
+                    if (!data.isPaid) throw new Error("Payment confirmation is pending.");
+                    setOrder(data);
+                    localStorage.removeItem("pendingPaymentOrder");
+                    localStorage.setItem("checkoutOrders", JSON.stringify([data, ...JSON.parse(localStorage.getItem("checkoutOrders") || "[]")]));
+                })
+                .catch((error) => setConfirmationError(error?.response?.data?.message || error.message || "We could not confirm the payment yet."));
+        } else if (stateOrder?.isPaid || stateOrder?.paymentMethod === 'cod') {
             setOrder(stateOrder);
         } else {
-            navigate("/");
+            setConfirmationError("We could not confirm this order. Please check your order history or contact support.");
         }
     }, [location, navigate]);
 
-    if (!order) return null;
+    const retryPaymentConfirmation = async () => {
+        try {
+            const params = new URLSearchParams(location.search);
+            const pendingOrder = JSON.parse(localStorage.getItem("pendingPaymentOrder") || "null");
+            const { data } = await API.post("/payment/verify", { orderId: pendingOrder?._id, paymentIntentId: params.get("payment_intent") });
+            if (!data.isPaid) throw new Error("Payment confirmation is still pending.");
+            setOrder(data);
+            setConfirmationError("");
+            localStorage.removeItem("pendingPaymentOrder");
+            localStorage.setItem("checkoutOrders", JSON.stringify([data, ...JSON.parse(localStorage.getItem("checkoutOrders") || "[]")]));
+        } catch (error) {
+            setConfirmationError(error?.response?.data?.message || error.message || "We could not confirm the payment yet.");
+        }
+    };
+
+    if (!order) return <main className="mx-auto min-h-[50vh] max-w-2xl px-5 py-20 text-center">{confirmationError ? <div className="rounded border border-amber-200 bg-amber-50 p-6 text-amber-900">{confirmationError}<div className="mt-4 flex justify-center gap-4"><button type="button" onClick={retryPaymentConfirmation} className="font-semibold underline">Retry confirmation</button><Link to="/track-order" className="font-semibold underline">Track an order</Link></div></div> : <p className="text-gray-600" role="status">Confirming your order with the payment provider…</p>}</main>;
 
     return (
         <main className="min-h-screen bg-white text-gray-950">

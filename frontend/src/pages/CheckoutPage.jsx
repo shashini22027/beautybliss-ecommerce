@@ -42,15 +42,6 @@ const getItemId = (item) => {
     return product._id || product.id || item?._id || item?.id || productId || product.name;
 };
 
-const getSavedCheckoutOrders = () => {
-    try {
-        const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
-        return Array.isArray(savedOrders) ? savedOrders : [];
-    } catch {
-        return [];
-    }
-};
-
 const sriLankanCities = [
     "Colombo",
     "Dehiwala-Mount Lavinia",
@@ -189,11 +180,16 @@ const CheckoutPage = () => {
     const [checkoutForm, setCheckoutForm] = useState(initialCheckoutForm);
     const [errors, setErrors] = useState({});
     const [formError, setFormError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [checkoutStep, setCheckoutStep] = useState(1);
+    const [shippingPrice] = useState(0);
+    const discount = 0;
 
     const subtotal = useMemo(
         () => cartItems.reduce((total, item) => total + getItemPrice(item) * getItemQty(item), 0),
         [cartItems]
     );
+    const total = Math.max(0, subtotal + shippingPrice - discount);
 
     const saveCart = (items) => {
         setCartItems(items);
@@ -211,6 +207,13 @@ const CheckoutPage = () => {
                 return key !== targetKey;
             })
         );
+    };
+
+    const updateItemQuantity = (targetItem, nextQty) => {
+        const targetKey = getItemId(targetItem);
+        if (nextQty < 1) return removeItem(targetItem);
+        const updated = cartItems.map((item) => getItemId(item) === targetKey ? { ...item, qty: nextQty } : item);
+        saveCart(updated);
     };
 
     const handleFieldChange = (event) => {
@@ -245,12 +248,20 @@ const CheckoutPage = () => {
         if (checkoutForm.billingEmail && !/^\S+@\S+\.\S+$/.test(checkoutForm.billingEmail)) {
             nextErrors.billingEmail = "Enter a valid email address.";
         }
+        const phoneFields = shipDifferent ? ["billingPhone", "shippingPhone"] : ["billingPhone"];
+        phoneFields.forEach((fieldName) => {
+            const normalizedPhone = String(checkoutForm[fieldName] || "").replace(/[\s()-]/g, "");
+            if (normalizedPhone && !/^(?:\+94|0)?\d{9}$/.test(normalizedPhone)) {
+                nextErrors[fieldName] = "Enter a valid Sri Lankan phone number, such as 0771234567.";
+            }
+        });
 
         setErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
     };
 
     const handlePlaceOrder = async () => {
+        if (submitting) return;
         if (cartItems.length === 0) {
             setFormError("Your cart is empty. Add products before placing an order.");
             return;
@@ -261,7 +272,8 @@ const CheckoutPage = () => {
             return;
         }
 
-        const savedOrders = getSavedCheckoutOrders();
+        setSubmitting(true);
+        setCheckoutStep(4);
         const orderItems = cartItems.map((item) => {
             const product = getProductData(item);
             const qty = getItemQty(item);
@@ -271,6 +283,8 @@ const CheckoutPage = () => {
                 _id: getItemId(item),
                 product: getItemId(item),
                 name: product.name || "BeautyBliss product",
+                color: product.color || product.selectedVariant?.name || "",
+                variantId: product.selectedVariant?._id || product.variantId || "",
                 qty,
                 quantity: qty,
                 image: getImageUrl(product.image || product.images?.[0] || ""),
@@ -286,13 +300,18 @@ const CheckoutPage = () => {
             : customerName;
 
         const checkoutOrder = {
-            orderNo: `C${String(52 + savedOrders.length).padStart(4, "0")}`,
+            checkoutKey: (() => {
+                let key = sessionStorage.getItem("checkoutKey");
+                if (!key) { key = `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`; sessionStorage.setItem("checkoutKey", key); }
+                return key;
+            })(),
             orderItems,
             subtotal: orderTotal,
-            shippingPrice: 0,
-            totalPrice: orderTotal,
+            shippingPrice,
+            discount,
+            totalPrice: Math.max(0, orderTotal + shippingPrice - discount),
             paymentMethod,
-            isPaid: paymentMethod === "card",
+            isPaid: false,
             isDelivered: false,
             customer: {
                 name: customerName,
@@ -305,6 +324,7 @@ const CheckoutPage = () => {
                 phone: shipDifferent ? checkoutForm.shippingPhone : checkoutForm.billingPhone,
                 address: shipDifferent ? checkoutForm.shippingStreet : checkoutForm.billingStreet,
                 city: shipDifferent ? checkoutForm.shippingCity : checkoutForm.billingCity,
+                district: shipDifferent ? checkoutForm.shippingDistrict : "",
                 postalCode: "00000",
                 country: "Sri Lanka",
             },
@@ -313,24 +333,33 @@ const CheckoutPage = () => {
         };
 
         if (paymentMethod === "card") {
-            // Save pending order for payment page
-            localStorage.setItem("pendingPaymentOrder", JSON.stringify({ ...checkoutOrder, _id: `checkout-${Date.now()}` }));
-            navigate("/payment");
+            try {
+                const { data } = await API.post("/orders/checkout", checkoutOrder);
+                localStorage.setItem("pendingPaymentOrder", JSON.stringify(data));
+                navigate("/payment");
+            } catch (error) {
+                console.error(error);
+                setFormError(error?.response?.data?.message || "We could not prepare your payment. Your cart is unchanged; please retry.");
+                setSubmitting(false);
+            }
         } else {
             // COD: call API to save order, clear cart, go to order complete
             try {
-                const { data } = await API.post("/orders", checkoutOrder);
-                localStorage.setItem("checkoutOrders", JSON.stringify([data, ...savedOrders]));
+                const { data } = await API.post("/orders/checkout", checkoutOrder);
+                const savedOrders = JSON.parse(localStorage.getItem("checkoutOrders") || "[]");
+                localStorage.setItem("checkoutOrders", JSON.stringify([data, ...(Array.isArray(savedOrders) ? savedOrders : [])]));
                 sessionStorage.setItem(
                     "guestOrderEmail",
                     checkoutOrder.customer.email.trim().toLowerCase()
                 );
                 dispatch(clearCart());
                 localStorage.setItem("cart", JSON.stringify([]));
+                sessionStorage.removeItem("checkoutKey");
                 navigate("/order-complete", { state: { order: data } });
             } catch (error) {
                 console.error(error);
-                setFormError("Failed to place order. Please try again.");
+                setFormError(error?.response?.data?.message || "We could not place your order. Your cart is unchanged; please retry.");
+                setSubmitting(false);
             }
         }
     };
@@ -368,11 +397,19 @@ const CheckoutPage = () => {
             </section>
 
             <section className="mx-auto max-w-7xl px-5 py-9 sm:px-6 sm:py-12">
+                <ol className="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Checkout steps">
+                    {["Contact", "Delivery", "Payment", "Review"].map((label, index) => (
+                        <li key={label} className={`flex items-center gap-2 border-b-2 px-2 py-3 text-xs font-semibold sm:px-3 sm:text-sm ${checkoutStep >= index + 1 ? "border-[#a94f61] text-gray-900" : "border-gray-200 text-gray-400"}`}>
+                            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${checkoutStep >= index + 1 ? "bg-[#a94f61] text-white" : "bg-gray-100 text-gray-500"}`}>{index + 1}</span>{label}
+                        </li>
+                    ))}
+                </ol>
                 <div className="grid items-start gap-8 lg:grid-cols-[1fr_0.95fr] lg:gap-12">
                     <section>
                         <h1 className="mb-6 text-2xl font-semibold sm:text-3xl">Billing details</h1>
 
                         <form className="space-y-6 rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-7">
+                            <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a94f61]">Step 1 · Contact</p><p className="mt-1 text-xs text-gray-500">We’ll send your order confirmation to this email address.</p></div>
                             <div className="grid gap-5 md:grid-cols-2">
                                 <label className="block text-sm font-medium">
                                     First Name <span className="text-red-500">*</span>
@@ -415,17 +452,15 @@ const CheckoutPage = () => {
 
                             <label className="block text-lg">
                                 Town / City <span className="text-red-500">*</span>
-                                <select
+                                <input
                                     name="billingCity"
                                     value={checkoutForm.billingCity}
                                     onChange={handleFieldChange}
-                                    className={getFieldClassName("billingCity", "mt-3 h-[52px] w-full px-4 text-gray-500")}
-                                >
-                                    <option value="">Select an option...</option>
-                                    {sriLankanCities.map((city) => (
-                                        <option key={city} value={city}>{city}</option>
-                                    ))}
-                                </select>
+                                    list="sri-lankan-cities"
+                                    placeholder="Enter or select your town / city"
+                                    className={getFieldClassName("billingCity", "mt-3 h-[52px] w-full px-4")}
+                                />
+                                <datalist id="sri-lankan-cities">{sriLankanCities.map((city) => <option key={city} value={city} />)}</datalist>
                                 {renderError("billingCity")}
                             </label>
 
@@ -474,6 +509,8 @@ const CheckoutPage = () => {
                                     Ship to a different address?
                                 </label>
                             </div>
+
+                            <div className="border-t border-[#eee5e1] pt-5"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a94f61]">Step 2 · Delivery</p><p className="mt-1 text-xs text-gray-500">Choose where your order should be delivered.</p></div>
 
                             {shipDifferent && (
                                 <div className="space-y-7 pt-2">
@@ -534,17 +571,14 @@ const CheckoutPage = () => {
 
                                     <label className="block text-lg">
                                         City <span className="text-red-500">*</span>
-                                        <select
+                                        <input
                                             name="shippingCity"
                                             value={checkoutForm.shippingCity}
                                             onChange={handleFieldChange}
-                                            className={getFieldClassName("shippingCity", "mt-3 h-[52px] w-full bg-gray-100 px-4 text-gray-500")}
-                                        >
-                                            <option value="">Select an option...</option>
-                                            {sriLankanCities.map((city) => (
-                                                <option key={city} value={city}>{city}</option>
-                                            ))}
-                                        </select>
+                                            list="sri-lankan-cities"
+                                            placeholder="Enter or select your town / city"
+                                            className={getFieldClassName("shippingCity", "mt-3 h-[52px] w-full px-4")}
+                                        />
                                         {renderError("shippingCity")}
                                     </label>
 
@@ -577,6 +611,7 @@ const CheckoutPage = () => {
                     </section>
 
                     <aside className="rounded-sm border border-[#eee5e1] bg-[#fbf8f5] p-5 sm:p-7">
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#a94f61]">Step 3 · Payment and review</p>
                         <h2 className="mb-6 text-2xl font-semibold sm:text-3xl">Your order</h2>
 
                         <div className="rounded-xl bg-white px-8 py-7 shadow-sm">
@@ -603,9 +638,9 @@ const CheckoutPage = () => {
                                                 <p className="text-right text-lg text-gray-600">{formatPrice(lineTotal)}</p>
                                             </div>
                                             <div className="mt-3 inline-flex h-10 items-center border border-gray-200">
-                                                <span className="flex h-full w-8 items-center justify-center text-gray-500">-</span>
+                                                <button type="button" onClick={() => updateItemQuantity(item, qty - 1)} className="flex h-full w-8 items-center justify-center text-gray-600 hover:bg-gray-50" aria-label={`Decrease ${product.name} quantity`}>−</button>
                                                 <span className="flex h-full w-10 items-center justify-center">{qty}</span>
-                                                <span className="flex h-full w-8 items-center justify-center text-gray-500">+</span>
+                                                <button type="button" onClick={() => updateItemQuantity(item, qty + 1)} disabled={qty >= Number(product.countInStock || 20)} className="flex h-full w-8 items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40" aria-label={`Increase ${product.name} quantity`}>+</button>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeItem(item)}
@@ -626,11 +661,12 @@ const CheckoutPage = () => {
                             </div>
                             <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-5 text-lg">
                                 <span className="font-bold">Shipping</span>
-                                <span className="text-right">Free Shipping</span>
+                                <span className="text-right">{shippingPrice === 0 ? 'Free' : formatPrice(shippingPrice)}</span>
                             </div>
+                            {discount > 0 && <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 py-4 text-sm"><span className="font-semibold">Discount</span><span className="text-right">−{formatPrice(discount)}</span></div>}
                             <div className="grid grid-cols-[1fr_140px] py-5 text-xl font-bold">
                                 <span>Total</span>
-                                <span className="text-right">{formatPrice(subtotal)}</span>
+                                <span className="text-right">{formatPrice(total)}</span>
                             </div>
                         </div>
 
@@ -644,7 +680,7 @@ const CheckoutPage = () => {
                                         type="radio"
                                         name="paymentMethod"
                                         checked={paymentMethod === value}
-                                        onChange={() => setPaymentMethod(value)}
+                                        onChange={() => { setPaymentMethod(value); setCheckoutStep(3); }}
                                     />
                                     <span>{label}</span>
                                 </label>
@@ -665,9 +701,10 @@ const CheckoutPage = () => {
                         <button
                             type="button"
                             onClick={handlePlaceOrder}
+                            disabled={submitting || cartItems.length === 0}
                             className="mt-6 min-h-12 w-full rounded-sm bg-[#292526] px-4 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            Place Order
+                            {submitting ? 'Preparing checkout...' : `Continue to ${paymentMethod === 'card' ? 'payment' : 'place order'}`}
                         </button>
                     </aside>
                 </div>

@@ -33,11 +33,12 @@ const StripeCheckoutForm = ({ order, onSuccess }) => {
     const elements = useElements();
     const [processing, setProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!stripe || !elements) return;
+        if (!stripe || !elements || processing || submitted) return;
 
         setProcessing(true);
         setErrorMessage("");
@@ -57,6 +58,7 @@ const StripeCheckoutForm = ({ order, onSuccess }) => {
             setErrorMessage(error.message);
             setProcessing(false);
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
+            setSubmitted(true);
             onSuccess(paymentIntent.id);
         } else {
             setErrorMessage("Payment failed. Please try again.");
@@ -118,6 +120,7 @@ const PaymentPage = () => {
     const [stripe, setStripe] = useState(null);
     const [clientSecret, setClientSecret] = useState("");
     const [loadError, setLoadError] = useState("");
+    const [verificationIntentId, setVerificationIntentId] = useState("");
 
     useEffect(() => {
         // Load pending order
@@ -142,15 +145,7 @@ const PaymentPage = () => {
                 setStripe(sp);
 
                 // 2. Create Payment Intent
-                const { data } = await API.post("/payment/create-payment-intent", {
-                    amount: pendingOrder.totalPrice,
-                    currency: "lkr",
-                    metadata: {
-                        orderId: pendingOrder._id,
-                        orderNo: pendingOrder.orderNo,
-                        customerEmail: pendingOrder.customer?.email || "",
-                    },
-                });
+                const { data } = await API.post("/payment/create-payment-intent", { orderId: pendingOrder._id });
 
                 setClientSecret(data.clientSecret);
             } catch (err) {
@@ -163,21 +158,9 @@ const PaymentPage = () => {
     }, [navigate]);
 
     const handlePaymentSuccess = async (paymentIntentId) => {
-        const updatedOrder = {
-            ...order,
-            isPaid: true,
-            paidAt: new Date().toISOString(),
-            paymentResult: {
-                id: paymentIntentId,
-                status: "succeeded",
-                provider: "stripe",
-            },
-        };
-
+        setVerificationIntentId(paymentIntentId);
         try {
-            // Remove the temporary _id from frontend so backend generates a real one
-            const { _id, ...orderPayload } = updatedOrder;
-            const { data } = await API.post("/orders", orderPayload);
+            const { data } = await API.post("/payment/verify", { orderId: order._id, paymentIntentId });
 
             // Save to checkout orders
             try {
@@ -200,9 +183,15 @@ const PaymentPage = () => {
             navigate("/order-complete", { state: { order: data } });
         } catch (error) {
             console.error("Failed to save order to backend:", error);
-            // Fallback: still navigate to complete page but maybe show error or just use updatedOrder
-            navigate("/order-complete", { state: { order: updatedOrder } });
+            setLoadError(error?.response?.data?.message || "Payment succeeded but confirmation is still pending. Retry verification before leaving this page.");
         }
+    };
+
+    const retryVerification = async () => {
+        const pendingOrder = order;
+        const paymentIntentId = verificationIntentId || pendingOrder?.paymentResult?.id;
+        if (!paymentIntentId) return;
+        await handlePaymentSuccess(paymentIntentId);
     };
 
     if (!order) return null;
@@ -255,6 +244,7 @@ const PaymentPage = () => {
                         {loadError ? (
                             <div className="rounded-lg border border-red-200 bg-red-50 px-6 py-5 text-red-700">
                                 <strong>Error:</strong> {loadError}
+                                {(verificationIntentId || order?.paymentResult?.id) && <button type="button" onClick={retryVerification} className="mt-4 block rounded bg-gray-950 px-4 py-2 text-sm font-semibold text-white">Retry verification</button>}
                             </div>
                         ) : (!stripe || !clientSecret) ? (
                             <div className="flex flex-col items-center justify-center py-20">
@@ -266,7 +256,7 @@ const PaymentPage = () => {
                             </div>
                         ) : (
                             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-                                <Elements stripe={stripe} options={{ clientSecret, appearance }}>
+                                <Elements key={clientSecret} stripe={stripe} options={{ clientSecret, appearance }}>
                                     <StripeCheckoutForm order={order} onSuccess={handlePaymentSuccess} />
                                 </Elements>
                             </div>

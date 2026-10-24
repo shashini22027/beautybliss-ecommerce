@@ -61,7 +61,7 @@ const getNextOrderNumber = async () => {
 };
 
 const addOrderItems = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, totalPrice, paymentMethod, customer, isPaid, paidAt, paymentResult } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, customer } = req.body;
   if (orderItems && orderItems.length === 0) {
     res.status(400).json({ message: 'No order items' });
     return;
@@ -93,9 +93,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
     shippingAddress,
     totalPrice,
     paymentMethod: paymentMethod || 'Cash On Delivery',
-    isPaid: isPaid || false,
-    paidAt,
-    paymentResult
+    isPaid: false,
   });
   const createdOrder = await order.save();
   res.status(201).json(createdOrder);

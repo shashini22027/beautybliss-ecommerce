@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
   orderNo: { type: String, unique: true, sparse: true },
+  checkoutKey: { type: String, unique: true, sparse: true },
   user: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'User' },
   customer: {
     name: { type: String },
@@ -12,6 +13,8 @@ const orderSchema = new mongoose.Schema({
     name: { type: String, required: true },
     qty: { type: Number, required: true },
     image: { type: String, required: true },
+    color: { type: String, default: '' },
+    variantId: { type: mongoose.Schema.Types.ObjectId, required: false },
     price: { type: Number, required: true },
     product: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' }
   }],

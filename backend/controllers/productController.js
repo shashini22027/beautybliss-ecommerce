@@ -100,6 +100,9 @@ const isSpecialOffersCategory = (category) =>
   category?.name?.trim().toLowerCase() === 'special offers';
 
 const getProducts = asyncHandler(async (req, res) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ message: 'Product catalog is temporarily unavailable. Please try again shortly.' });
+  }
   const category = req.query.category;
   const subcategory = req.query.subcategory;
   const color = req.query.color;
