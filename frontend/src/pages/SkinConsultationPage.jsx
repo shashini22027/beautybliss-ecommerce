@@ -158,15 +158,15 @@ const SkinConsultationPage = () => {
         </div>
       )}
 
-      <section className="relative min-h-[420px] overflow-hidden">
+      <section className="relative min-h-[340px] overflow-hidden sm:min-h-[380px]">
         <img
           src="/images/banner.jpg"
           alt="Skin Consultation"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-center text-white">
-          <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
+        <div className="relative z-10 mx-auto flex min-h-[340px] max-w-7xl flex-col items-center justify-center px-5 py-12 text-center text-white sm:min-h-[380px] sm:px-6">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
             Skin Consultation
           </h1>
           <p className="mt-6 max-w-3xl text-base font-medium leading-7 text-white/90 md:text-lg">
@@ -175,10 +175,10 @@ const SkinConsultationPage = () => {
         </div>
       </section>
 
-      <section id="concerns" className="mx-auto max-w-[1540px] px-6 py-16 lg:py-20">
-        <div className="mb-10 border-b border-gray-200 pb-6">
+      <section id="concerns" className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:py-16">
+        <div className="mb-8 border-b border-[#eee5e1] pb-5">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Step 1</p>
-          <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-950">Select your main skin concern</h2>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Select your main skin concern</h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-gray-600">
             This guide helps customers move from browsing products to choosing a routine with a clear goal.
           </p>
@@ -204,9 +204,9 @@ const SkinConsultationPage = () => {
           ))}
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="h-fit border border-gray-200 bg-white px-6 py-7">
-            <label className="block border-b border-gray-200 pb-4 text-lg font-extrabold uppercase tracking-tight text-gray-950" htmlFor="skinType">
+        <div className="mt-9 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="h-fit rounded-sm border border-[#eee5e1] bg-white px-5 py-6 sm:px-6">
+            <label className="block border-b border-[#eee5e1] pb-4 text-base font-semibold text-gray-950" htmlFor="skinType">
               Skin type
             </label>
             <select
@@ -226,11 +226,11 @@ const SkinConsultationPage = () => {
             </p>
           </div>
 
-          <div className="border border-gray-200 p-8">
+          <div className="rounded-sm border border-[#eee5e1] bg-[#fdfaf8] p-5 sm:p-7">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Recommended starter routine</p>
-                <h3 className="mt-3 text-3xl font-extrabold text-gray-950">{activeConcern.title}</h3>
+                <h3 className="mt-3 text-2xl font-semibold text-gray-950">{activeConcern.title}</h3>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description}</p>
               </div>
               <Link
@@ -253,17 +253,17 @@ const SkinConsultationPage = () => {
         </div>
       </section>
 
-      <section id="appointment" className="border-t border-gray-200 bg-[#f6f6f6] py-20">
-        <div className="mx-auto grid max-w-[1540px] gap-10 px-6 lg:grid-cols-[0.85fr_1.15fr]">
+      <section id="appointment" className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
+        <div className="mx-auto grid max-w-7xl gap-7 px-5 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:gap-9">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Step 2</p>
-            <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-950">Book a beauty consultation</h2>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Book a beauty consultation</h2>
             <p className="mt-5 text-sm leading-7 text-gray-600">
               Share your skin concern and preferred time. The consultant can confirm the appointment and recommend products before checkout.
             </p>
 
-            <div className="mt-8 space-y-4 border border-gray-200 bg-white p-6">
-              <h3 className="text-2xl font-extrabold text-gray-950">{consultant.name}</h3>
+            <div className="mt-6 space-y-4 rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-6">
+              <h3 className="text-xl font-semibold text-gray-950">{consultant.name}</h3>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-pink-600">{consultant.role}</p>
               <div className="space-y-3 pt-2 text-sm text-gray-600">
                 <a
@@ -294,7 +294,7 @@ const SkinConsultationPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="border border-gray-200 bg-white p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="rounded-sm border border-[#eee5e1] bg-white p-5 shadow-[0_3px_16px_rgba(45,31,33,0.04)] sm:p-7">
             <div className="grid gap-5 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-bold text-gray-700">Full name</label>
@@ -341,7 +341,7 @@ const SkinConsultationPage = () => {
             <button
               type="submit"
               disabled={submitStatus === 'sending'}
-              className="mt-6 flex w-full items-center justify-center gap-3 bg-gray-950 px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 rounded-sm bg-[#292526] px-6 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <MessageCircle size={18} />
               {submitStatus === 'sending' ? 'Sending Request...' : 'Request Appointment'}

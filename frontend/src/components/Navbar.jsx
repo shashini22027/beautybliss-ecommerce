@@ -68,9 +68,9 @@ const Navbar = () => {
   };
 
   const navLinkClass =
-    'text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 transition hover:text-pink-600';
+    'text-[13px] font-medium tracking-[0.02em] text-gray-700 transition hover:text-[#a94f61]';
   const mobileNavLinkClass =
-    'block px-4 py-2 text-[13px] font-extrabold uppercase tracking-[0.12em] text-gray-700 hover:bg-[#f6f6f6]';
+    'block rounded px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-[#fbf3f1] hover:text-[#a94f61]';
 
   const navLinks = [
     { label: 'Home', to: '/' },
@@ -84,15 +84,15 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50 bg-white shadow-[0_1px_0_rgba(0,0,0,0.06)]">
-      <div className="border-b border-gray-100 bg-[#2b2b2b] px-4 py-2 text-center text-[11px] font-bold uppercase tracking-[0.2em] text-white">
+      <div className="border-b border-white/10 bg-[#292526] px-4 py-2 text-center text-[10px] font-medium tracking-[0.08em] text-white/90 sm:text-[11px]">
         Islandwide delivery | Cash on delivery available | 100% genuine products
       </div>
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[1540px] px-4 sm:px-6 lg:px-8">
-          <div className="grid min-h-[92px] grid-cols-[auto_1fr_auto] items-center gap-4 py-4">
+          <div className="grid min-h-[78px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:gap-5 sm:py-4">
             <Link
               to="/"
-              className="text-3xl font-black tracking-[0.18em] text-gray-950 md:text-4xl"
+              className="text-2xl font-black tracking-[0.16em] text-gray-950 sm:text-3xl md:text-4xl"
             >
               BEAUTYBLISS
             </Link>

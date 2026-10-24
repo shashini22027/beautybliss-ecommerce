@@ -347,15 +347,15 @@ const CheckoutPage = () => {
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
-            <section className="relative min-h-[420px] overflow-hidden">
+            <section className="relative min-h-[300px] overflow-hidden sm:min-h-[340px]">
                 <img
                     src="/images/banner.jpg"
                     alt="Beauty checkout"
                     className="absolute inset-0 h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/35" />
-                <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] items-center justify-center px-6 text-white">
-                    <div className="flex flex-wrap items-center justify-center gap-4 text-3xl font-extrabold uppercase">
+                <div className="relative z-10 mx-auto flex min-h-[300px] max-w-7xl items-center justify-center px-5 text-white sm:min-h-[340px] sm:px-6">
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-center text-base font-semibold sm:gap-4 sm:text-xl md:text-2xl">
                         <Link to="/cart" className="text-white/80 transition hover:text-white">
                             Shopping Cart
                         </Link>
@@ -367,14 +367,14 @@ const CheckoutPage = () => {
                 </div>
             </section>
 
-            <section className="mx-auto max-w-[1460px] px-6 py-12">
-                <div className="grid gap-20 lg:grid-cols-[1fr_0.95fr]">
+            <section className="mx-auto max-w-7xl px-5 py-9 sm:px-6 sm:py-12">
+                <div className="grid items-start gap-8 lg:grid-cols-[1fr_0.95fr] lg:gap-12">
                     <section>
-                        <h1 className="mb-8 text-3xl font-extrabold uppercase">Billing Details</h1>
+                        <h1 className="mb-6 text-2xl font-semibold sm:text-3xl">Billing details</h1>
 
-                        <form className="space-y-7">
-                            <div className="grid gap-7 md:grid-cols-2">
-                                <label className="block text-lg">
+                        <form className="space-y-6 rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-7">
+                            <div className="grid gap-5 md:grid-cols-2">
+                                <label className="block text-sm font-medium">
                                     First Name <span className="text-red-500">*</span>
                                     <input
                                         name="billingFirstName"
@@ -576,8 +576,8 @@ const CheckoutPage = () => {
                         </form>
                     </section>
 
-                    <aside className="bg-[#f6f6f6] px-9 pb-10 pt-12">
-                        <h2 className="mb-8 text-center text-3xl font-extrabold uppercase">Your Order</h2>
+                    <aside className="rounded-sm border border-[#eee5e1] bg-[#fbf8f5] p-5 sm:p-7">
+                        <h2 className="mb-6 text-2xl font-semibold sm:text-3xl">Your order</h2>
 
                         <div className="rounded-xl bg-white px-8 py-7 shadow-sm">
                             <div className="grid grid-cols-[1fr_140px] border-b border-gray-200 pb-5 text-xl font-extrabold uppercase">
@@ -634,7 +634,7 @@ const CheckoutPage = () => {
                             </div>
                         </div>
 
-                        <div className="mt-8 space-y-5 text-lg">
+                        <div className="mt-6 space-y-4 text-sm sm:text-base">
                             {[
                                 ["card", "Pay by Credit card, Debit card"],
                                 ["cod", "Cash on delivery"],
@@ -651,7 +651,7 @@ const CheckoutPage = () => {
                             ))}
                         </div>
 
-                        <div className="mt-7 border-t border-gray-200 pt-7 text-base leading-7 text-gray-600">
+                        <div className="mt-6 border-t border-[#e9ded9] pt-6 text-sm leading-6 text-gray-600">
                             Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our{" "}
                             <strong className="text-gray-950">privacy policy</strong>.
                         </div>
@@ -665,7 +665,7 @@ const CheckoutPage = () => {
                         <button
                             type="button"
                             onClick={handlePlaceOrder}
-                            className="mt-7 h-[60px] w-full bg-[#2b2b2b] text-lg font-bold uppercase text-white transition hover:bg-pink-600"
+                            className="mt-6 min-h-12 w-full rounded-sm bg-[#292526] px-4 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             Place Order
                         </button>

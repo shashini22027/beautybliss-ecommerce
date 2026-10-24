@@ -457,11 +457,11 @@ const ProductsPage = () => {
                     </select>
                 </div>
                 {loading ? (
-                    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
                             <div
                                 key={item}
-                                className="h-[470px] animate-pulse bg-gray-50"
+                                className="aspect-[4/5] animate-pulse rounded-sm bg-[#fbf3f1]"
                             />
                         ))}
                     </div>
@@ -480,7 +480,7 @@ const ProductsPage = () => {
                     </div>
                 ) : (
                     <>
-                    <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid items-stretch gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {visibleProducts.map((product) => {
                             const id = getProductId(product);
                             const productPath = `/product/${id}`;
@@ -494,9 +494,9 @@ const ProductsPage = () => {
                             return (
                                 <article
                                     key={id || product.name}
-                                    className="group relative block text-center"
+                                    className="group relative flex h-full flex-col text-left"
                                 >
-                                    <div className="relative mx-auto mb-5 flex h-[350px] w-full max-w-[390px] items-center justify-center overflow-hidden bg-white">
+                                    <div className="relative mb-4 flex aspect-[4/4.2] w-full items-center justify-center overflow-hidden rounded-sm bg-[#fbf8f5]">
                                         <Link to={productPath} state={{ product }} className="flex h-full w-full items-center justify-center">
                                             {product.discount && (
                                                 <span className="absolute left-5 top-3 z-10 rounded-full bg-black px-4 py-1.5 text-sm font-bold text-white">
@@ -513,7 +513,7 @@ const ProductsPage = () => {
                                             <img
                                                 src={getImageUrl(primaryImage)}
                                                 alt={product.name || "Beauty product"}
-                                                className={`h-[330px] w-full max-w-[360px] object-cover transition duration-500 ${
+                                                className={`h-full w-full object-cover transition duration-500 ${
                                                     hoverImage ? "group-hover:opacity-0" : "group-hover:scale-105"
                                                 }`}
                                             />
@@ -521,7 +521,7 @@ const ProductsPage = () => {
                                                 <img
                                                     src={getImageUrl(hoverImage)}
                                                     alt={product.name || "Beauty product"}
-                                                    className="absolute left-1/2 top-1/2 h-[330px] w-full max-w-[360px] -translate-x-1/2 -translate-y-1/2 object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                                                className="absolute inset-0 h-full w-full object-cover opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
                                                     loading="lazy"
                                                 />
                                             )}
@@ -534,7 +534,7 @@ const ProductsPage = () => {
                                                         event.stopPropagation();
                                                         dispatch(reduxAddToCart({ product: getCartProduct(product), qty: 1 }));
                                                     }}
-                                                    className="flex h-14 w-14 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                                                    className="flex h-11 w-11 items-center justify-center border-r border-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to cart"
                                                 >
                                                     <ShoppingCart aria-hidden="true" className="h-6 w-6" strokeWidth={1.7} />
@@ -546,7 +546,7 @@ const ProductsPage = () => {
                                                         event.stopPropagation();
                                                         dispatch(reduxToggleWishlist(product));
                                                     }}
-                                                    className="flex h-14 w-14 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
+                                                    className="flex h-11 w-11 items-center justify-center text-gray-700 transition hover:bg-gray-950 hover:text-white"
                                                     aria-label="Add to wishlist"
                                                 >
                                                     <Icon name="heart" className="h-6 w-6" />
@@ -555,17 +555,17 @@ const ProductsPage = () => {
                                         </Link>
                                     </div>
 
-                                    <Link to={productPath} state={{ product }}>
-                                        <h3 className="text-lg font-bold leading-snug text-gray-800 transition group-hover:text-pink-600">
+                                    <Link to={productPath} state={{ product }} className="min-h-10">
+                                        <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-gray-900 transition group-hover:text-[#a94f61]">
                                             {product.name}
                                         </h3>
                                     </Link>
 
-                                    <p className="mt-2 text-base text-gray-400">
+                                    <p className="mt-1 min-h-5 text-xs text-gray-500">
                                         {getTextValue(product.category)}
                                     </p>
 
-                                    <div className="mt-3 flex justify-center text-xl leading-none">
+                                    <div className="mt-2 flex min-h-5 items-center text-base leading-none">
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <span
                                                 key={star}
@@ -576,7 +576,7 @@ const ProductsPage = () => {
                                         ))}
                                     </div>
 
-                                    <div className="mt-4 flex items-center justify-center gap-2 text-lg font-bold">
+                                    <div className="mt-auto flex items-center gap-2 pt-3 text-sm font-bold">
                                         {comparePrice && (
                                             <span className="text-base font-normal text-gray-400 line-through">
                                                 {typeof comparePrice === "string" ? comparePrice : formatPrice(comparePrice)}

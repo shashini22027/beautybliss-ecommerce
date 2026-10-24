@@ -36,9 +36,9 @@ const ProductCard = ({ product }) => {
   const oldPrice = product.oldPrice || '';
 
   return (
-    <div className="flex h-full flex-col overflow-hidden border border-gray-200 bg-white shadow-[0_1px_10px_rgba(0,0,0,0.08)] transition duration-300 hover:border-gray-300 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]">
+    <article className="flex h-full flex-col overflow-hidden rounded-sm border border-[#eee5e1] bg-white transition duration-300 hover:border-[#dfc5c5] hover:shadow-[0_10px_28px_rgba(66,40,43,0.10)]">
       {/* Image Container */}
-      <div className="group relative aspect-square overflow-hidden bg-white">
+      <div className="group relative aspect-[4/4.2] overflow-hidden bg-[#fbf8f5]">
         {/* Discount Badge */}
         {discount && (
           <div className="absolute left-3 top-3 z-20 bg-gray-950 px-3 py-1 text-xs font-bold uppercase text-white">
@@ -100,10 +100,10 @@ const ProductCard = ({ product }) => {
       </div>
 
       {/* Card Content */}
-      <div className="flex flex-grow flex-col justify-between p-5">
-        <div className="space-y-2">
-          <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400">{product.brand || product.category}</span>
-          <h3 className="line-clamp-2 text-sm font-bold leading-tight text-gray-950">
+      <div className="flex flex-grow flex-col justify-between p-4 sm:p-5">
+        <div className="space-y-2.5">
+          <span className="block min-h-4 text-[10px] font-medium uppercase tracking-[0.14em] text-[#a17c7d]">{product.brand || product.category}</span>
+          <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-gray-900">
             <Link 
               to={productId ? `/product/${productId}` : '#'}
               className="transition hover:text-pink-600"
@@ -114,7 +114,7 @@ const ProductCard = ({ product }) => {
 
           {/* Rating Stars */}
           {rating > 0 && (
-            <div className="mt-2 flex items-center gap-1">
+            <div className="mt-2 flex min-h-5 items-center gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
@@ -131,7 +131,7 @@ const ProductCard = ({ product }) => {
           {/* Price Display */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-col">
-              <span className="text-sm font-extrabold text-gray-950">{typeof product.price === 'number' ? formatPrice(product.price) : product.price}</span>
+              <span className="text-sm font-bold text-gray-950">{typeof product.price === 'number' ? formatPrice(product.price) : product.price}</span>
               {oldPrice && (
                 <span className="text-xs text-gray-400 line-through">{typeof oldPrice === 'number' ? formatPrice(oldPrice) : oldPrice}</span>
               )}
@@ -142,7 +142,7 @@ const ProductCard = ({ product }) => {
           <button
             type="button"
             onClick={() => dispatch(addToCart({ product, qty: 1 }))}
-            className="flex w-full items-center justify-center gap-2 bg-[#2b2b2b] p-2 text-sm font-bold uppercase text-white transition hover:bg-pink-600"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#292526] px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Add to cart"
             title="Add to cart"
           >
@@ -151,7 +151,7 @@ const ProductCard = ({ product }) => {
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

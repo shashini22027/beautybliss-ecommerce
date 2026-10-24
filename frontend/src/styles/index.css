@@ -3,36 +3,49 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+    --bb-ivory: #fbf8f5;
+    --bb-blush: #f8e8e9;
+    --bb-rose: #b85f70;
+    --bb-charcoal: #292526;
+  }
+
   body {
-    @apply bg-white text-gray-950 font-sans antialiased;
+    @apply bg-white text-gray-900 font-sans antialiased;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: var(--bb-ivory);
   }
   ::-webkit-scrollbar-thumb {
     background: #2b2b2b;
     border-radius: 3px;
   }
   input, select, textarea {
-    @apply transition-all duration-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100/70;
+    @apply transition-all duration-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-100/70;
+  }
+
+  button, a, input, select, textarea {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2;
   }
 }
 
 .luxury-gradient {
-  background: #f6f6f6;
+  background: linear-gradient(135deg, var(--bb-ivory), var(--bb-blush));
 }
 
 @layer components {
   .bb-storefront-button {
-    @apply inline-flex items-center justify-center bg-[#2b2b2b] px-8 py-3 text-xs font-extrabold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600;
+    @apply inline-flex items-center justify-center rounded-sm bg-[#292526] px-7 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .bb-storefront-panel {
-    @apply border border-gray-200 bg-white shadow-[0_1px_10px_rgba(0,0,0,0.08)];
+    @apply border border-[#eee5e1] bg-white shadow-[0_2px_12px_rgba(45,31,33,0.05)];
   }
 
   .price-range-input {
