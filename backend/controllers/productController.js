@@ -1,6 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
+import Order from '../models/Order.js';
 import mongoose from 'mongoose';
 import fs from 'fs';
 import { clearCache } from '../middleware/cacheMiddleware.js';
@@ -283,7 +284,7 @@ const createProductReview = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Product not found' });
   }
 
-  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const normalizedEmail = String(req.user?.email || email || '').trim().toLowerCase();
   const reviewerName = String(req.user?.name || name || '').trim();
   const reviewComment = String(comment || '').trim();
   const reviewRating = Number(rating);
@@ -314,6 +315,16 @@ const createProductReview = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'This email has already reviewed this product.' });
   }
 
+  let verifiedPurchase = false;
+  if (req.user) {
+    verifiedPurchase = Boolean(await Order.exists({
+      user: req.user._id,
+      isPaid: true,
+      'paymentResult.status': { $nin: ['refunded', 'refund_pending'] },
+      'orderItems.product': product._id,
+    }));
+  }
+
   const media = (req.files || []).map((file) => ({
     url: `/uploads/reviews/${file.filename}`,
     type: file.mimetype.startsWith('video/') ? 'video' : 'image',
@@ -324,6 +335,7 @@ const createProductReview = asyncHandler(async (req, res) => {
     rating: reviewRating,
     comment: reviewComment,
     user: req.user?._id,
+    verifiedPurchase,
     media,
   });
   product.numReviews = product.reviews.length;
@@ -339,6 +351,24 @@ const createProductReview = asyncHandler(async (req, res) => {
   }
   await clearCache('/api/products*');
   return res.status(201).json({ message: 'Review added', reviews: product.reviews });
+});
+
+const reportProductReview = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(req.params.reviewId)) {
+    return res.status(400).json({ message: 'Invalid product or review ID.' });
+  }
+  const reason = ['inappropriate', 'spam', 'other'].includes(req.body?.reason) ? req.body.reason : 'inappropriate';
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found.' });
+  const review = product.reviews.id(req.params.reviewId);
+  if (!review) return res.status(404).json({ message: 'Review not found.' });
+  if (review.reports.some((report) => String(report.user) === String(req.user._id))) {
+    return res.status(409).json({ message: 'You have already reported this review.' });
+  }
+  review.reports.push({ user: req.user._id, reason });
+  await product.save();
+  await clearCache('/api/products*');
+  return res.status(201).json({ message: 'Thank you. Your report has been sent to the moderation team.' });
 });
 
 const deleteProductReview = asyncHandler(async (req, res) => {
@@ -493,6 +523,7 @@ export {
   getProductById,
   createProduct,
   createProductReview,
+  reportProductReview,
   deleteProductReview,
   updateProduct,
   deleteProduct,

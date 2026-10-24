@@ -6,6 +6,12 @@ const reviewSchema = new mongoose.Schema({
   rating: { type: Number, required: true },
   comment: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, required: false, ref: 'User' },
+  verifiedPurchase: { type: Boolean, default: false },
+  reports: [{
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+    reason: { type: String, enum: ['inappropriate', 'spam', 'other'], default: 'inappropriate' },
+    createdAt: { type: Date, default: Date.now },
+  }],
   media: [{
     url: { type: String, required: true },
     type: { type: String, enum: ['image', 'video'], required: true },

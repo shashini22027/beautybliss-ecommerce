@@ -6,14 +6,25 @@ import { getImageUrl } from '../utils/image';
 const MAX_MEDIA_FILES = 5;
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
+const getReviewUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('userInfo') || 'null');
+  } catch {
+    return null;
+  }
+};
+
 const ReviewSection = ({ product, onReviewAdded }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const reviewUser = getReviewUser();
+  const [name, setName] = useState(reviewUser?.name || '');
+  const [email, setEmail] = useState(reviewUser?.email || '');
   const [media, setMedia] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
+  const [reportedReviewIds, setReportedReviewIds] = useState([]);
+  const [reportMessages, setReportMessages] = useState({});
   const imageInput = useRef(null);
   const videoInput = useRef(null);
   const reviews = product?.reviews || [];
@@ -44,6 +55,20 @@ const ReviewSection = ({ product, onReviewAdded }) => {
     setEmail('');
     setMedia([]);
     setMessage(null);
+  };
+
+  const reportReview = async (review) => {
+    if (!reviewUser?.token) {
+      setReportMessages((current) => ({ ...current, [review._id]: 'Sign in to report a review.' }));
+      return;
+    }
+    try {
+      const { data } = await API.post(`/products/${product._id}/reviews/${review._id}/report`, { reason: 'inappropriate' });
+      setReportedReviewIds((current) => [...current, review._id]);
+      setReportMessages((current) => ({ ...current, [review._id]: data.message }));
+    } catch (error) {
+      setReportMessages((current) => ({ ...current, [review._id]: error.response?.data?.message || 'Could not report this review.' }));
+    }
   };
 
   const submitReview = async (event) => {
@@ -96,6 +121,7 @@ const ReviewSection = ({ product, onReviewAdded }) => {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-semibold text-gray-900">{review.name}</p>
+                    {review.verifiedPurchase ? <span className="mt-1 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">Verified purchase</span> : <span className="mt-1 inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">Community review</span>}
                     {review.createdAt && (
                       <p className="mt-1 text-xs text-gray-500">
                         {new Date(review.createdAt).toLocaleDateString()}
@@ -111,6 +137,12 @@ const ReviewSection = ({ product, onReviewAdded }) => {
                       />
                     ))}
                   </div>
+                </div>
+                <div className="mt-3 flex items-center justify-end gap-3">
+                  {reportMessages[review._id] && <span className="text-xs text-gray-500" role="status">{reportMessages[review._id]}</span>}
+                  <button type="button" onClick={() => reportReview(review)} disabled={reportedReviewIds.includes(review._id)} className="text-xs font-medium text-gray-500 underline hover:text-rose-700 disabled:cursor-not-allowed disabled:no-underline" aria-label={`Report review by ${review.name}`}>
+                    {reportedReviewIds.includes(review._id) ? 'Reported' : 'Report'}
+                  </button>
                 </div>
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-gray-700">{review.comment}</p>
                 {review.media?.length > 0 && (
@@ -150,6 +182,7 @@ const ReviewSection = ({ product, onReviewAdded }) => {
       )}
 
       <form onSubmit={submitReview} className="mx-auto w-full max-w-md space-y-5">
+        <p className="text-xs leading-5 text-gray-500">Reviews from signed-in customers with a paid order for this item are marked as verified purchases. Other reviews are labeled as community reviews.</p>
         <div>
           <div className="flex items-center gap-2" role="group" aria-label="Choose a rating">
             {[1, 2, 3, 4, 5].map((star) => (

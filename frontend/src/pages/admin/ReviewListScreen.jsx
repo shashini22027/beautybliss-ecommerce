@@ -95,12 +95,16 @@ const ReviewListScreen = () => {
       ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
       : 0;
     const fiveStarReviews = reviews.filter((review) => Number(review.rating || 0) === 5).length;
+    const verifiedReviews = reviews.filter((review) => review.verifiedPurchase).length;
+    const reportedReviews = reviews.filter((review) => (review.reports?.length || 0) > 0).length;
     const uniqueCustomers = new Set(reviews.map((review) => review.user || review.name).filter(Boolean)).size;
 
     return {
       total: reviews.length,
       averageRating,
       fiveStarReviews,
+      verifiedReviews,
+      reportedReviews,
       uniqueCustomers,
     };
   }, [reviews]);
@@ -146,11 +150,13 @@ const ReviewListScreen = () => {
               Review customer feedback submitted from product pages and monitor product experience quality.
             </p>
 
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {[
                 ["Reviews", stats.total],
                 ["Average Rating", stats.averageRating.toFixed(1)],
                 ["5 Star Reviews", stats.fiveStarReviews],
+                ["Verified Purchases", stats.verifiedReviews],
+                ["Reported Reviews", stats.reportedReviews],
                 ["Customers", stats.uniqueCustomers],
               ].map(([label, value]) => (
                 <div key={label} className="border border-gray-200 bg-white px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.08)]">
@@ -209,6 +215,10 @@ const ReviewListScreen = () => {
                               <p className="mt-1 text-sm font-medium text-gray-500">
                                 {review.productName || "BeautyBliss product"} • {formatDate(review.createdAt)}
                               </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${review.verifiedPurchase ? "bg-emerald-50 text-emerald-800" : "bg-gray-100 text-gray-600"}`}>{review.verifiedPurchase ? "Verified purchase" : "Community review"}</span>
+                                {(review.reports?.length || 0) > 0 && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900">{review.reports.length} report{review.reports.length === 1 ? "" : "s"}</span>}
+                              </div>
                             </div>
                             <div className="flex items-center justify-between gap-5">
                               <div className="flex items-center gap-1 text-yellow-500">
