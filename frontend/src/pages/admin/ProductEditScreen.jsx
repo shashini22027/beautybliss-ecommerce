@@ -73,6 +73,8 @@ const getCategoryName = (categories, categoryId) =>
 const createEmptyVariant = () => ({
   name: "",
   hex: "",
+  undertone: "",
+  finish: "",
   image: "",
   countInStock: 0,
 });
@@ -116,6 +118,14 @@ const ProductEditScreen = () => {
       ? "Immerse yourself in a blooming paradise with this enchanting eau de parfum. Featuring a sophisticated blend of fresh jasmine, delicate white rose, and a subtle touch of warm musk, it delivers a captivating, romantic, and long-lasting scent trail perfect for the modern, elegant woman."
       : ""
   );
+  const [ingredients, setIngredients] = useState("");
+  const [keyIngredients, setKeyIngredients] = useState("");
+  const [skinTypes, setSkinTypes] = useState([]);
+  const [skinConcerns, setSkinConcerns] = useState([]);
+  const [fragranceFree, setFragranceFree] = useState("unknown");
+  const [allergyWarnings, setAllergyWarnings] = useState("");
+  const [howToUse, setHowToUse] = useState("");
+  const [size, setSize] = useState("");
   const [compareAtPrice, setCompareAtPrice] = useState(
     useFloralBloomTemplate ? 16500 : ""
   );
@@ -267,6 +277,14 @@ const ProductEditScreen = () => {
 
         setCountInStock(product.countInStock || 0);
         setDescription(product.description || "");
+        setIngredients(product.ingredients || "");
+        setKeyIngredients(Array.isArray(product.keyIngredients) ? product.keyIngredients.join(", ") : "");
+        setSkinTypes(Array.isArray(product.skinTypes) ? product.skinTypes : []);
+        setSkinConcerns(Array.isArray(product.skinConcerns) ? product.skinConcerns : []);
+        setFragranceFree(typeof product.fragranceFree === "boolean" ? String(product.fragranceFree) : "unknown");
+        setAllergyWarnings(product.allergyWarnings || "");
+        setHowToUse(product.howToUse || "");
+        setSize(product.size || "");
         setCompareAtPrice(product.compareAtPrice ?? "");
         setDiscountLabel(product.discountLabel || "");
         setRating(product.rating ?? "");
@@ -284,6 +302,8 @@ const ProductEditScreen = () => {
             ? product.variants.map((variant) => ({
                 name: variant.name || "",
                 hex: variant.hex || "",
+                undertone: variant.undertone || "",
+                finish: variant.finish || "",
                 image: variant.image || "",
                 countInStock: variant.countInStock ?? 0,
               }))
@@ -427,6 +447,8 @@ const ProductEditScreen = () => {
         .map((variant) => ({
           name: variant.name.trim(),
           hex: variant.hex.trim(),
+          undertone: variant.undertone,
+          finish: variant.finish.trim(),
           image: variant.image.trim(),
           countInStock: Number(variant.countInStock) || 0,
         }))
@@ -447,6 +469,14 @@ const ProductEditScreen = () => {
         category,
         countInStock: isVariantProduct ? totalVariantStock : countInStock,
         description,
+        ingredients,
+        keyIngredients: keyIngredients.split(/[,\n]/).map((item) => item.trim()).filter(Boolean),
+        skinTypes,
+        skinConcerns,
+        fragranceFree: fragranceFree === "unknown" ? null : fragranceFree === "true",
+        allergyWarnings,
+        howToUse,
+        size,
         compareAtPrice: parsedCompareAtPrice,
         discountLabel,
         rating: rating === "" ? undefined : Number(rating),
@@ -886,7 +916,7 @@ const ProductEditScreen = () => {
                             {variants.map((variant, index) => (
                               <div
                                 key={`variant-${index}`}
-                                className="grid gap-4 border border-gray-200 p-4 sm:grid-cols-[1fr_auto_auto_auto]"
+                                className="grid gap-4 border border-gray-200 p-4 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_100px_150px_150px_auto]"
                               >
                                 <div>
                                   <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
@@ -898,6 +928,36 @@ const ProductEditScreen = () => {
                                     onChange={(event) => updateVariant(index, "name", event.target.value)}
                                     placeholder="e.g. Ruby Red"
                                     className="w-full border border-gray-300 bg-white px-4 py-3 text-base font-medium outline-none transition focus:border-pink-500"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                    Undertone
+                                  </label>
+                                  <select
+                                    value={variant.undertone || ""}
+                                    onChange={(event) => updateVariant(index, "undertone", event.target.value)}
+                                    className="h-[50px] w-full border border-gray-300 bg-white px-3 text-sm outline-none focus:border-pink-500"
+                                  >
+                                    <option value="">Not specified</option>
+                                    <option value="Warm">Warm</option>
+                                    <option value="Cool">Cool</option>
+                                    <option value="Neutral">Neutral</option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">
+                                    Finish
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={variant.finish || ""}
+                                    onChange={(event) => updateVariant(index, "finish", event.target.value)}
+                                    placeholder="e.g. Satin"
+                                    maxLength={40}
+                                    className="h-[50px] w-full border border-gray-300 bg-white px-3 text-sm outline-none focus:border-pink-500"
                                   />
                                 </div>
 
@@ -1037,6 +1097,47 @@ const ProductEditScreen = () => {
                         />
                       </div>
                     </div>
+
+                    <section className="space-y-5 border border-[#eadde0] bg-[#fffafa] p-5 sm:p-6" aria-labelledby="beauty-guidance-heading">
+                      <div>
+                        <h3 id="beauty-guidance-heading" className="text-sm font-bold uppercase tracking-widest text-gray-700">Beauty guidance and suitability</h3>
+                        <p className="mt-2 text-sm leading-6 text-gray-600">Add verified package information. These details help customers assess product suitability and improve routine recommendations.</p>
+                      </div>
+                      <label className="block text-sm font-semibold text-gray-700">Key ingredients, separated by commas
+                        <input value={keyIngredients} onChange={(event) => setKeyIngredients(event.target.value)} maxLength={2000} className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 font-normal" placeholder="Ceramides, glycerin, niacinamide" />
+                      </label>
+                      <label className="block text-sm font-semibold text-gray-700">Full ingredient list
+                        <textarea value={ingredients} onChange={(event) => setIngredients(event.target.value)} maxLength={4000} rows={4} className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 font-normal" placeholder="Enter the full ingredient list from the product packaging." />
+                      </label>
+                      <div className="grid gap-5 md:grid-cols-2">
+                        <fieldset>
+                          <legend className="text-sm font-semibold text-gray-700">Suitable skin types</legend>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            {['Oily', 'Dry', 'Combination', 'Sensitive', 'Normal'].map((type) => <label key={type} className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={skinTypes.includes(type)} onChange={(event) => setSkinTypes((current) => event.target.checked ? [...current, type] : current.filter((item) => item !== type))} />{type}</label>)}
+                          </div>
+                        </fieldset>
+                        <fieldset>
+                          <legend className="text-sm font-semibold text-gray-700">Relevant skin concerns</legend>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            {[['acne', 'Blemishes'], ['dryness', 'Dryness'], ['dark-spots', 'Uneven tone'], ['sensitive', 'Sensitivity']].map(([value, label]) => <label key={value} className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={skinConcerns.includes(value)} onChange={(event) => setSkinConcerns((current) => event.target.checked ? [...current, value] : current.filter((item) => item !== value))} />{label}</label>)}
+                          </div>
+                        </fieldset>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="block text-sm font-semibold text-gray-700">Fragrance-free status
+                          <select value={fragranceFree} onChange={(event) => setFragranceFree(event.target.value)} className="mt-2 h-11 w-full border border-gray-300 bg-white px-3 font-normal"><option value="unknown">Not verified</option><option value="true">Yes, package confirms fragrance-free</option><option value="false">No</option></select>
+                        </label>
+                        <label className="block text-sm font-semibold text-gray-700">Size / volume
+                          <input value={size} onChange={(event) => setSize(event.target.value)} maxLength={100} className="mt-2 h-11 w-full border border-gray-300 bg-white px-3 font-normal" placeholder="e.g. 50 ml" />
+                        </label>
+                      </div>
+                      <label className="block text-sm font-semibold text-gray-700">Allergen or usage warnings
+                        <textarea value={allergyWarnings} onChange={(event) => setAllergyWarnings(event.target.value)} maxLength={1000} rows={2} className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 font-normal" placeholder="List only verified warnings. Leave blank if none are provided." />
+                      </label>
+                      <label className="block text-sm font-semibold text-gray-700">How to use
+                        <textarea value={howToUse} onChange={(event) => setHowToUse(event.target.value)} maxLength={2000} rows={3} className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 font-normal" placeholder="Enter directions from the product packaging." />
+                      </label>
+                    </section>
 
                     <div className="space-y-5 border border-gray-200 bg-white p-5">
                       <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-4">

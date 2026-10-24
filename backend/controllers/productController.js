@@ -75,6 +75,26 @@ const resolveCategoryId = async (category) => {
 const getAllowedImageCount = (productInfo) =>
   isColorVariantProduct(productInfo) ? MAX_LIPSTICK_IMAGES : MAX_STANDARD_IMAGES;
 
+const normalizeStringList = (values, allowedValues = null, maxItems = 30) => {
+  if (!Array.isArray(values)) return [];
+  const normalized = [...new Set(values
+    .filter((value) => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter(Boolean))].slice(0, maxItems);
+  return allowedValues ? normalized.filter((value) => allowedValues.includes(value)) : normalized;
+};
+
+const normalizeBeautyDetails = (details = {}) => ({
+  ingredients: typeof details.ingredients === 'string' ? details.ingredients.trim().slice(0, 4000) : '',
+  keyIngredients: normalizeStringList(details.keyIngredients, null, 30).map((item) => item.slice(0, 80)),
+  skinTypes: normalizeStringList(details.skinTypes, ['Oily', 'Dry', 'Combination', 'Sensitive', 'Normal'], 5),
+  skinConcerns: normalizeStringList(details.skinConcerns, ['acne', 'dryness', 'dark-spots', 'sensitive'], 4),
+  fragranceFree: typeof details.fragranceFree === 'boolean' ? details.fragranceFree : null,
+  allergyWarnings: typeof details.allergyWarnings === 'string' ? details.allergyWarnings.trim().slice(0, 1000) : '',
+  howToUse: typeof details.howToUse === 'string' ? details.howToUse.trim().slice(0, 2000) : '',
+  size: typeof details.size === 'string' ? details.size.trim().slice(0, 100) : '',
+});
+
 const normalizeVariants = (variants) => {
   if (!Array.isArray(variants)) {
     return [];
@@ -84,6 +104,8 @@ const normalizeVariants = (variants) => {
     .map((variant) => ({
       name: typeof variant?.name === 'string' ? variant.name.trim() : '',
       hex: typeof variant?.hex === 'string' ? variant.hex.trim() : '',
+      undertone: ['Warm', 'Cool', 'Neutral'].includes(variant?.undertone) ? variant.undertone : '',
+      finish: typeof variant?.finish === 'string' ? variant.finish.trim().slice(0, 40) : '',
       image: typeof variant?.image === 'string' ? variant.image.trim() : '',
       countInStock:
         variant?.countInStock === undefined || variant?.countInStock === null || variant?.countInStock === ''
@@ -177,6 +199,14 @@ const createProduct = asyncHandler(async (req, res) => {
     isSpecialOffer,
     rating,
     variants,
+    ingredients,
+    keyIngredients,
+    skinTypes,
+    skinConcerns,
+    fragranceFree,
+    allergyWarnings,
+    howToUse,
+    size,
   } = req.body;
 
   let categoryId;
@@ -229,6 +259,7 @@ const createProduct = asyncHandler(async (req, res) => {
     variants: isVariantProduct ? normalizedVariants : [],
     countInStock: resolvedCountInStock,
     description,
+    ...normalizeBeautyDetails({ ingredients, keyIngredients, skinTypes, skinConcerns, fragranceFree, allergyWarnings, howToUse, size }),
     compareAtPrice,
     discountLabel,
     isBestSeller,
@@ -358,6 +389,14 @@ const updateProduct = asyncHandler(async (req, res) => {
     isSpecialOffer,
     rating,
     variants,
+    ingredients,
+    keyIngredients,
+    skinTypes,
+    skinConcerns,
+    fragranceFree,
+    allergyWarnings,
+    howToUse,
+    size,
   } = req.body;
 
   const product = await Product.findById(req.params.id).populate('category');
@@ -418,6 +457,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       product.countInStock = countInStock === undefined ? product.countInStock : countInStock;
     }
     product.description = description || product.description;
+    Object.assign(product, normalizeBeautyDetails({ ingredients, keyIngredients, skinTypes, skinConcerns, fragranceFree, allergyWarnings, howToUse, size }));
     product.compareAtPrice =
       compareAtPrice === undefined ? product.compareAtPrice : compareAtPrice;
     product.discountLabel = discountLabel === undefined ? product.discountLabel : discountLabel;

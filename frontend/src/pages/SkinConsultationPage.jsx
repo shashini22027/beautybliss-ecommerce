@@ -157,21 +157,50 @@ const SkinConsultationPage = () => {
     const productCatalog = products.length ? products : catalogProducts;
     return order.map((stepKey) => {
       const stepInfo = routineSteps[stepKey];
-      const matches = productCatalog.filter((product) => {
-        const searchable = [product.name, product.description, product.category?.name || product.category, product.subcategory, product.brand]
-          .filter(Boolean).join(' ').toLowerCase();
+      const matches = productCatalog.map((product) => {
+        const searchable = [
+          product.name, product.description, product.ingredients,
+          ...(Array.isArray(product.keyIngredients) ? product.keyIngredients : []),
+          product.category?.name || product.category, product.subcategory, product.brand,
+        ].filter(Boolean).join(' ').toLowerCase();
         const matchedTerm = stepInfo.terms.some((term) => searchable.includes(term));
-        const sensitivityMatch = sensitivity !== 'Sensitive' || !/strong exfol|retinol|fragrance/i.test(searchable);
-        return matchedTerm && sensitivityMatch;
-      });
-      const preferredProduct = fragrancePreference === 'Fragrance-free preferred'
-        ? matches.find((item) => /fragrance.free|unscented|no fragrance/i.test(`${item.name} ${item.description || ''}`))
-        : null;
-      const product = preferredProduct || matches.find((item) => Number(item.countInStock ?? 1) > 0) || matches[0] || null;
-      const fragranceVerified = !product || fragrancePreference !== 'Fragrance-free preferred' || Boolean(preferredProduct);
-      return { key: stepKey, label: stepInfo.label, product, fragranceVerified };
+        const listedSkinTypes = Array.isArray(product.skinTypes) ? product.skinTypes : [];
+        const listedConcerns = Array.isArray(product.skinConcerns) ? product.skinConcerns : [];
+        const skinTypeMatch = skinType === 'Not sure' || listedSkinTypes.length === 0 || listedSkinTypes.includes(skinType);
+        const sensitivityMatch = sensitivity !== 'Sensitive' || listedSkinTypes.length === 0 || listedSkinTypes.includes('Sensitive');
+        const concernMatch = listedConcerns.length === 0 || listedConcerns.includes(activeConcern.id);
+        const fragranceMatch = fragrancePreference !== 'Fragrance-free preferred' || product.fragranceFree !== false;
+        const score = (listedSkinTypes.includes(skinType) ? 3 : 0)
+          + (listedConcerns.includes(activeConcern.id) ? 3 : 0)
+          + (product.fragranceFree === true && fragrancePreference === 'Fragrance-free preferred' ? 2 : 0)
+          + (Number(product.rating || 0) > 0 ? Number(product.rating) / 5 : 0);
+        return { product, matchedTerm: stepInfo.terms.some((term) => searchable.includes(term)), skinTypeMatch, sensitivityMatch, concernMatch, fragranceMatch, score };
+      }).filter((match) => match.matchedTerm && match.skinTypeMatch && match.sensitivityMatch && match.concernMatch && match.fragranceMatch)
+        .sort((first, second) => {
+          const firstAvailable = Number(first.product.countInStock ?? 0) > 0;
+          const secondAvailable = Number(second.product.countInStock ?? 0) > 0;
+          return Number(secondAvailable) - Number(firstAvailable) || second.score - first.score;
+        });
+      const match = matches[0];
+      const product = match?.product || null;
+      const hasSkinTypeTag = product?.skinTypes?.includes(skinType);
+      const hasConcernTag = product?.skinConcerns?.includes(activeConcern.id);
+      const whyRecommended = hasSkinTypeTag && hasConcernTag
+        ? `Catalog tags list this for ${skinType.toLowerCase()} skin and ${activeConcern.title.toLowerCase()}.`
+        : hasConcernTag
+          ? `Catalog tags list this for ${activeConcern.title.toLowerCase()}; skin type suitability is not specified.`
+          : hasSkinTypeTag
+            ? `Catalog tags list this for ${skinType.toLowerCase()} skin; this concern match is based on the product text.`
+            : 'Matched by product name or description for this routine step; suitability tags are not provided.';
+      return {
+        key: stepKey,
+        label: stepInfo.label,
+        product,
+        whyRecommended,
+        fragranceVerified: !product || fragrancePreference !== 'Fragrance-free preferred' || product.fragranceFree === true,
+      };
     });
-  }, [activeConcern.id, catalogProducts, fragrancePreference, products, sensitivity]);
+  }, [activeConcern, catalogProducts, fragrancePreference, products, sensitivity, skinType]);
 
   const routineStorageKey = `beautybliss-routine-${user?._id || user?.id || user?.email || 'guest'}`;
 
@@ -428,7 +457,7 @@ const SkinConsultationPage = () => {
           </div>
           <div className="mt-5 rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-6">
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h4 className="font-semibold text-gray-900">Products for your routine</h4><p className="mt-1 text-xs text-gray-500">Matched from current catalog names and descriptions. Ingredient details are shown only where supplied by the product listing.</p></div><button type="button" onClick={addRoutineToCart} disabled={!productRecommendations.some(({ product }) => product && Number(product.countInStock ?? 1) > 0)} className="min-h-10 rounded-sm bg-[#292526] px-4 text-xs font-semibold uppercase tracking-wide text-white hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50">Add available set to cart</button></div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{productRecommendations.map(({ key, label, product, fragranceVerified }) => <article key={key} className="rounded border border-[#eee5e1] bg-[#fdfaf8] p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#a94f61]">{label}</p>{product ? <><h5 className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold text-gray-900">{product.name}</h5><p className="mt-2 text-sm font-semibold text-gray-900">{typeof product.price === 'number' ? formatPrice(product.price) : product.price || 'See product page'}</p><p className="mt-2 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-gray-600">{product.description || 'Review the product page and packaging for ingredients and suitability.'}</p><p className="mt-2 text-[11px] font-medium text-gray-500">{Number(product.countInStock ?? 1) > 0 ? 'Available' : 'Currently out of stock'}</p>{!fragranceVerified && <p className="mt-2 text-[11px] leading-4 text-amber-800">Fragrance status is not listed; check the package before use.</p>}<div className="mt-3 flex flex-wrap gap-2"><Link to={`/product/${product._id || product.id}`} state={{ product }} className="text-xs font-medium text-[#884252] underline">Details</Link>{Number(product.countInStock ?? 1) > 0 && <button type="button" onClick={() => addProductToCart(product)} className="text-xs font-semibold text-gray-800 underline">Add to cart</button>}</div></> : <p className="mt-3 text-xs leading-5 text-gray-500">No suitable catalog match found. Browse the store or ask our consultant for help.</p>}</article>)}</div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{productRecommendations.map(({ key, label, product, fragranceVerified, whyRecommended }) => <article key={key} className="rounded border border-[#eee5e1] bg-[#fdfaf8] p-4"><p className="text-[10px] font-semibold uppercase tracking-wide text-[#a94f61]">{label}</p>{product ? <><h5 className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold text-gray-900">{product.name}</h5><p className="mt-2 text-sm font-semibold text-gray-900">{typeof product.price === 'number' ? formatPrice(product.price) : product.price || 'See product page'}</p><p className="mt-2 line-clamp-3 min-h-[3.75rem] text-xs leading-5 text-gray-600">{product.description || 'Review the product page and packaging for ingredients and suitability.'}</p><p className="mt-2 text-xs leading-5 text-[#884252]">Why this match: {whyRecommended}</p>{product.keyIngredients?.length > 0 && <p className="mt-2 text-[11px] leading-4 text-gray-600">Key ingredients: {product.keyIngredients.join(', ')}</p>}<p className="mt-2 text-[11px] font-medium text-gray-500">{Number(product.countInStock ?? 1) > 0 ? 'Available' : 'Currently out of stock'}</p>{!fragranceVerified && <p className="mt-2 text-[11px] leading-4 text-amber-800">Fragrance-free status is not verified. Check the package before use.</p>}{product.allergyWarnings && <p className="mt-2 text-[11px] leading-4 text-amber-900">Label warning: {product.allergyWarnings}</p>}<div className="mt-3 flex flex-wrap gap-2"><Link to={`/product/${product._id || product.id}`} state={{ product }} className="text-xs font-medium text-[#884252] underline">Details</Link>{Number(product.countInStock ?? 1) > 0 && <button type="button" onClick={() => addProductToCart(product)} className="text-xs font-semibold text-gray-800 underline">Add to cart</button>}</div></> : <p className="mt-3 text-xs leading-5 text-gray-500">No catalog match found for this routine step. Browse the store or ask our consultant for help.</p>}</article>)}</div>
             <p className="mt-4 border-t border-[#eee5e1] pt-3 text-xs leading-5 text-amber-800">Ingredient lists and allergy information may be incomplete in online listings. Always check the package for full ingredients and avoid known allergens. Stop use if irritation occurs.</p>
             <div className="mt-4 flex flex-wrap gap-3"><button type="button" onClick={saveCurrentRoutine} className="min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">{savedRoutine ? 'Update saved routine' : 'Save this routine'}</button>{savedRoutine && <button type="button" onClick={loadSavedRoutine} className="min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">Reopen saved routine</button>}</div>
             {routineNotice && <p className="mt-3 text-sm font-medium text-[#884252]" role="status">{routineNotice}</p>}

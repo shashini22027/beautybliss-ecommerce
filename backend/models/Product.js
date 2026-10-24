@@ -15,6 +15,8 @@ const reviewSchema = new mongoose.Schema({
 const variantSchema = new mongoose.Schema({
   name: { type: String, required: true },
   hex: { type: String, default: '' },
+  undertone: { type: String, enum: ['', 'Warm', 'Cool', 'Neutral'], default: '' },
+  finish: { type: String, trim: true, maxlength: 40, default: '' },
   image: { type: String, default: '' },
   countInStock: { type: Number, min: 0, default: 0 },
 }, { _id: true });
@@ -24,6 +26,14 @@ const productSchema = new mongoose.Schema({
   image: { type: String, required: false, default: '' },
   images: [{ type: String }],
   description: { type: String, required: true },
+  ingredients: { type: String, trim: true, maxlength: 4000, default: '' },
+  keyIngredients: [{ type: String, trim: true, maxlength: 80 }],
+  skinTypes: [{ type: String, enum: ['Oily', 'Dry', 'Combination', 'Sensitive', 'Normal'] }],
+  skinConcerns: [{ type: String, enum: ['acne', 'dryness', 'dark-spots', 'sensitive'] }],
+  fragranceFree: { type: Boolean, default: null },
+  allergyWarnings: { type: String, trim: true, maxlength: 1000, default: '' },
+  howToUse: { type: String, trim: true, maxlength: 2000, default: '' },
+  size: { type: String, trim: true, maxlength: 100, default: '' },
   brand: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Category' },
   subcategory: { type: String },

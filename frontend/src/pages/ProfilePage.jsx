@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import api from "../services/api";
 import { loginSuccess } from "../redux/slices/authSlice";
+import { selectWishlistItems } from "../redux/slices/wishlistSlice";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -133,7 +135,12 @@ const ProfilePage = () => {
     const [appointments, setAppointments] = useState([]);
     const [appointmentsLoading, setAppointmentsLoading] = useState(false);
     const [appointmentsError, setAppointmentsError] = useState("");
+    const [dashboardOrders, setDashboardOrders] = useState([]);
+    const [dashboardAppointments, setDashboardAppointments] = useState([]);
+    const [dashboardLoading, setDashboardLoading] = useState(false);
+    const [dashboardError, setDashboardError] = useState("");
     const accountId = storedUser?._id || storedUser?.id;
+    const wishlistItems = useSelector(selectWishlistItems);
 
     useEffect(() => {
         if (!storedUser) {
@@ -152,6 +159,38 @@ const ProfilePage = () => {
             dispatch(loginSuccess({ ...latestUser, ...data, token: latestUser?.token }));
         }).catch((error) => setAccountError(error.response?.data?.message || 'Could not load your saved account details.'));
     }, [accountId, dispatch]);
+
+    useEffect(() => {
+        if (!accountId) return undefined;
+        let active = true;
+        setDashboardLoading(true);
+        setDashboardError("");
+        Promise.allSettled([api.get('/orders/myorders'), api.get('/appointments/mine')])
+            .then(([ordersResult, appointmentsResult]) => {
+                if (!active) return;
+                let failed = false;
+                if (ordersResult.status === 'fulfilled') {
+                    const orderData = ordersResult.value.data;
+                    setDashboardOrders(Array.isArray(orderData) ? orderData : orderData.orders || []);
+                } else failed = true;
+                if (appointmentsResult.status === 'fulfilled') {
+                    const appointmentData = appointmentsResult.value.data;
+                    setDashboardAppointments(Array.isArray(appointmentData) ? appointmentData : []);
+                } else failed = true;
+                if (failed) setDashboardError('Some account activity could not be loaded. You can still open each section for details.');
+            })
+            .finally(() => { if (active) setDashboardLoading(false); });
+        return () => { active = false; };
+    }, [accountId]);
+
+    const todayInColombo = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Colombo', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date());
+    const upcomingAppointments = dashboardAppointments
+        .filter((appointment) => appointment.appointmentDate >= todayInColombo && ['pending', 'confirmed'].includes(appointment.status))
+        .sort((first, second) => `${first.appointmentDate} ${first.time}`.localeCompare(`${second.appointmentDate} ${second.time}`));
+    const recentDashboardOrder = [...dashboardOrders].sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt))[0];
+    const latestSavedRoutine = [...savedRoutines].sort((first, second) => new Date(second.savedAt) - new Date(first.savedAt))[0];
 
     const logoutHandler = () => {
         const keysToRemove = [
@@ -645,6 +684,43 @@ const ProfilePage = () => {
                                     , and edit your{" "}
                                     <span className="font-semibold text-gray-950">password and account details</span>.
                                 </p>
+
+                                <section className="mt-8" aria-labelledby="beauty-overview-heading">
+                                    <div className="flex flex-wrap items-end justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a94f61]">Your BeautyBliss</p>
+                                            <h2 id="beauty-overview-heading" className="mt-1 text-2xl font-semibold tracking-tight">Beauty overview</h2>
+                                        </div>
+                                        <Link to="/skin-consultation" className="text-sm font-semibold text-[#884252] underline">Get beauty recommendations</Link>
+                                    </div>
+                                    {dashboardError && <p role="status" className="mt-4 border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{dashboardError}</p>}
+                                    <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                                        {[
+                                            { label: 'Orders', value: dashboardLoading ? '…' : dashboardOrders.length, to: '/orders', hint: 'View purchases and delivery updates' },
+                                            { label: 'Upcoming appointments', value: dashboardLoading ? '…' : upcomingAppointments.length, view: 'appointments', hint: 'Requests and confirmed sessions' },
+                                            { label: 'Saved routines', value: savedRoutines.length, view: 'routines', hint: latestSavedRoutine ? 'Latest: ' + latestSavedRoutine.concernTitle : 'Build a routine for your needs' },
+                                            { label: 'Wishlist', value: wishlistItems.length, to: '/wishlist', hint: 'Your saved product picks' },
+                                        ].map((item) => {
+                                            const card = <><span className="text-sm font-medium text-gray-600">{item.label}</span><span className="mt-2 block text-3xl font-semibold text-gray-950">{item.value}</span><span className="mt-2 block text-xs leading-5 text-gray-500">{item.hint}</span></>;
+                                            return item.to ? <Link key={item.label} to={item.to} className="border border-[#eee5e1] bg-[#fbf8f5] p-4 transition hover:border-[#c98b96]">{card}</Link> : <button key={item.label} type="button" onClick={() => setActiveView(item.view)} className="border border-[#eee5e1] bg-[#fbf8f5] p-4 text-left transition hover:border-[#c98b96]">{card}</button>;
+                                        })}
+                                    </div>
+                                    <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                                        <article className="border border-[#eee5e1] bg-white p-5">
+                                            <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">Recent order</h3><Link to="/orders" className="text-sm font-medium text-[#884252] underline">Order history</Link></div>
+                                            {recentDashboardOrder ? <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm"><div><p className="font-medium">{recentDashboardOrder.orderNo || 'BeautyBliss order'}</p><p className="mt-1 text-gray-500">{recentDashboardOrder.createdAt ? new Date(recentDashboardOrder.createdAt).toLocaleDateString() : 'Date unavailable'} · {recentDashboardOrder.isPaid ? 'Paid' : 'Payment pending'} · {recentDashboardOrder.isDelivered ? 'Delivered' : 'In progress'}</p></div><span className="font-semibold">{typeof recentDashboardOrder.totalPrice === 'number' ? 'LKR ' + recentDashboardOrder.totalPrice.toLocaleString() : 'View order'}</span></div> : <p className="mt-3 text-sm leading-6 text-gray-600">{dashboardLoading ? 'Loading your orders…' : 'Your recent purchases will appear here.'}</p>}
+                                        </article>
+                                        <article className="border border-[#eee5e1] bg-white p-5">
+                                            <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">Next consultation</h3><button type="button" onClick={() => setActiveView('appointments')} className="text-sm font-medium text-[#884252] underline">Appointment history</button></div>
+                                            {upcomingAppointments[0] ? <div className="mt-3 text-sm"><p className="font-medium">{upcomingAppointments[0].appointmentDate} at {upcomingAppointments[0].time} · Sri Lanka time</p><p className="mt-1 text-gray-500">{upcomingAppointments[0].concern || 'Beauty consultation'} · <span className="capitalize">{upcomingAppointments[0].status}</span></p></div> : <p className="mt-3 text-sm leading-6 text-gray-600">{dashboardLoading ? 'Loading your appointments…' : 'No upcoming consultation. You can request a time with our beauty consultant.'}</p>}
+                                            <Link to="/skin-consultation#appointment" className="mt-3 inline-block text-sm font-semibold text-[#884252] underline">Book a consultation</Link>
+                                        </article>
+                                    </div>
+                                    <article className="mt-4 flex flex-col justify-between gap-4 border border-[#ead4d6] bg-[#fff7f7] p-5 sm:flex-row sm:items-center">
+                                        <div><h3 className="font-semibold">{latestSavedRoutine ? 'Continue your ' + latestSavedRoutine.concernTitle.toLowerCase() + ' routine' : 'Find products for your skin routine'}</h3><p className="mt-1 text-sm leading-6 text-gray-600">{latestSavedRoutine ? 'Your saved profile is ' + latestSavedRoutine.skinType.toLowerCase() + ' skin. Review the routine and current catalog recommendations.' : 'Answer a few questions to explore a morning and evening routine with products from the current catalog.'}</p></div>
+                                        <Link to={latestSavedRoutine ? '/products?skinConcern=' + encodeURIComponent(latestSavedRoutine.concernId) : '/skin-consultation'} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-sm bg-[#292526] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#a94f61]">{latestSavedRoutine ? 'Shop routine matches' : 'Start consultation'}</Link>
+                                    </article>
+                                </section>
 
                                 <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                                     {dashboardTiles.map((tile) => {

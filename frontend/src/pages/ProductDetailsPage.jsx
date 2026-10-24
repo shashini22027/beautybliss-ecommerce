@@ -331,9 +331,16 @@ const ProductDetailsPage = () => {
   const color = hasColorVariants ? getTextValue(selectedVariant?.name) : getTextValue(product.color);
   const country = getTextValue(product.country);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
-  const ingredients = product.ingredients || product.keyIngredients || '';
+  const ingredients = product.ingredients || '';
+  const keyIngredients = Array.isArray(product.keyIngredients)
+    ? product.keyIngredients
+    : typeof product.keyIngredients === 'string'
+      ? product.keyIngredients.split(',').map((item) => item.trim()).filter(Boolean)
+      : [];
   const howToUse = product.howToUse || product.usageInstructions || '';
   const size = product.size || product.volume || product.weight || '';
+  const suitableSkinTypes = Array.isArray(product.skinTypes) ? product.skinTypes : [];
+  const suitableConcerns = Array.isArray(product.skinConcerns) ? product.skinConcerns : [];
   const deliveryInfo = product.deliveryInfo || '';
   const mainImage = getImageUrl(activeImage || selectedVariant?.image || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80');
   const activeImageIndex = Math.max(0, allImages.indexOf(getImageUrl(activeImage || mainImage)));
@@ -532,7 +539,7 @@ const ProductDetailsPage = () => {
                       onClick={() => handleSelectVariant(index)}
                       disabled={isVariantOutOfStock}
                       aria-pressed={isSelected}
-                      title={isVariantOutOfStock ? `${variant.name} is out of stock` : variant.name}
+                      title={`${variant.name}${variant.undertone ? ` · ${variant.undertone} undertone` : ''}${variant.finish ? ` · ${variant.finish} finish` : ''}${isVariantOutOfStock ? ' · out of stock' : ''}`}
                       className={`inline-flex items-center gap-3 border px-4 py-3 text-sm font-semibold transition ${
                         isSelected
                           ? 'border-gray-950 bg-gray-950 text-white'
@@ -551,6 +558,8 @@ const ProductDetailsPage = () => {
               {selectedVariant && (
                 <p className="mt-3 text-sm text-gray-500">
                   Selected: <span className="font-semibold text-gray-950">{selectedVariant.name}</span>
+                  {selectedVariant.undertone ? ` · ${selectedVariant.undertone} undertone` : ''}
+                  {selectedVariant.finish ? ` · ${selectedVariant.finish} finish` : ''}
                   {stockCount > 0 ? ` — ${stockCount} in stock` : ' — out of stock'}
                 </p>
               )}
@@ -705,6 +714,14 @@ const ProductDetailsPage = () => {
               <>
                 <div className="mx-auto max-w-[1420px] py-8 text-left">
                   <h2 className="text-lg font-bold text-gray-600">{product.name}</h2>
+
+                  {(keyIngredients.length > 0 || ingredients || howToUse || suitableSkinTypes.length > 0 || suitableConcerns.length > 0 || product.allergyWarnings) && <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    {keyIngredients.length > 0 && <section className="rounded border border-[#eee5e1] bg-[#fbf8f5] p-5"><h3 className="font-semibold text-gray-950">Key ingredients</h3><div className="mt-3 flex flex-wrap gap-2">{keyIngredients.map((ingredient) => <span key={ingredient} className="rounded-full bg-white px-3 py-1.5 text-sm text-gray-700">{ingredient}</span>)}</div></section>}
+                    {(suitableSkinTypes.length > 0 || suitableConcerns.length > 0 || typeof product.fragranceFree === 'boolean') && <section className="rounded border border-[#eee5e1] bg-[#fbf8f5] p-5"><h3 className="font-semibold text-gray-950">Suitability information</h3>{suitableSkinTypes.length > 0 && <p className="mt-3 text-sm leading-6 text-gray-700"><strong>Skin types:</strong> {suitableSkinTypes.join(', ')}</p>}{suitableConcerns.length > 0 && <p className="mt-2 text-sm leading-6 text-gray-700"><strong>Tagged concerns:</strong> {suitableConcerns.join(', ')}</p>}{typeof product.fragranceFree === 'boolean' && <p className="mt-2 text-sm leading-6 text-gray-700"><strong>Fragrance-free:</strong> {product.fragranceFree ? 'Yes' : 'No'}</p>}</section>}
+                    {ingredients && <section className="rounded border border-gray-200 p-5 md:col-span-2"><h3 className="font-semibold text-gray-950">Full ingredients</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">{ingredients}</p></section>}
+                    {product.allergyWarnings && <p className="border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950 md:col-span-2"><strong>Allergy and use notice:</strong> {product.allergyWarnings} Always check the packaging for complete ingredient and warning information.</p>}
+                    {howToUse && <section className="rounded border border-gray-200 p-5 md:col-span-2"><h3 className="font-semibold text-gray-950">How to use</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">{howToUse}</p></section>}
+                  </div>}
 
                   <p className="mt-8 text-lg leading-8 text-gray-600">
                     Discover the natural beauty benefits of <strong>{product.name}</strong>, a

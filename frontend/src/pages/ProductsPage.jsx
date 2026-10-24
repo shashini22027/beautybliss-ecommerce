@@ -151,6 +151,8 @@ const ProductsPage = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [sortOrder, setSortOrder] = useState("default");
     const [brandFilter, setBrandFilter] = useState("All");
+    const [undertoneFilter, setUndertoneFilter] = useState("");
+    const [finishFilter, setFinishFilter] = useState("");
     const [ratingFilter, setRatingFilter] = useState(0);
     const [inStockOnly, setInStockOnly] = useState(false);
     const [searchText, setSearchText] = useState("");
@@ -173,10 +175,20 @@ const ProductsPage = () => {
         () => new URLSearchParams(location.search).get("q") || "",
         [location.search]
     );
+    const undertoneQuery = useMemo(
+        () => new URLSearchParams(location.search).get("undertone") || "",
+        [location.search]
+    );
+    const finishQuery = useMemo(
+        () => new URLSearchParams(location.search).get("finish") || "",
+        [location.search]
+    );
 
     useEffect(() => {
         setSearchText(searchQuery);
-    }, [searchQuery]);
+        setUndertoneFilter(undertoneQuery);
+        setFinishFilter(finishQuery);
+    }, [finishQuery, searchQuery, undertoneQuery]);
 
     const getCategoryId = (value) => {
         if (!value) return "";
@@ -228,6 +240,8 @@ const ProductsPage = () => {
     const resetFilters = () => {
         setActiveCategory("All");
         setBrandFilter("All");
+        setUndertoneFilter("");
+        setFinishFilter("");
         setRatingFilter(0);
         setInStockOnly(false);
         setSearchText("");
@@ -236,7 +250,7 @@ const ProductsPage = () => {
         setAppliedPriceRange([0, MAX_PRODUCT_PRICE]);
         setSortOrder("default");
         setCurrentPage(0);
-        if (categoryQuery || searchQuery || skinConcernQuery) navigate("/products");
+        if (categoryQuery || searchQuery || skinConcernQuery || undertoneQuery || finishQuery) navigate("/products");
     };
 
     // Scroll to top whenever the page changes
@@ -277,7 +291,7 @@ const ProductsPage = () => {
                 product.subcategory,
                 product.brand,
                 getTextValue(product.color),
-                ...(Array.isArray(product.variants) ? product.variants.map((variant) => getTextValue(variant?.name)) : []),
+                ...(Array.isArray(product.variants) ? product.variants.flatMap((variant) => [getTextValue(variant?.name), getTextValue(variant?.undertone), getTextValue(variant?.finish)]) : []),
             ]
                 .filter(Boolean)
                 .join(" ")
@@ -295,8 +309,13 @@ const ProductsPage = () => {
             const matchesRating = Number(product.rating || 0) >= ratingFilter;
             const stockCount = Number(product.countInStock ?? product.stock ?? 0);
             const matchesAvailability = !inStockOnly || stockCount > 0;
+            const variants = Array.isArray(product.variants) ? product.variants : [];
+            const matchesShade = (!undertoneFilter && !finishFilter) || variants.some((variant) =>
+                (!undertoneFilter || variant.undertone?.toLowerCase() === undertoneFilter.toLowerCase()) &&
+                (!finishFilter || variant.finish?.toLowerCase() === finishFilter.toLowerCase())
+            );
 
-            return matchesCategory && matchesConcern && matchesSearch && matchesPrice && matchesBrand && matchesRating && matchesAvailability;
+            return matchesCategory && matchesConcern && matchesSearch && matchesPrice && matchesBrand && matchesRating && matchesAvailability && matchesShade;
         });
 
         switch (sortOrder) {
@@ -320,7 +339,7 @@ const ProductsPage = () => {
         }
 
         return filtered;
-    }, [activeCategory, appliedPriceRange, brandFilter, categoryAliases, inStockOnly, products, ratingFilter, searchText, skinConcernQuery, sortOrder]);
+    }, [activeCategory, appliedPriceRange, brandFilter, categoryAliases, finishFilter, inStockOnly, products, ratingFilter, searchText, skinConcernQuery, sortOrder, undertoneFilter]);
 
     const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
     const visibleProducts = filteredProducts.slice(
@@ -373,6 +392,7 @@ const ProductsPage = () => {
     const formatRangePrice = (price) =>
         `₨${price.toLocaleString("en-US")}`;
     const availableBrands = useMemo(() => [...new Set(products.map((product) => getTextValue(product.brand, "")).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [products]);
+    const availableFinishes = useMemo(() => [...new Set(products.flatMap((product) => (product.variants || []).map((variant) => variant.finish).filter(Boolean)))].sort((a, b) => a.localeCompare(b)), [products]);
     const priceMinPosition = (priceMin / MAX_PRODUCT_PRICE) * 100;
     const priceMaxPosition = (priceMax / MAX_PRODUCT_PRICE) * 100;
 
@@ -489,6 +509,8 @@ const ProductsPage = () => {
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <select value={brandFilter} onChange={(event) => { setBrandFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by brand" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value="All">All brands</option>{availableBrands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
+                    <select value={undertoneFilter} onChange={(event) => { setUndertoneFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by shade undertone" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value="">Any undertone</option>{['Warm', 'Cool', 'Neutral'].map((tone) => <option key={tone} value={tone}>{tone} undertone</option>)}</select>
+                    <select value={finishFilter} onChange={(event) => { setFinishFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by shade finish" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value="">Any finish</option>{availableFinishes.map((finish) => <option key={finish} value={finish}>{finish}</option>)}</select>
                     <select value={ratingFilter} onChange={(event) => { setRatingFilter(Number(event.target.value)); setCurrentPage(0); }} aria-label="Minimum rating" className="h-10 w-full border border-gray-300 bg-white px-3 text-sm sm:w-auto"><option value={0}>Any rating</option><option value={4}>4 stars & up</option><option value={3}>3 stars & up</option></select>
                     <label className="inline-flex min-h-10 items-center gap-2 border border-gray-300 px-3 text-sm"><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} />In stock</label>
                     <select
@@ -617,6 +639,15 @@ const ProductsPage = () => {
                                     <p className="mt-1 min-h-5 text-xs text-gray-500">
                                         {getTextValue(product.category)}
                                     </p>
+
+                                    {Array.isArray(product.variants) && product.variants.length > 0 && (
+                                      <div className="mt-2 flex min-h-5 items-center gap-1.5" aria-label="Available shades">
+                                        {product.variants.slice(0, 6).map((variant, index) => (
+                                          <span key={`${variant.name}-${index}`} title={`${variant.name}${variant.undertone ? ` · ${variant.undertone}` : ''}${variant.finish ? ` · ${variant.finish}` : ''}`} className="h-4 w-4 rounded-full border border-gray-300" style={{ backgroundColor: /^#[0-9a-f]{6}$/i.test(variant.hex || '') ? variant.hex : '#e8d8d5' }} />
+                                        ))}
+                                        {product.variants.length > 6 && <span className="text-[11px] text-gray-500">+{product.variants.length - 6}</span>}
+                                      </div>
+                                    )}
 
                                     <div className="mt-2 flex min-h-5 items-center text-base leading-none">
                                         {[1, 2, 3, 4, 5].map((star) => (

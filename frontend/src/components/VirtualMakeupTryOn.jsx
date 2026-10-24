@@ -277,9 +277,9 @@ const VirtualMakeupTryOn = () => {
 
   const handleMakeupTypeChange = (nextType) => {
     setMakeupType(nextType);
-    setSelectedShade(nextType === 'foundation'
-      ? makeupTypes[nextType].shades.find((shade) => shade.undertone === undertone) || makeupTypes[nextType].shades[0]
-      : makeupTypes[nextType].shades[0]);
+    setSelectedShade(
+      makeupTypes[nextType].shades.find((shade) => shade.undertone === undertone) || makeupTypes[nextType].shades[0]
+    );
   };
 
   const clearPhoto = () => {
@@ -291,8 +291,8 @@ const VirtualMakeupTryOn = () => {
 
   const handleUndertoneChange = (nextUndertone) => {
     setUndertone(nextUndertone);
-    const matchingShade = makeupTypes.foundation.shades.find((shade) => shade.undertone === nextUndertone);
-    if (makeupType === 'foundation' && matchingShade) setSelectedShade(matchingShade);
+    const matchingShade = makeupTypes[makeupType].shades.find((shade) => shade.undertone === nextUndertone);
+    if (matchingShade) setSelectedShade(matchingShade);
   };
 
   const lipPath = landmarks ? createLandmarkPath(landmarks, lipLandmarkIndices) : '';
@@ -534,17 +534,15 @@ const VirtualMakeupTryOn = () => {
               ))}
             </div>
 
-            {makeupType === 'foundation' && (
-              <div className="mt-5 rounded border border-[#eee5e1] bg-[#fbf8f5] p-4">
+            <div className="mt-5 rounded border border-[#eee5e1] bg-[#fbf8f5] p-4">
                 <p className="text-xs font-semibold text-gray-800">Choose an undertone</p>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {['Warm', 'Cool', 'Neutral'].map((value) => (
                     <button key={value} type="button" aria-pressed={undertone === value} onClick={() => handleUndertoneChange(value)} className={`rounded border px-2 py-2 text-xs font-medium transition ${undertone === value ? 'border-[#a94f61] bg-[#f8e8e9] text-[#884252]' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`}>{value}</button>
                   ))}
                 </div>
-                <p className="mt-2 text-[11px] leading-5 text-gray-500">Undertone is a self-selected guide; it does not determine a guaranteed match.</p>
+                <p className="mt-2 text-[11px] leading-5 text-gray-500">Undertone is a self-selected guide. Lighting, screens, and camera settings can change how colors appear.</p>
               </div>
-            )}
 
             <p className="mt-6 text-sm font-semibold text-gray-800">Select a shade</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
@@ -571,7 +569,7 @@ const VirtualMakeupTryOn = () => {
             </div>
 
             <Link
-              to={`/products?q=${encodeURIComponent(selectedShade.name)}`}
+              to={`/products?q=${encodeURIComponent(selectedShade.name)}&undertone=${encodeURIComponent(selectedShade.undertone)}&finish=${encodeURIComponent(selectedShade.finish)}`}
               className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-sm bg-[#292526] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#a94f61]"
             >
               Find {selectedShade.name} in the shop

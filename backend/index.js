@@ -130,10 +130,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Stop the other backend process or set a different PORT in backend/.env (for example, PORT=5001).`);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.error('Backend failed to start:', error);
+  process.exitCode = 1;
 });
 
 const reminderTimer = setInterval(() => {
