@@ -137,6 +137,7 @@ const ProfilePage = () => {
     const [appointmentsError, setAppointmentsError] = useState("");
     const [dashboardOrders, setDashboardOrders] = useState([]);
     const [dashboardAppointments, setDashboardAppointments] = useState([]);
+    const [rewardSummary, setRewardSummary] = useState(null);
     const [dashboardLoading, setDashboardLoading] = useState(false);
     const [dashboardError, setDashboardError] = useState("");
     const accountId = storedUser?._id || storedUser?.id;
@@ -165,8 +166,8 @@ const ProfilePage = () => {
         let active = true;
         setDashboardLoading(true);
         setDashboardError("");
-        Promise.allSettled([api.get('/orders/myorders'), api.get('/appointments/mine')])
-            .then(([ordersResult, appointmentsResult]) => {
+        Promise.allSettled([api.get('/orders/myorders'), api.get('/appointments/mine'), api.get('/users/profile/rewards')])
+            .then(([ordersResult, appointmentsResult, rewardsResult]) => {
                 if (!active) return;
                 let failed = false;
                 if (ordersResult.status === 'fulfilled') {
@@ -177,6 +178,8 @@ const ProfilePage = () => {
                     const appointmentData = appointmentsResult.value.data;
                     setDashboardAppointments(Array.isArray(appointmentData) ? appointmentData : []);
                 } else failed = true;
+                if (rewardsResult.status === 'fulfilled') setRewardSummary(rewardsResult.value.data);
+                else failed = true;
                 if (failed) setDashboardError('Some account activity could not be loaded. You can still open each section for details.');
             })
             .finally(() => { if (active) setDashboardLoading(false); });
@@ -205,6 +208,7 @@ const ProfilePage = () => {
         { label: "Dashboard", view: "dashboard" },
         { label: "Orders", to: "/orders" },
         { label: "Appointments", view: "appointments" },
+        { label: "Rewards", view: "rewards" },
         { label: "Saved routines", view: "routines" },
         { label: "Addresses", view: "addresses" },
         { label: "Account details", view: "accountDetails" },
@@ -214,6 +218,7 @@ const ProfilePage = () => {
     const dashboardTiles = [
         { label: "Orders", icon: "orders", to: "/orders" },
         { label: "Appointments", icon: "orders", view: "appointments" },
+        { label: "Beauty rewards", icon: "heart", view: "rewards" },
         { label: "Saved routines", icon: "heart", view: "routines" },
         { label: "Addresses", icon: "address", view: "addresses" },
         { label: "Account details", icon: "user", view: "accountDetails" },
@@ -602,7 +607,30 @@ const ProfilePage = () => {
                     </aside>
 
                     <section className="lg:pl-1">
-                        {activeView === "appointments" ? (
+                        {activeView === "rewards" ? (
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a94f61]">BeautyBliss loyalty</p>
+                                <h2 className="mt-2 text-3xl font-semibold tracking-tight">Beauty rewards</h2>
+                                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">Earn 1 point for every LKR 100 in a successfully paid order. Points do not expire. Unpaid and refunded orders do not earn points.</p>
+                                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                                    <article className="border border-[#ead4d6] bg-[#fff7f7] p-6">
+                                        <p className="text-sm font-medium text-gray-600">Lifetime points earned</p>
+                                        <p className="mt-2 text-4xl font-semibold text-gray-950" aria-live="polite">{rewardSummary ? Number(rewardSummary.points || 0).toLocaleString() : '—'}</p>
+                                        <p className="mt-2 text-xs text-gray-500">Calculated from eligible paid orders on your account.</p>
+                                    </article>
+                                    <article className="border border-[#eee5e1] bg-[#fbf8f5] p-6">
+                                        <p className="text-sm font-medium text-gray-600">Eligible purchases</p>
+                                        <p className="mt-2 text-2xl font-semibold text-gray-950">{rewardSummary ? `${rewardSummary.eligibleOrderCount} orders` : '—'}</p>
+                                        <p className="mt-2 text-xs text-gray-500">LKR {Number(rewardSummary?.eligibleSpend || 0).toLocaleString()} paid total.</p>
+                                    </article>
+                                </div>
+                                <div className="mt-6 border border-gray-200 bg-white p-5">
+                                    <h3 className="font-semibold">Recent points activity</h3>
+                                    {!rewardSummary ? <p className="mt-3 text-sm text-gray-500">Loading rewards…</p> : rewardSummary.recentEligibleOrders?.length ? <ul className="mt-3 divide-y divide-gray-100">{rewardSummary.recentEligibleOrders.map((order, index) => <li key={`${order.orderNo || index}-${order.paidAt || ''}`} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"><span><span className="font-medium">{order.orderNo || 'Paid order'}</span><span className="ml-2 text-gray-500">{order.paidAt ? new Date(order.paidAt).toLocaleDateString() : ''}</span></span><span className="font-semibold text-[#884252]">+{order.points} points</span></li>)}</ul> : <p className="mt-3 text-sm leading-6 text-gray-600">No qualifying paid orders yet. Points will appear here after payment is confirmed.</p>}
+                                </div>
+                                <p className="mt-4 text-xs leading-5 text-gray-500">Points currently track qualifying purchases. They cannot yet be redeemed at checkout.</p>
+                            </div>
+                        ) : activeView === "appointments" ? (
                             <div>
                                 <h2 className="text-3xl font-extrabold uppercase">Appointment history</h2>
                                 <p className="mt-3 text-sm leading-6 text-gray-600">Requests show as pending until the consultant confirms them. Cancellation and rescheduling links are sent by email.</p>
@@ -699,6 +727,7 @@ const ProfilePage = () => {
                                             { label: 'Orders', value: dashboardLoading ? '…' : dashboardOrders.length, to: '/orders', hint: 'View purchases and delivery updates' },
                                             { label: 'Upcoming appointments', value: dashboardLoading ? '…' : upcomingAppointments.length, view: 'appointments', hint: 'Requests and confirmed sessions' },
                                             { label: 'Saved routines', value: savedRoutines.length, view: 'routines', hint: latestSavedRoutine ? 'Latest: ' + latestSavedRoutine.concernTitle : 'Build a routine for your needs' },
+                                            { label: 'Reward points', value: dashboardLoading ? '…' : (rewardSummary?.points || 0).toLocaleString(), view: 'rewards', hint: 'Earn points on paid orders' },
                                             { label: 'Wishlist', value: wishlistItems.length, to: '/wishlist', hint: 'Your saved product picks' },
                                         ].map((item) => {
                                             const card = <><span className="text-sm font-medium text-gray-600">{item.label}</span><span className="mt-2 block text-3xl font-semibold text-gray-950">{item.value}</span><span className="mt-2 block text-xs leading-5 text-gray-500">{item.hint}</span></>;

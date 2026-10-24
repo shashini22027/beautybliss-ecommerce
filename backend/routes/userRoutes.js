@@ -1,6 +1,7 @@
 import express from 'express';
 import { registerUser, authUser, getUserProfile, updateUserProfile, saveUserRoutine, deleteUserRoutine, getAllUsers, updateUserRole, deleteUser, forgotPassword, resetPassword, refreshToken, logoutUser } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
+import { getMyRewards } from '../controllers/rewardController.js';
 const router = express.Router();
 
 router.post('/', registerUser);
@@ -14,6 +15,7 @@ router.put('/:id/role', protect, admin, updateUserRole);
 router.route('/:id').delete(protect, admin, deleteUser);
 router.route('/profile').get(protect, getUserProfile);
 router.route('/profile').put(protect, updateUserProfile);
+router.get('/profile/rewards', protect, getMyRewards);
 router.route('/profile/routines').post(protect, saveUserRoutine);
 router.route('/profile/routines/:routineId').delete(protect, deleteUserRoutine);
 
