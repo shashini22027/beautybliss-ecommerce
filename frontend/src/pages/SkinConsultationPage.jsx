@@ -99,6 +99,32 @@ const SkinConsultationPage = () => {
     notes: '',
   });
   const [submitStatus, setSubmitStatus] = useState('idle');
+  const [submitError, setSubmitError] = useState('');
+  const [appointmentConfig, setAppointmentConfig] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [submittedAppointment, setSubmittedAppointment] = useState(null);
+
+  useEffect(() => {
+    api.get('/appointments/config').then(({ data }) => setAppointmentConfig(data)).catch(() => setAvailabilityError('Appointment availability is temporarily unavailable. Please contact the consultant.'));
+  }, []);
+
+  const loadAppointmentSlots = async (date) => {
+    setAvailableSlots([]);
+    setAvailabilityError('');
+    if (!date) return;
+    setAvailabilityLoading(true);
+    try {
+      const { data } = await api.get('/appointments/availability', { params: { date } });
+      setAvailableSlots(data.slots || []);
+      if (!data.slots?.some((slot) => slot.available)) setAvailabilityError('No appointment slots are available on this date. Choose another working day.');
+    } catch (error) {
+      setAvailabilityError(error.response?.data?.message || 'Could not load appointment availability. Please try again.');
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -198,32 +224,36 @@ const SkinConsultationPage = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'date') {
+      setFormData((prev) => ({ ...prev, date: value, time: '' }));
+      loadAppointmentSlots(value);
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitStatus('sending');
-
-    const message = [
-      'Appointment request',
-      `Concern: ${activeConcern.title}`,
-      `Skin type: ${skinType}`,
-      `Preferred date: ${formData.date}`,
-      `Preferred time: ${formData.time}`,
-      `Consultation mode: ${formData.mode}`,
-      `Notes: ${formData.notes || 'No extra notes provided.'}`,
-    ].join('\n');
+    setSubmitError('');
+    setSubmittedAppointment(null);
 
     try {
-      await api.post('/messages', {
+      const { data } = await api.post('/appointments', {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        company: 'Skin consultation booking',
-        message,
+        date: formData.date,
+        time: formData.time,
+        mode: formData.mode,
+        concern: activeConcern.title,
+        skinType,
+        sensitivity,
+        fragrancePreference,
+        notes: formData.notes,
       });
 
+      setSubmittedAppointment(data);
       setSubmitStatus('success');
+      setAvailableSlots((slots) => slots.map((slot) => slot.time === formData.time ? { ...slot, available: false } : slot));
       setFormData({
         name: '',
         email: '',
@@ -235,6 +265,8 @@ const SkinConsultationPage = () => {
       });
     } catch (error) {
       console.error('Appointment request failed', error);
+      setSubmitError(error.response?.data?.message || 'We could not send the request. Please try again or call the consultant directly.');
+      if (error.response?.status === 409) loadAppointmentSlots(formData.date);
       setSubmitStatus('error');
     }
   };
@@ -258,8 +290,8 @@ const SkinConsultationPage = () => {
           )}
           <p className="flex-1 text-sm font-semibold leading-6">
             {submitStatus === 'success'
-              ? 'Appointment request sent. Our consultant will contact you to confirm.'
-              : 'We could not send the request. Please try again or call the consultant directly.'}
+              ? (submittedAppointment?.customerEmailSent ? 'Your appointment request is pending. We will email you when the consultant confirms it.' : 'Your request is pending. Use the secure management link below to manage it.')
+              : submitError || 'We could not send the request. Please try again or call the consultant directly.'}
           </p>
           <button
             type="button"
@@ -412,7 +444,8 @@ const SkinConsultationPage = () => {
                   <MapPin size={18} className="shrink-0" />
                   <span>{consultant.location}</span>
                 </a>
-                <p className="flex items-center gap-3"><CalendarDays size={18} /> {consultant.hours}</p>
+                <p className="flex items-center gap-3"><CalendarDays size={18} /> {appointmentConfig ? 'Monday–Saturday, 10:00 AM–6:00 PM · 30-minute slots · Sri Lanka time' : consultant.hours}</p>
+                <p className="text-xs leading-5 text-gray-500">Appointments remain requests until confirmed by the consultant. Cancel or reschedule at least 12 hours before your slot.</p>
               </div>
             </div>
           </div>
@@ -434,20 +467,24 @@ const SkinConsultationPage = () => {
               <div>
                 <label className="mb-2 block text-sm font-bold text-gray-700">Consultation mode</label>
                 <select name="mode" value={formData.mode} onChange={handleChange} className="w-full border border-gray-200 px-4 py-3 text-sm focus:border-gray-950 focus:outline-none">
-                  {appointmentModes.map((mode) => (
+                  {(appointmentConfig?.modes || appointmentModes).map((mode) => (
                     <option key={mode} value={mode}>{mode}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-bold text-gray-700">Preferred date</label>
-                <input type="date" name="date" value={formData.date} onChange={handleChange} required className="w-full border border-gray-200 px-4 py-3 text-sm focus:border-gray-950 focus:outline-none" />
+                <input type="date" name="date" min={new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Colombo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())} value={formData.date} onChange={handleChange} required className="w-full border border-gray-200 px-4 py-3 text-sm focus:border-gray-950 focus:outline-none" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-bold text-gray-700">Preferred time</label>
-                <input type="time" name="time" value={formData.time} onChange={handleChange} required className="w-full border border-gray-200 px-4 py-3 text-sm focus:border-gray-950 focus:outline-none" />
+                <select name="time" value={formData.time} onChange={handleChange} required disabled={!formData.date || availabilityLoading || availableSlots.length === 0} className="w-full border border-gray-200 px-4 py-3 text-sm focus:border-gray-950 focus:outline-none disabled:bg-gray-50">
+                  <option value="">{availabilityLoading ? 'Loading available times…' : 'Select an available time'}</option>
+                  {availableSlots.filter((slot) => slot.available).map((slot) => <option key={slot.time} value={slot.time}>{slot.time}</option>)}
+                </select>
               </div>
             </div>
+            {availabilityError && <p className="mt-3 text-sm text-amber-800" role="status">{availabilityError}</p>}
 
             <div className="mt-5">
               <label className="mb-2 block text-sm font-bold text-gray-700">Notes for consultant</label>
@@ -470,6 +507,7 @@ const SkinConsultationPage = () => {
               {submitStatus === 'sending' ? 'Sending Request...' : 'Request Appointment'}
             </button>
           </form>
+          {submittedAppointment && <div className="mt-4 border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950"><p className="font-semibold">Request received · Pending confirmation</p><p className="mt-1">{submittedAppointment.appointment?.date} at {submittedAppointment.appointment?.time} · {submittedAppointment.appointment?.mode}</p><p className="mt-2">{submittedAppointment.customerEmailSent ? 'We emailed your secure appointment management link.' : 'We could not send the email, so save this secure management link to make changes later.'}</p><a href={submittedAppointment.manageUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block font-semibold underline">Manage this appointment</a><p className="mt-2 text-xs">Changes are available until 12 hours before your appointment.</p></div>}
         </div>
       </section>
 

@@ -26,6 +26,8 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import { sendAppointmentReminders } from './controllers/appointmentController.js';
 
 dotenv.config();
 connectDB();
@@ -105,6 +107,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // Serve uploads static directory
 const __dirname = path.resolve();
@@ -118,3 +121,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+const reminderTimer = setInterval(() => {
+  sendAppointmentReminders().catch((error) => console.error('Appointment reminder job failed:', error.message));
+}, 15 * 60 * 1000);
+reminderTimer.unref();
