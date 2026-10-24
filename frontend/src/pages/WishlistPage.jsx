@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Heart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { selectWishlistItems, toggleWishlist as reduxToggleWishlist } from "../redux/slices/wishlistSlice";
+import { addToCart } from "../redux/slices/cartSlice";
 import { formatPrice, parsePrice } from "../utils/currency";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
@@ -50,6 +52,9 @@ const WishlistPage = () => {
     ? rawWishlistItems.filter((item) => item && typeof item === "object")
     : [];
   const toggleWishlist = (product) => dispatch(reduxToggleWishlist(product));
+  const moveToCart = (product) => {
+    dispatch(addToCart({ product, qty: 1 }));
+  };
 
   const [selectedItems, setSelectedItems] = useState(new Set());
 
@@ -243,6 +248,9 @@ const WishlistPage = () => {
                             {typeof product.price === 'number' ? formatPrice(price) : product.price}
                           </span>
                         </div>
+                        <button type="button" onClick={() => moveToCart(product)} disabled={Number(product?.countInStock ?? 1) < 1} className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 bg-[#292526] px-5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50">
+                          <ShoppingCart size={16} /> Move to cart
+                        </button>
                       </article>
                     );
                   })}

@@ -149,6 +149,10 @@ const ProductsPage = () => {
     const [activeCategory, setActiveCategory] = useState("All");
     const [currentPage, setCurrentPage] = useState(0);
     const [sortOrder, setSortOrder] = useState("default");
+    const [brandFilter, setBrandFilter] = useState("All");
+    const [ratingFilter, setRatingFilter] = useState(0);
+    const [inStockOnly, setInStockOnly] = useState(false);
+    const [searchText, setSearchText] = useState("");
     const [priceMin, setPriceMin] = useState(0);
     const [priceMax, setPriceMax] = useState(MAX_PRODUCT_PRICE);
     const [appliedPriceRange, setAppliedPriceRange] = useState([0, MAX_PRODUCT_PRICE]);
@@ -164,6 +168,14 @@ const ProductsPage = () => {
         () => new URLSearchParams(location.search).get("skinConcern") || "",
         [location.search]
     );
+    const searchQuery = useMemo(
+        () => new URLSearchParams(location.search).get("q") || "",
+        [location.search]
+    );
+
+    useEffect(() => {
+        setSearchText(searchQuery);
+    }, [searchQuery]);
 
     const getCategoryId = (value) => {
         if (!value) return "";
@@ -256,11 +268,18 @@ const ProductsPage = () => {
             const matchesConcern =
                 !concernKeywords ||
                 concernKeywords.some((keyword) => productSearchText.includes(keyword));
+            const queryTerms = searchText.trim().toLowerCase().split(/\s+/).filter(Boolean);
+            const matchesSearch = queryTerms.every((term) => productSearchText.includes(term));
             const price = parsePrice(product.price);
             const matchesPrice =
                 price >= appliedPriceRange[0] && price <= appliedPriceRange[1];
+            const brandName = getTextValue(product.brand, "");
+            const matchesBrand = brandFilter === "All" || brandName === brandFilter;
+            const matchesRating = Number(product.rating || 0) >= ratingFilter;
+            const stockCount = Number(product.countInStock ?? product.stock ?? 0);
+            const matchesAvailability = !inStockOnly || stockCount > 0;
 
-            return matchesCategory && matchesConcern && matchesPrice;
+            return matchesCategory && matchesConcern && matchesSearch && matchesPrice && matchesBrand && matchesRating && matchesAvailability;
         });
 
         switch (sortOrder) {
@@ -274,14 +293,17 @@ const ProductsPage = () => {
                 filtered.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
                 break;
             case "latest":
-                filtered.reverse(); // Simplified 'latest' logic based on array order
+                filtered.sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0));
+                break;
+            case "popular":
+                filtered.sort((a, b) => (Number(b.numReviews || 0) + (b.isBestSeller ? 1000 : 0)) - (Number(a.numReviews || 0) + (a.isBestSeller ? 1000 : 0)));
                 break;
             default:
                 break;
         }
 
         return filtered;
-    }, [activeCategory, appliedPriceRange, categoryAliases, products, skinConcernQuery, sortOrder]);
+    }, [activeCategory, appliedPriceRange, brandFilter, categoryAliases, inStockOnly, products, ratingFilter, searchText, skinConcernQuery, sortOrder]);
 
     const pageCount = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage));
     const visibleProducts = filteredProducts.slice(
@@ -333,6 +355,7 @@ const ProductsPage = () => {
 
     const formatRangePrice = (price) =>
         `₨${price.toLocaleString("en-US")}`;
+    const availableBrands = useMemo(() => [...new Set(products.map((product) => getTextValue(product.brand, "")).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [products]);
     const priceMinPosition = (priceMin / MAX_PRODUCT_PRICE) * 100;
     const priceMaxPosition = (priceMax / MAX_PRODUCT_PRICE) * 100;
 
@@ -439,22 +462,29 @@ const ProductsPage = () => {
                 </aside>
 
                 <div>
-                <div className="mb-10 flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
-                    <p className="text-sm font-semibold text-gray-500">
-                        Showing {visibleProducts.length} of {filteredProducts.length} products
-                    </p>
+                <div className="mb-10 flex flex-col gap-4 border-b border-gray-200 pb-6">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm font-semibold text-gray-500">Showing {visibleProducts.length} of {filteredProducts.length} products</p>
+                    <input value={searchText} onChange={(event) => { setSearchText(event.target.value); setCurrentPage(0); }} placeholder="Search names, brands, categories, keywords" aria-label="Search products" className="h-11 w-full border border-gray-200 bg-white px-4 text-sm sm:max-w-sm" />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                    <select value={brandFilter} onChange={(event) => { setBrandFilter(event.target.value); setCurrentPage(0); }} aria-label="Filter by brand" className="h-10 border border-gray-200 bg-white px-3 text-sm"><option value="All">All brands</option>{availableBrands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}</select>
+                    <select value={ratingFilter} onChange={(event) => { setRatingFilter(Number(event.target.value)); setCurrentPage(0); }} aria-label="Minimum rating" className="h-10 border border-gray-200 bg-white px-3 text-sm"><option value={0}>Any rating</option><option value={4}>4 stars & up</option><option value={3}>3 stars & up</option></select>
+                    <label className="inline-flex h-10 items-center gap-2 border border-gray-200 px-3 text-sm"><input type="checkbox" checked={inStockOnly} onChange={(event) => setInStockOnly(event.target.checked)} />In stock</label>
                     <select
-                        className="h-11 w-full border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 outline-none focus:border-gray-950 md:w-64"
+                        className="h-10 border border-gray-200 bg-white px-3 text-sm font-medium text-gray-600 outline-none focus:border-gray-950"
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
                         aria-label="Sort products"
                     >
                         <option value="default">Default sorting</option>
                         <option value="rating">Sort by average rating</option>
+                        <option value="popular">Most popular</option>
                         <option value="latest">Sort by latest</option>
                         <option value="price-low">Sort by price: low to high</option>
                         <option value="price-high">Sort by price: high to low</option>
                     </select>
+                    </div>
                 </div>
                 {loading ? (
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

@@ -331,6 +331,10 @@ const ProductDetailsPage = () => {
   const color = hasColorVariants ? getTextValue(selectedVariant?.name) : getTextValue(product.color);
   const country = getTextValue(product.country);
   const description = product.description || 'Discover the beauty essentials you need for an elevated daily routine.';
+  const ingredients = product.ingredients || product.keyIngredients || '';
+  const howToUse = product.howToUse || product.usageInstructions || '';
+  const size = product.size || product.volume || product.weight || '';
+  const deliveryInfo = product.deliveryInfo || '';
   const mainImage = getImageUrl(activeImage || selectedVariant?.image || allImages[0] || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80');
   const activeImageIndex = Math.max(0, allImages.indexOf(getImageUrl(activeImage || mainImage)));
   const thumbnailStart = Math.min(
@@ -625,6 +629,8 @@ const ProductDetailsPage = () => {
                 </>
               )}
 
+              {size && <><span className="font-bold text-gray-950">Size:</span><span>{size}</span></>}
+
               <span className="font-bold text-gray-950">Availability:</span>
               <span>
                 {stockCount === 0 ? (
@@ -641,6 +647,9 @@ const ProductDetailsPage = () => {
                   </span>
                 )}
               </span>
+
+              <span className="font-bold text-gray-950">Delivery:</span>
+              <span>{deliveryInfo || 'Islandwide delivery available. Estimated timing and fees are shown at checkout.'}</span>
 
               {product.compareAtPrice > 0 && product.compareAtPrice > price && (
                 <>
