@@ -64,10 +64,66 @@ const getUserProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       isAdmin: user.isAdmin,
+      addresses: user.addresses || { billing: null, shipping: null },
+      savedRoutines: user.savedRoutines || [],
     });
   } else {
     res.status(404).json({ message: 'User not found' });
   }
+});
+
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const { name, email, addresses, currentPassword, newPassword } = req.body;
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : user.email;
+  const changesSensitiveData = normalizedEmail !== user.email || Boolean(newPassword);
+
+  if (changesSensitiveData && (!currentPassword || !(await user.matchPassword(currentPassword)))) {
+    return res.status(400).json({ message: 'Enter your current password to change your email or password.' });
+  }
+  if (typeof name === 'string' && name.trim()) user.name = name.trim();
+  if (typeof email === 'string' && /^\S+@\S+\.\S+$/.test(normalizedEmail)) user.email = normalizedEmail;
+  else if (typeof email === 'string') return res.status(400).json({ message: 'Enter a valid email address.' });
+  if (addresses && typeof addresses === 'object') {
+    if (Object.hasOwn(addresses, 'billing')) user.addresses.billing = addresses.billing;
+    if (Object.hasOwn(addresses, 'shipping')) user.addresses.shipping = addresses.shipping;
+    user.markModified('addresses');
+  }
+  if (newPassword) {
+    if (typeof newPassword !== 'string' || newPassword.length < 8) return res.status(400).json({ message: 'New password must be at least 8 characters.' });
+    user.password = newPassword;
+  }
+
+  try {
+    await user.save();
+  } catch (error) {
+    if (error.code === 11000) return res.status(409).json({ message: 'That email address is already registered.' });
+    throw error;
+  }
+  res.json({ _id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin, addresses: user.addresses, savedRoutines: user.savedRoutines });
+});
+
+const saveUserRoutine = asyncHandler(async (req, res) => {
+  const { concernId, concernTitle, skinType, sensitivity, fragrancePreference } = req.body;
+  if (![concernId, concernTitle, skinType].every((value) => typeof value === 'string' && value.trim())) {
+    return res.status(400).json({ message: 'Routine details are incomplete.' });
+  }
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  user.savedRoutines = user.savedRoutines.filter((routine) => !(routine.concernId === concernId && routine.skinType === skinType));
+  user.savedRoutines.push({ concernId, concernTitle, skinType, sensitivity, fragrancePreference, savedAt: new Date() });
+  if (user.savedRoutines.length > 20) user.savedRoutines.shift();
+  await user.save();
+  res.status(201).json({ savedRoutines: user.savedRoutines });
+});
+
+const deleteUserRoutine = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  user.savedRoutines = user.savedRoutines.filter((routine) => String(routine._id) !== req.params.routineId);
+  await user.save();
+  res.json({ savedRoutines: user.savedRoutines });
 });
 
 // @desc    Get all users
@@ -232,6 +288,9 @@ export {
   registerUser,
   authUser,
   getUserProfile,
+  updateUserProfile,
+  saveUserRoutine,
+  deleteUserRoutine,
   getAllUsers,
   deleteUser,
   forgotPassword,

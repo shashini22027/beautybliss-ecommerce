@@ -45,7 +45,7 @@ const termsContent = [
       {
         subtitle: "3.2 Payment Security",
         content:
-          "All payments are processed securely through our payment gateway. You are responsible for maintaining the confidentiality of your payment information. BeautyBliss is not liable for unauthorized charges resulting from your disclosure of payment details.",
+          "Card payments are handled by Stripe through its payment interface. BeautyBliss does not store raw card numbers or CVVs. An order is treated as paid only after the server verifies the payment status with the payment provider.",
       },
     ],
   },
@@ -72,7 +72,7 @@ const termsContent = [
       {
         subtitle: "5.1 Eligibility Criteria",
         content:
-          "Return or exchange eligibility depends on product condition, seal integrity, hygiene requirements, expiry period, and inspection results. Products must be unused, unopened, and in original packaging to qualify for returns unless the item is faulty or incorrectly shipped.",
+          "Return eligibility and the request window are described in our Return & Refund Policy. The currently published policy asks customers to contact support within 7 days of delivery. The item must generally be unused, unopened, and in its original packaging, subject to the policy's defective or incorrect item process.",
       },
       {
         subtitle: "5.2 Cosmetic Products",
@@ -88,7 +88,7 @@ const termsContent = [
       {
         subtitle: "6.1 Account Security",
         content:
-          "You are responsible for maintaining the confidentiality of your account login credentials and password. You are fully liable for all activity that occurs under your account. You must promptly notify BeautyBliss of any unauthorized access or suspected account compromise.",
+          "Keep your login credentials private and use a strong, unique password. Contact BeautyBliss promptly if you suspect unauthorized access. We may ask you to verify account ownership before making sensitive account changes.",
       },
       {
         subtitle: "6.2 Account Misuse",
@@ -126,6 +126,34 @@ const termsContent = [
         subtitle: "8.2 Notification",
         content:
           "For significant changes to these terms, we will notify you by email or through prominent website notices. We encourage you to review these terms periodically to stay informed of any updates.",
+      },
+    ],
+  },
+  {
+    section: 9,
+    title: "Consultations and Cosmetic Guidance",
+    subsections: [
+      {
+        subtitle: "9.1 Appointment Requests",
+        content: "Submitting a consultation form creates a pending request, not a confirmed appointment. The appointment is confirmed only after the consultant changes its status and sends a confirmation. Available times are shown in Sri Lanka time. Customers can cancel or reschedule online up to 12 hours before the appointment using the secure link sent by email.",
+      },
+      {
+        subtitle: "9.2 Skincare and Shade Previews",
+        content: "Routine suggestions and virtual makeup previews are informational cosmetic tools. They are not medical advice, diagnosis, or treatment, and a shade preview does not guarantee an exact product match. Review product ingredients and patch test as appropriate; consult a qualified health professional about a medical skin concern.",
+      },
+    ],
+  },
+  {
+    section: 10,
+    title: "Account Features and Site Content",
+    subsections: [
+      {
+        subtitle: "10.1 Account and Guest Features",
+        content: "Registered customers can manage profile details, saved addresses, saved routines, wishlist items, and account order history. Some shopping features are available without signing in and may be stored only in the browser used to access the site.",
+      },
+      {
+        subtitle: "10.2 Educational Content",
+        content: "Beauty articles are general educational material. Product links and recommendations are provided for convenience and do not guarantee suitability for every person or skin type. Check the product listing and packaging for current ingredients, availability, and directions.",
       },
     ],
   },

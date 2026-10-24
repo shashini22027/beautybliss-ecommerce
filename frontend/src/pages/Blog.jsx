@@ -1,12 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { MessageSquare, Share2, User } from "lucide-react";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
+
+const categoryFor = (post) => {
+  if (post.category && post.category !== 'Beauty') return post.category;
+  const text = `${post.title || ''} ${post.excerpt || ''}`.toLowerCase();
+  if (/ingredient|retinol|niacinamide|vitamin c/.test(text)) return 'Ingredients';
+  if (/tutorial|step.by.step|how to|guide/.test(text)) return 'Tutorials';
+  if (/makeup|foundation|lipstick|shade|mascara/.test(text)) return 'Makeup';
+  if (/skin|skincare|cleanser|moistur|spf|acne/.test(text)) return 'Skincare';
+  return 'Beauty';
+};
+
+const readingMinutes = (post) => Math.max(1, Math.ceil(`${post.title || ''} ${post.excerpt || ''} ${post.description || ''}`.trim().split(/\s+/).length / 200));
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
   useEffect(() => {
     document.title = "Beauty Blog | BeautyBliss";
     fetchBlogs();
@@ -31,6 +45,14 @@ const Blog = () => {
   const getBlogPath = (post) => `/blog/${encodeURIComponent(post.slug || post._id)}`;
 
   const fallbackImage = "/images/banner.jpg";
+  const categories = useMemo(() => ['All', ...new Set(blogs.map(categoryFor))], [blogs]);
+  const visibleBlogs = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return blogs.filter((post) => {
+      const searchable = `${post.title || ''} ${post.excerpt || ''} ${post.description || ''} ${post.author || ''} ${categoryFor(post)}`.toLowerCase();
+      return (activeCategory === 'All' || categoryFor(post) === activeCategory) && (!normalizedQuery || searchable.includes(normalizedQuery));
+    });
+  }, [activeCategory, blogs, query]);
 
   return (
     <main className="min-h-screen bg-white">
@@ -73,8 +95,19 @@ const Blog = () => {
               Articles
             </h2>
 
+            <div className="mb-8 space-y-4">
+              <label className="block max-w-xl text-sm font-medium text-gray-700">Search articles
+                <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search skincare, ingredients, makeup…" className="mt-2 w-full rounded border border-gray-300 px-4 py-3 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-100" />
+              </label>
+              <div className="flex flex-wrap gap-2" aria-label="Filter articles by category">
+                {categories.map((category) => <button key={category} type="button" onClick={() => setActiveCategory(category)} aria-pressed={activeCategory === category} className={`rounded-full border px-4 py-2 text-sm transition ${activeCategory === category ? 'border-[#9f234f] bg-[#9f234f] text-white' : 'border-gray-300 text-gray-700 hover:border-[#9f234f]'}`}>{category}</button>)}
+              </div>
+            </div>
+
+            {visibleBlogs.length === 0 ? <p className="rounded-lg border border-gray-200 p-8 text-center text-gray-600">No articles match your search. Try another term or category.</p> :
+
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {blogs.map((post) => (
+              {visibleBlogs.map((post) => (
                 <article
                   key={post._id}
                   className="group flex flex-col rounded-xl bg-white shadow-md transition-shadow hover:shadow-lg overflow-hidden border border-gray-100"
@@ -85,6 +118,8 @@ const Blog = () => {
                       alt={post.title}
                       onError={(e) => { e.target.src = fallbackImage }}
                       className="h-64 w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                     
                     {/* Date Badge */}
@@ -100,7 +135,7 @@ const Blog = () => {
                     {/* Category Overlay */}
                     <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-black px-4 py-1.5 shadow-lg">
                       <span className="text-xs font-bold tracking-widest text-white uppercase">
-                        BEAUTY & SKINCARE
+                        {categoryFor(post)}
                       </span>
                     </div>
                   </div>
@@ -115,8 +150,9 @@ const Blog = () => {
                     <div className="relative mb-5 flex items-center justify-center gap-4 text-sm text-gray-400">
                       <span className="inline-flex items-center gap-2">
                         By <User size={18} className="fill-gray-300 text-gray-300" />
-                        <span className="text-gray-500">BeautyBliss.com</span>
+                        <span className="text-gray-500">{post.author || 'BeautyBliss Editorial'}</span>
                       </span>
+                      <span className="whitespace-nowrap">{readingMinutes(post)} min read</span>
                       <Link
                         to={`${getBlogPath(post)}#comments`}
                         className="relative inline-flex items-center gap-1.5 text-gray-500 transition hover:text-pink-600"
@@ -169,6 +205,7 @@ const Blog = () => {
                 </article>
               ))}
             </div>
+            }
           </section>
         </>
       )}

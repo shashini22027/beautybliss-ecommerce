@@ -129,7 +129,7 @@ const getBlogById = asyncHandler(async (req, res) => {
 // @route   POST /api/blogs
 // @access  Private/Admin
 const createBlog = asyncHandler(async (req, res) => {
-  const { title, excerpt, description, image, date } = req.body;
+  const { title, excerpt, description, image, date, category, author } = req.body;
 
   const slug = title
     .toLowerCase()
@@ -142,6 +142,8 @@ const createBlog = asyncHandler(async (req, res) => {
     excerpt,
     description,
     image,
+    category: category || 'Beauty',
+    author: author || 'BeautyBliss Editorial',
     date: date || Date.now(),
   });
 
@@ -153,7 +155,7 @@ const createBlog = asyncHandler(async (req, res) => {
 // @route   PUT /api/blogs/:id
 // @access  Private/Admin
 const updateBlog = asyncHandler(async (req, res) => {
-  const { title, excerpt, description, image, date, slug } = req.body;
+  const { title, excerpt, description, image, date, slug, category, author } = req.body;
 
   const blog = await Blog.findById(req.params.id);
 
@@ -163,6 +165,8 @@ const updateBlog = asyncHandler(async (req, res) => {
     blog.excerpt = excerpt || blog.excerpt;
     blog.description = description || blog.description;
     blog.image = image || blog.image;
+    blog.category = category || blog.category;
+    blog.author = author || blog.author;
     if (date) {
         blog.date = date;
     }

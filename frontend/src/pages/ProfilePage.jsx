@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import api from "../services/api";
+import { loginSuccess } from "../redux/slices/authSlice";
 
 const Icon = ({ name, className = "w-5 h-5" }) => {
     const paths = {
@@ -112,6 +115,7 @@ const getInitialAccountDetails = (storedUser) => {
 
 const ProfilePage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { search } = useLocation();
     const passwordReset = new URLSearchParams(search).get("password_reset") === "true";
     const storedUser = getStoredUser();
@@ -124,12 +128,30 @@ const ProfilePage = () => {
     const [accountDetails, setAccountDetails] = useState(getInitialAccountDetails(storedUser));
     const [accountMessage, setAccountMessage] = useState("");
     const [accountError, setAccountError] = useState("");
+    const [accountSaving, setAccountSaving] = useState(false);
+    const [savedRoutines, setSavedRoutines] = useState([]);
+    const [appointments, setAppointments] = useState([]);
+    const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+    const [appointmentsError, setAppointmentsError] = useState("");
+    const accountId = storedUser?._id || storedUser?.id;
 
     useEffect(() => {
         if (!storedUser) {
             navigate("/login?redirect=/profile");
         }
     }, [navigate, storedUser]);
+
+    useEffect(() => {
+        if (!accountId) return;
+        api.get('/users/profile').then(({ data }) => {
+            const nameParts = String(data.name || '').trim().split(/\s+/).filter(Boolean);
+            setAccountDetails((current) => ({ ...current, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' '), displayName: data.name || '', email: data.email || '' }));
+            setAddressForms((current) => ({ billing: data.addresses?.billing || current.billing, shipping: data.addresses?.shipping || current.shipping }));
+            setSavedRoutines(data.savedRoutines || []);
+            const latestUser = getStoredUser();
+            dispatch(loginSuccess({ ...latestUser, ...data, token: latestUser?.token }));
+        }).catch((error) => setAccountError(error.response?.data?.message || 'Could not load your saved account details.'));
+    }, [accountId, dispatch]);
 
     const logoutHandler = () => {
         const keysToRemove = [
@@ -143,6 +165,8 @@ const ProfilePage = () => {
     const menuItems = [
         { label: "Dashboard", view: "dashboard" },
         { label: "Orders", to: "/orders" },
+        { label: "Appointments", view: "appointments" },
+        { label: "Saved routines", view: "routines" },
         { label: "Addresses", view: "addresses" },
         { label: "Account details", view: "accountDetails" },
         { label: "Wishlist", to: "/wishlist" },
@@ -150,6 +174,8 @@ const ProfilePage = () => {
 
     const dashboardTiles = [
         { label: "Orders", icon: "orders", to: "/orders" },
+        { label: "Appointments", icon: "orders", view: "appointments" },
+        { label: "Saved routines", icon: "heart", view: "routines" },
         { label: "Addresses", icon: "address", view: "addresses" },
         { label: "Account details", icon: "user", view: "accountDetails" },
         { label: "Wishlist", icon: "heart", to: "/wishlist" },
@@ -166,22 +192,60 @@ const ProfilePage = () => {
         }));
     };
 
-    const saveAddress = (event, type) => {
+    const saveAddress = async (event, type) => {
         event.preventDefault();
-        localStorage.setItem(`${type}Address`, JSON.stringify(addressForms[type]));
-        setActiveView("addresses");
+        setAccountSaving(true);
+        setAccountError("");
+        try {
+            const { data } = await api.put('/users/profile', { addresses: { [type]: addressForms[type] } });
+            localStorage.setItem(`${type}Address`, JSON.stringify(addressForms[type]));
+            setAddressForms((current) => ({ ...current, [type]: data.addresses?.[type] || current[type] }));
+            setAccountMessage(`${type === 'billing' ? 'Billing' : 'Shipping'} address saved to your account.`);
+            setActiveView("addresses");
+        } catch (error) {
+            setAccountError(error.response?.data?.message || 'Could not save this address. Please try again.');
+        } finally { setAccountSaving(false); }
+    };
+
+    useEffect(() => {
+        if (activeView !== 'appointments') return;
+        let active = true;
+        setAppointmentsLoading(true);
+        setAppointmentsError('');
+        api.get('/appointments/mine').then(({ data }) => {
+            if (active) setAppointments(Array.isArray(data) ? data : []);
+        }).catch((error) => {
+            if (active) setAppointmentsError(error.response?.data?.message || 'Could not load your appointment history.');
+        }).finally(() => { if (active) setAppointmentsLoading(false); });
+        return () => { active = false; };
+    }, [activeView]);
+
+    const removeSavedRoutine = async (routineId) => {
+        try {
+            const { data } = await api.delete(`/users/profile/routines/${routineId}`);
+            setSavedRoutines(data.savedRoutines || []);
+        } catch (error) {
+            setAccountError(error.response?.data?.message || 'Could not remove the saved routine.');
+        }
     };
 
     const handleAccountChange = (field, value) => {
-        setAccountDetails((currentDetails) => ({
-            ...currentDetails,
-            [field]: value,
-        }));
+        setAccountDetails((currentDetails) => {
+            const updated = { ...currentDetails, [field]: value };
+            if (field === 'firstName' || field === 'lastName') {
+                updated.displayName = [updated.firstName, updated.lastName].filter(Boolean).join(' ');
+            } else if (field === 'displayName') {
+                const nameParts = value.trim().split(/\s+/).filter(Boolean);
+                updated.firstName = nameParts[0] || '';
+                updated.lastName = nameParts.slice(1).join(' ');
+            }
+            return updated;
+        });
         setAccountMessage("");
         setAccountError("");
     };
 
-    const saveAccountDetails = (event) => {
+    const saveAccountDetails = async (event) => {
         event.preventDefault();
         setAccountMessage("");
         setAccountError("");
@@ -190,21 +254,25 @@ const ProfilePage = () => {
             setAccountError("New passwords do not match.");
             return;
         }
-
-        const updatedUser = {
-            ...storedUser,
-            name: accountDetails.displayName,
-            email: accountDetails.email,
-        };
-
-        localStorage.setItem("userInfo", JSON.stringify(updatedUser));
-        setAccountDetails((currentDetails) => ({
-            ...currentDetails,
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        }));
-        setAccountMessage("Account details saved.");
+        const sensitiveChange = accountDetails.email !== storedUser?.email || Boolean(accountDetails.newPassword);
+        if (sensitiveChange && !accountDetails.currentPassword) {
+            setAccountError('Enter your current password to change your email or password.');
+            return;
+        }
+        setAccountSaving(true);
+        try {
+            const { data } = await api.put('/users/profile', {
+                name: accountDetails.displayName,
+                email: accountDetails.email,
+                currentPassword: accountDetails.currentPassword,
+                newPassword: accountDetails.newPassword || undefined,
+            });
+            dispatch(loginSuccess({ ...storedUser, ...data, token: storedUser.token }));
+            setAccountDetails((currentDetails) => ({ ...currentDetails, currentPassword: "", newPassword: "", confirmPassword: "" }));
+            setAccountMessage("Account details saved to your account.");
+        } catch (error) {
+            setAccountError(error.response?.data?.message || 'Could not save your account details. Please try again.');
+        } finally { setAccountSaving(false); }
     };
 
     const renderAccountDetailsForm = () => (
@@ -301,10 +369,16 @@ const ProfilePage = () => {
 
             <button
                 type="submit"
-                className="mt-8 h-[52px] bg-[#2b2b2b] px-9 text-base font-extrabold uppercase text-white transition hover:bg-pink-600"
+                disabled={accountSaving}
+                className="mt-8 h-[52px] bg-[#2b2b2b] px-9 text-base font-extrabold uppercase text-white transition hover:bg-pink-600 disabled:cursor-wait disabled:opacity-60"
             >
-                Save changes
+                {accountSaving ? 'Saving…' : 'Save changes'}
             </button>
+            <section className="mt-12 border-t border-gray-200 pt-8">
+                <h3 className="text-lg font-semibold text-gray-900">Privacy and account removal</h3>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">To request account deletion or help with personal information, contact support. Include the email on your account; support may need to confirm your identity and review open orders or appointments.</p>
+                <a href={`mailto:consultant@beautybliss.com?subject=${encodeURIComponent('Account deletion request')}&body=${encodeURIComponent(`Please help me with an account deletion request. Account email: ${storedUser?.email || ''}`)}`} className="mt-3 inline-block text-sm font-semibold text-rose-700 underline">Request account deletion</a>
+            </section>
         </form>
     );
 
@@ -314,6 +388,7 @@ const ProfilePage = () => {
 
         return (
             <form onSubmit={(event) => saveAddress(event, type)} className="max-w-[1100px]">
+                {accountError && <div role="alert" className="mb-6 border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{accountError}</div>}
                 <h2 className="mb-8 text-3xl font-extrabold">{title}</h2>
 
                 <div className="grid gap-8 md:grid-cols-2">
@@ -418,9 +493,10 @@ const ProfilePage = () => {
 
                 <button
                     type="submit"
-                    className="mt-8 h-[52px] bg-[#2b2b2b] px-9 text-base font-extrabold uppercase text-white transition hover:bg-pink-600"
+                    disabled={accountSaving}
+                    className="mt-8 h-[52px] bg-[#2b2b2b] px-9 text-base font-extrabold uppercase text-white transition hover:bg-pink-600 disabled:cursor-wait disabled:opacity-60"
                 >
-                    Save address
+                    {accountSaving ? 'Saving…' : 'Save address'}
                 </button>
             </form>
         );
@@ -487,7 +563,20 @@ const ProfilePage = () => {
                     </aside>
 
                     <section className="lg:pl-1">
-                        {activeView === "addresses" ? (
+                        {activeView === "appointments" ? (
+                            <div>
+                                <h2 className="text-3xl font-extrabold uppercase">Appointment history</h2>
+                                <p className="mt-3 text-sm leading-6 text-gray-600">Requests show as pending until the consultant confirms them. Cancellation and rescheduling links are sent by email.</p>
+                                {appointmentsLoading ? <p className="mt-8 text-sm text-gray-500">Loading appointments…</p> : appointmentsError ? <p role="alert" className="mt-6 bg-red-50 p-4 text-sm text-red-700">{appointmentsError}</p> : appointments.length === 0 ? <p className="mt-8 border border-gray-200 p-8 text-center text-sm text-gray-500">No appointments found for this account.</p> : <div className="mt-6 space-y-4">{appointments.map((appointment) => <article key={appointment._id} className="rounded-lg border border-gray-200 p-5"><div className="flex flex-wrap justify-between gap-3"><h3 className="font-semibold">{appointment.appointmentDate} at {appointment.time} · {appointment.mode}</h3><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold capitalize text-amber-900">{appointment.status}</span></div><p className="mt-2 text-sm text-gray-600">{appointment.concern || 'Skin consultation'} · Sri Lanka time</p></article>)}</div>}
+                            </div>
+                        ) : activeView === "routines" ? (
+                            <div>
+                                <h2 className="text-3xl font-extrabold uppercase">Saved skincare routines</h2>
+                                <p className="mt-3 text-sm leading-6 text-gray-600">Your saved routines are attached to your account and can be reopened from the skin consultation page.</p>
+                                {accountError && <p role="alert" className="mt-4 bg-red-50 p-3 text-sm text-red-700">{accountError}</p>}
+                                {savedRoutines.length === 0 ? <p className="mt-8 border border-gray-200 p-8 text-center text-sm text-gray-500">No routines saved yet. Visit <Link className="font-semibold text-pink-700 underline" to="/skin-consultation">Skin consultation</Link> to create one.</p> : <div className="mt-6 space-y-4">{savedRoutines.map((routine) => <article key={routine._id || `${routine.concernId}-${routine.skinType}`} className="flex flex-wrap items-center justify-between gap-4 border border-gray-200 p-5"><div><h3 className="font-semibold">{routine.concernTitle}</h3><p className="mt-1 text-sm text-gray-600">{routine.skinType} skin · {routine.sensitivity || 'Sensitivity not set'} · Saved {new Date(routine.savedAt).toLocaleDateString()}</p></div><div className="flex items-center gap-4"><Link to="/skin-consultation" className="text-sm font-semibold text-pink-700 underline">Open consultation</Link><button type="button" onClick={() => removeSavedRoutine(routine._id)} className="text-sm font-semibold text-red-700 underline">Remove</button></div></article>)}</div>}
+                            </div>
+                        ) : activeView === "addresses" ? (
                             <>
                                 <p className="text-lg leading-8 text-gray-600">
                                     The following addresses will be used on the checkout page by default.
@@ -508,9 +597,7 @@ const ProfilePage = () => {
                                                 <Icon name="edit" className="h-5 w-5" />
                                                 {action}
                                             </button>
-                                            <p className="mt-8 text-xl italic leading-8 text-gray-600">
-                                                You have not set up this type of address yet.
-                                            </p>
+                                            {addressForms[title === 'Billing Address' ? 'billing' : 'shipping']?.street ? <address className="mt-6 not-italic leading-7 text-gray-600">{addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].firstName} {addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].lastName}<br />{addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].street}<br />{addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].city}, {addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].district}<br />{addressForms[title === 'Billing Address' ? 'billing' : 'shipping'].phone}</address> : <p className="mt-8 text-xl italic leading-8 text-gray-600">You have not set up this type of address yet.</p>}
                                         </section>
                                     ))}
                                 </div>

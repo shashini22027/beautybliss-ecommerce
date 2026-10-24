@@ -9,7 +9,7 @@ const policyContent = [
       {
         subtitle: "1.1 Personal Identification Information",
         content:
-          "We may collect personal identification information from you when you visit our Website, register an account, place an order, subscribe to our newsletter, respond to a survey, or fill out a form. The personal identification information we collect may include your name, email address, mailing address, phone number, and payment details.",
+          "Depending on how you use BeautyBliss, we collect account details such as your name and email; contact and delivery details; order, wishlist, saved skincare routine, and appointment information; newsletter preferences; and messages or comments you submit. Card numbers and CVVs are entered into Stripe's payment interface. BeautyBliss stores order and payment status details, not raw card numbers or CVVs.",
       },
       {
         subtitle: "1.2 Non-personal Identification Information",
@@ -25,7 +25,7 @@ const policyContent = [
       {
         subtitle: "2.1 Purpose of Information",
         content:
-          "We collect and use your personal identification information for the following purposes: To process and fulfill your orders; To communicate with you regarding your purchases and deliveries; To personalize your experience and provide you with personalized shopping recommendations; To improve our customer service and respond to your requests; To send periodic emails regarding your orders or to provide you with marketing and promotional materials.",
+          "We use this information to operate your account, save addresses and skincare routines, process orders and payments, provide delivery updates, respond to support requests, manage consultation requests and reminders, publish comments you submit, and send newsletters when you subscribe. Consultation suggestions are cosmetic guidance and are not a medical assessment.",
       },
       {
         subtitle: "2.2 Non-personal Use",
@@ -41,12 +41,12 @@ const policyContent = [
       {
         subtitle: "3.1 Data Protection",
         content:
-          "We adopt appropriate data collection, storage, and processing practices and security measures to protect against unauthorized access, alteration, disclosure, or destruction of your personal information, username, password, transaction information, and data stored on our Website.",
+          "Account passwords are stored as salted password hashes. The application uses service providers for database hosting, payment processing, email, and image storage. No online service can guarantee absolute security; use a unique password and contact support if you suspect account misuse.",
       },
       {
         subtitle: "3.2 Encryption Technology",
         content:
-          "We use industry-standard Secure Sockets Layer (SSL) technology to encrypt sensitive information transmitted between your browser and our Website.",
+          "The live site should be accessed over HTTPS. Local development may use HTTP. Stripe handles card entry and payment processing through its payment interface; BeautyBliss does not store raw card numbers or CVVs.",
       },
     ],
   },
@@ -57,7 +57,7 @@ const policyContent = [
       {
         subtitle: "4.1 Information Sharing",
         content:
-          "We do not sell, trade, or rent your personal identification information to others. We may share generic aggregated demographic information not linked to any personal identification information regarding visitors and users with our business partners, trusted affiliates, and advertisers.",
+          "BeautyBliss uses service providers needed to run the store, including Stripe for payments, database and hosting providers, email delivery, and image storage. They process information needed to provide those services. We do not use consultation photos for advertising or clinical analysis.",
       },
       {
         subtitle: "4.2 Disclosure in Specific Situations",
@@ -90,6 +90,34 @@ const policyContent = [
         subtitle: "6.1 Policy Updates",
         content:
           "We reserve the right to update or change this Privacy Policy at any time. When we do, we will provide notice of the changes by updating the 'Last Updated' date of this Privacy Policy.",
+      },
+    ],
+  },
+  {
+    section: 7,
+    title: "Photos, Browser Storage, and Comments",
+    subsections: [
+      {
+        subtitle: "7.1 Virtual Makeup Preview",
+        content: "If you choose the virtual makeup preview, camera frames or a selected photo are processed in your browser for the visual preview. The preview does not upload the photo to BeautyBliss, does not analyze skin health, and does not guarantee an exact shade. You can remove the selected image by resetting or closing the preview.",
+      },
+      {
+        subtitle: "7.2 Browser Storage and Public Comments",
+        content: "The site uses browser storage to keep local shopping and session preferences. Guest shopping data may stay on the device you use. Blog comments display the name and comment you submit publicly; do not include private information in a comment.",
+      },
+    ],
+  },
+  {
+    section: 8,
+    title: "Your Choices and Privacy Requests",
+    subsections: [
+      {
+        subtitle: "8.1 Access, Correction, and Deletion Requests",
+        content: "You can edit account details, saved addresses, and saved routines from My Account. For help accessing or correcting other information, or to request account deletion, contact BeautyBliss through the Contact page. Some transaction or support records may need to be retained to manage orders and resolve disputes.",
+      },
+      {
+        subtitle: "8.2 Newsletter Preferences",
+        content: "Newsletter sign-ups are recorded so BeautyBliss can manage subscription requests. To change or remove a subscription, contact us through the Contact page. Order, appointment, and account service messages may still be sent when needed to provide the requested service.",
       },
     ],
   },

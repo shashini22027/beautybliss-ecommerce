@@ -26,6 +26,20 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    addresses: {
+      billing: { type: mongoose.Schema.Types.Mixed, default: null },
+      shipping: { type: mongoose.Schema.Types.Mixed, default: null },
+    },
+
+    savedRoutines: [{
+      concernId: { type: String, required: true },
+      concernTitle: { type: String, required: true },
+      skinType: { type: String, required: true },
+      sensitivity: { type: String },
+      fragrancePreference: { type: String },
+      savedAt: { type: Date, default: Date.now },
+    }],
+
     resetPasswordToken: {
       type: String,
     },
@@ -40,9 +54,9 @@ const userSchema = new mongoose.Schema(
 );
 
 // Password Hash Middleware
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
-    next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);

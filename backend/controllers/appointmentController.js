@@ -60,7 +60,7 @@ export const createAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.create({
       name, email, phone, appointmentDate: date, time, mode, concern, skinType, sensitivity, fragrancePreference, notes,
-      status: 'pending', slotReserved: true, manageTokenHash: tokenHash(token),
+      status: 'pending', slotReserved: true, manageTokenHash: tokenHash(token), user: req.user?._id || null,
     });
     let customerEmailSent = false;
     try {
@@ -135,6 +135,14 @@ export const rescheduleManagedAppointment = async (req, res) => {
 
 export const listAppointments = async (req, res) => {
   const appointments = await Appointment.find().sort({ appointmentDate: 1, time: 1, createdAt: -1 }).lean();
+  res.json(appointments);
+};
+
+export const listMyAppointments = async (req, res) => {
+  const appointments = await Appointment.find({ $or: [{ user: req.user._id }, { email: req.user.email.toLowerCase() }] })
+    .select('-manageTokenHash')
+    .sort({ appointmentDate: -1, time: -1 })
+    .lean();
   res.json(appointments);
 };
 

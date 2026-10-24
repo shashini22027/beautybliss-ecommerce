@@ -89,6 +89,7 @@ const SkinConsultationPage = () => {
   const [savedRoutine, setSavedRoutine] = useState(false);
   const [routineNotice, setRoutineNotice] = useState('');
   const [savedRoutineData, setSavedRoutineData] = useState(null);
+  const [savedRoutines, setSavedRoutines] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -175,17 +176,33 @@ const SkinConsultationPage = () => {
   const routineStorageKey = `beautybliss-routine-${user?._id || user?.id || user?.email || 'guest'}`;
 
   useEffect(() => {
+    if (user?._id || user?.id) {
+      api.get('/users/profile').then(({ data }) => {
+        const routines = data.savedRoutines || [];
+        setSavedRoutines(routines);
+        const latest = [...routines].sort((left, right) => new Date(right.savedAt) - new Date(left.savedAt))[0] || null;
+        setSavedRoutineData(latest);
+        setSavedRoutine(Boolean(latest));
+      }).catch(() => {
+        setSavedRoutines([]);
+        setSavedRoutineData(null);
+        setSavedRoutine(false);
+      });
+      return;
+    }
     try {
       const storedRoutine = JSON.parse(localStorage.getItem(routineStorageKey) || 'null');
       setSavedRoutineData(storedRoutine);
+      setSavedRoutines(storedRoutine ? [storedRoutine] : []);
       setSavedRoutine(Boolean(storedRoutine));
     } catch {
       setSavedRoutineData(null);
+      setSavedRoutines([]);
       setSavedRoutine(false);
     }
-  }, [routineStorageKey]);
+  }, [routineStorageKey, user?._id, user?.id]);
 
-  const saveCurrentRoutine = () => {
+  const saveCurrentRoutine = async () => {
     const routine = {
       concernId: activeConcern.id,
       concernTitle: activeConcern.title,
@@ -194,10 +211,23 @@ const SkinConsultationPage = () => {
       fragrancePreference,
       savedAt: new Date().toISOString(),
     };
-    localStorage.setItem(routineStorageKey, JSON.stringify(routine));
-    setSavedRoutineData(routine);
-    setSavedRoutine(true);
-    setRoutineNotice('Routine saved in this browser for this account.');
+    try {
+      if (user?._id || user?.id) {
+        const { data } = await api.post('/users/profile/routines', routine);
+        const routines = data.savedRoutines || [];
+        setSavedRoutines(routines);
+        setSavedRoutineData(routines.find((item) => item.concernId === routine.concernId && item.skinType === routine.skinType) || routine);
+        setRoutineNotice('Routine saved to your account.');
+      } else {
+        localStorage.setItem(routineStorageKey, JSON.stringify(routine));
+        setSavedRoutines([routine]);
+        setSavedRoutineData(routine);
+        setRoutineNotice('Routine saved in this browser. Sign in to keep it with your account.');
+      }
+      setSavedRoutine(true);
+    } catch (error) {
+      setRoutineNotice(error.response?.data?.message || 'Could not save this routine. Please try again.');
+    }
   };
 
   const loadSavedRoutine = () => {

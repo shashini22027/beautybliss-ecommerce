@@ -192,6 +192,7 @@ const getMyOrders = asyncHandler(async (req, res) => {
     const emailRegex = new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
     orders = await Order.find({
       $or: [
+        { user: req.user._id },
         { 'customer.email': emailRegex },
         { 'shippingAddress.email': emailRegex },
         { 'paymentResult.email_address': emailRegex },

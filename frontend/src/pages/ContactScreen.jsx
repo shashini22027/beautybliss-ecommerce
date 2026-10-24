@@ -10,22 +10,22 @@ const faqItems = [
   {
     question: "Where can I view my sales receipt?",
     answer:
-      "You can view your sales receipt in your account dashboard under the Orders section. After completing your purchase, a receipt will be sent to your registered email address. You can also download it from your account anytime.",
+      "Sign in and open My Account → Orders to view your order history and status. If you need a receipt or cannot find an order, contact us with the email address used at checkout and your order number.",
   },
   {
     question: "How can I return an item?",
     answer:
-      "We offer a hassle-free return policy. You can initiate a return within 14 days of purchase from your account dashboard. Please ensure the product is unused and in its original packaging.",
+      "Contact customer support within 7 days of delivery to ask about a return. Products generally need to be unused, unopened, and in their original packaging. See the Return & Refund Policy for eligibility and defective or incorrect items.",
   },
   {
     question: "Will you restock items indicated as 'out of stock'?",
     answer:
-      "Yes, we regularly restock popular items. You can check back soon or enable notifications on the product page to be alerted when it becomes available again.",
+      "Restock dates vary by product. The product page shows current availability; this site does not currently offer back-in-stock alerts.",
   },
   {
     question: "Where can I ship my order?",
     answer:
-      "We ship to various locations across South Asia and internationally. Shipping options and costs depend on your location. During checkout, you can select your delivery address and see available shipping options.",
+      "We currently ship within Sri Lanka. Available delivery fees and options are shown during checkout before payment.",
   },
 ];
 
@@ -146,6 +146,7 @@ const ContactScreen = () => {
               <h2 className="text-3xl md:text-4xl font-bold text-stone-900">
                 Contact Us For Any Questions
               </h2>
+              <p className="mt-4 text-sm leading-6 text-stone-600">For appointment questions, email <a className="font-medium text-rose-700 underline" href="mailto:consultant@beautybliss.com">consultant@beautybliss.com</a> or call <a className="font-medium text-rose-700 underline" href="tel:+94701984663">+94 70 198 4663</a>. Use the form for general support; reply times may vary.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">

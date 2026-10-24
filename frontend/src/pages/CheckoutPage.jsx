@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { getImageUrl } from "../utils/image";
 import { formatPrice, parsePrice } from "../utils/currency";
 import API from "../services/api";
 import { clearCart } from "../redux/slices/cartSlice";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/slices/authSlice";
 
 const getCartItems = () => {
     try {
@@ -174,6 +176,7 @@ const requiredShippingFields = [
 const CheckoutPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const user = useSelector(selectUser);
     const [paymentMethod, setPaymentMethod] = useState("card");
     const [shipDifferent, setShipDifferent] = useState(false);
     const [cartItems, setCartItems] = useState(getCartItems);
@@ -184,6 +187,35 @@ const CheckoutPage = () => {
     const [checkoutStep, setCheckoutStep] = useState(1);
     const [shippingPrice] = useState(0);
     const discount = 0;
+
+    useEffect(() => {
+        if (!user?._id) return;
+        let active = true;
+        API.get('/users/profile').then(({ data }) => {
+            if (!active) return;
+            const billing = data.addresses?.billing || {};
+            const shipping = data.addresses?.shipping || {};
+            setCheckoutForm((current) => ({
+                ...current,
+                billingFirstName: billing.firstName || current.billingFirstName,
+                billingLastName: billing.lastName || current.billingLastName,
+                billingStreet: billing.street || current.billingStreet,
+                billingCity: billing.city || current.billingCity,
+                billingDistrict: billing.district || current.billingDistrict,
+                billingPhone: billing.phone || current.billingPhone,
+                billingSecondaryPhone: billing.secondaryPhone || current.billingSecondaryPhone,
+                billingEmail: billing.email || data.email || current.billingEmail,
+                shippingFirstName: shipping.firstName || current.shippingFirstName,
+                shippingLastName: shipping.lastName || current.shippingLastName,
+                shippingStreet: shipping.street || current.shippingStreet,
+                shippingCity: shipping.city || current.shippingCity,
+                shippingDistrict: shipping.district || current.shippingDistrict,
+                shippingPhone: shipping.phone || current.shippingPhone,
+            }));
+            setShipDifferent(Boolean(shipping.street && shipping.street !== billing.street));
+        }).catch(() => {});
+        return () => { active = false; };
+    }, [user?._id]);
 
     const subtotal = useMemo(
         () => cartItems.reduce((total, item) => total + getItemPrice(item) * getItemQty(item), 0),

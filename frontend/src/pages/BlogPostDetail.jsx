@@ -1,6 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { ArrowLeft, MessageSquare } from "lucide-react";
+import { formatPrice } from "../utils/currency";
+
+const estimatedReadingTime = (post) => Math.max(1, Math.ceil(`${post?.title || ''} ${post?.excerpt || ''} ${post?.description || ''}`.trim().split(/\s+/).length / 200));
+const articleCategory = (post) => {
+  if (post?.category && post.category !== 'Beauty') return post.category;
+  const text = `${post?.title || ''} ${post?.excerpt || ''}`.toLowerCase();
+  if (/ingredient|retinol|niacinamide|vitamin c/.test(text)) return 'Ingredients';
+  if (/tutorial|how to|guide|step.by.step/.test(text)) return 'Tutorials';
+  if (/makeup|foundation|lipstick|shade|mascara/.test(text)) return 'Makeup';
+  if (/skin|acne|spf|cleanser|moistur/.test(text)) return 'Skincare';
+  return 'Beauty';
+};
 
 const BlogPostDetail = () => {
   const { slug } = useParams();
@@ -13,6 +25,7 @@ const BlogPostDetail = () => {
   const [recentPosts, setRecentPosts] = useState([]);
   const [recentPostsLoading, setRecentPostsLoading] = useState(true);
   const [recentPostsError, setRecentPostsError] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsLoadError, setCommentsLoadError] = useState("");
   const [commentSubmitError, setCommentSubmitError] = useState("");
@@ -25,6 +38,23 @@ const BlogPostDetail = () => {
   useEffect(() => {
     fetchPost();
   }, [slug]);
+
+  useEffect(() => {
+    let active = true;
+    if (!post) return () => { active = false; };
+    fetch('/api/products').then((response) => response.ok ? response.json() : []).then((products) => {
+      if (!active || !Array.isArray(products)) return;
+      const category = articleCategory(post).toLowerCase();
+      const keywords = category === 'makeup' ? ['makeup', 'foundation', 'lip', 'mascara', 'blush', 'shade'] : ['skin', 'serum', 'cleanser', 'moistur', 'spf', 'cream', 'ingredient'];
+      const matches = products.filter((product) => {
+        const categoryName = typeof product.category === 'object' ? product.category?.name || '' : product.category || '';
+        const productText = `${product.name || ''} ${product.description || ''} ${categoryName} ${product.subcategory || ''}`.toLowerCase();
+        return keywords.some((keyword) => productText.includes(keyword));
+      }).filter((product) => Number(product.countInStock ?? 1) > 0).slice(0, 3);
+      setRelatedProducts(matches);
+    }).catch(() => { if (active) setRelatedProducts([]); });
+    return () => { active = false; };
+  }, [post]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -201,6 +231,7 @@ const BlogPostDetail = () => {
           alt={post.title}
           onError={(e) => { e.target.src = fallbackImage }}
           className="absolute inset-0 h-full w-full object-cover"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white px-4">
@@ -228,9 +259,10 @@ const BlogPostDetail = () => {
             </h3>
           )}
           <p className="text-sm font-medium text-gray-400 mb-8 pb-4 border-b border-gray-100 flex items-center gap-4">
-            <span>By BeautyBliss</span>
+            <span>By {post.author || 'BeautyBliss Editorial'}</span>
             <span>•</span>
             <span>{new Date(post.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>{articleCategory(post)} · {estimatedReadingTime(post)} min read</span>
           </p>
           <div className="mt-8 space-y-5 rounded-2xl border border-pink-100 bg-[#fff9fb] p-6 text-base leading-8 text-black shadow-sm sm:p-8">
             {blogContentSections.map((section, index) => {
@@ -255,6 +287,15 @@ const BlogPostDetail = () => {
             })}
           </div>
         </article>
+
+        {relatedProducts.length > 0 && <section className="mt-12 rounded-2xl border border-gray-100 bg-white p-6 sm:p-8" aria-labelledby="article-products-heading">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">From our store</p>
+          <h2 id="article-products-heading" className="mt-2 text-2xl font-semibold text-gray-900">Products related to this article</h2>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{relatedProducts.map((product) => <Link key={product._id} to={`/product/${product._id}`} className="group overflow-hidden rounded-lg border border-gray-100 transition hover:shadow-md">
+            <img src={product.image || product.images?.[0] || fallbackImage} alt={product.name} loading="lazy" decoding="async" className="h-48 w-full bg-gray-50 object-contain p-4" onError={(event) => { event.currentTarget.src = fallbackImage; }} />
+            <span className="block p-4"><span className="block font-semibold text-gray-900 group-hover:text-rose-700">{product.name}</span><span className="mt-2 block text-sm text-gray-600">{formatPrice(product.price)}</span></span>
+          </Link>)}</div>
+        </section>}
         
         <div className="mt-12 pt-8 border-t border-gray-100">
           <Link

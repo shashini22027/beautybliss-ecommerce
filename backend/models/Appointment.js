@@ -12,6 +12,7 @@ const appointmentSchema = new mongoose.Schema({
   sensitivity: { type: String, trim: true, maxlength: 40 },
   fragrancePreference: { type: String, trim: true, maxlength: 60 },
   notes: { type: String, trim: true, maxlength: 2000 },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
   status: { type: String, enum: ['pending', 'confirmed', 'completed', 'cancelled'], default: 'pending', index: true },
   slotReserved: { type: Boolean, default: true },
   manageTokenHash: { type: String, required: true, select: false },

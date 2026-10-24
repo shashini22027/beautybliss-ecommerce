@@ -14,6 +14,8 @@ const BlogEditScreen = () => {
   const [excerpt, setExcerpt] = useState("");
   const [image, setImage] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Beauty");
+  const [author, setAuthor] = useState(user?.name || "BeautyBliss Editorial");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -36,6 +38,8 @@ const BlogEditScreen = () => {
       setExcerpt(data.excerpt);
       setImage(data.image);
       setDescription(data.description);
+      setCategory(data.category || 'Beauty');
+      setAuthor(data.author || 'BeautyBliss Editorial');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -89,7 +93,8 @@ const BlogEditScreen = () => {
           excerpt,
           image,
           description,
-          author: user?._id,
+          category,
+          author: author || user?.name || 'BeautyBliss Editorial',
         }),
       });
 
@@ -131,6 +136,16 @@ const BlogEditScreen = () => {
       )}
 
       <form onSubmit={submitHandler} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category
+            <select id="category" value={category} onChange={(event) => setCategory(event.target.value)} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-pink-500 focus:outline-none">
+              {['Skincare', 'Makeup', 'Ingredients', 'Tutorials', 'Beauty'].map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+          <label htmlFor="author" className="block text-sm font-medium text-gray-700">Author
+            <input id="author" value={author} onChange={(event) => setAuthor(event.target.value)} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-pink-500 focus:outline-none" />
+          </label>
+        </div>
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700">
             Title

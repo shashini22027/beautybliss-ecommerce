@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, authUser, getUserProfile, getAllUsers, deleteUser, forgotPassword, resetPassword, refreshToken, logoutUser } from '../controllers/userController.js';
+import { registerUser, authUser, getUserProfile, updateUserProfile, saveUserRoutine, deleteUserRoutine, getAllUsers, deleteUser, forgotPassword, resetPassword, refreshToken, logoutUser } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
@@ -12,5 +12,8 @@ router.put('/reset-password/:token', resetPassword);
 router.route('/').get(protect, admin, getAllUsers);
 router.route('/:id').delete(protect, admin, deleteUser);
 router.route('/profile').get(protect, getUserProfile);
+router.route('/profile').put(protect, updateUserProfile);
+router.route('/profile/routines').post(protect, saveUserRoutine);
+router.route('/profile/routines/:routineId').delete(protect, deleteUserRoutine);
 
 export default router;
