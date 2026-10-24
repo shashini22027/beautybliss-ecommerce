@@ -1,32 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Sparkles, Upload, X } from 'lucide-react';
+import { Camera, RotateCcw, Sparkles, Trash2, Upload, X } from 'lucide-react';
 
 const makeupTypes = {
   lipstick: {
     label: 'Lipstick',
     shades: [
-      { name: 'Rosewood', color: '#a94d61' },
-      { name: 'Soft Coral', color: '#d96b64' },
-      { name: 'Berry', color: '#84334e' },
-      { name: 'Classic Red', color: '#c62838' },
+      { name: 'Rosewood', color: '#a94d61', undertone: 'Neutral', finish: 'Satin' },
+      { name: 'Soft Coral', color: '#d96b64', undertone: 'Warm', finish: 'Cream' },
+      { name: 'Berry', color: '#84334e', undertone: 'Cool', finish: 'Velvet' },
+      { name: 'Classic Red', color: '#c62838', undertone: 'Neutral', finish: 'Satin' },
     ],
   },
   blush: {
     label: 'Blush',
     shades: [
-      { name: 'Petal Pink', color: '#df7784' },
-      { name: 'Peach Glow', color: '#e99570' },
-      { name: 'Berry Flush', color: '#bd627a' },
-      { name: 'Soft Mauve', color: '#b47988' },
+      { name: 'Petal Pink', color: '#df7784', undertone: 'Cool', finish: 'Sheer' },
+      { name: 'Peach Glow', color: '#e99570', undertone: 'Warm', finish: 'Satin' },
+      { name: 'Berry Flush', color: '#bd627a', undertone: 'Neutral', finish: 'Buildable' },
+      { name: 'Soft Mauve', color: '#b47988', undertone: 'Cool', finish: 'Matte' },
     ],
   },
   foundation: {
     label: 'Foundation',
     shades: [
-      { name: 'Warm Sand', color: '#d39b72' },
-      { name: 'Golden Beige', color: '#bd8056' },
-      { name: 'Honey', color: '#a96e48' },
-      { name: 'Deep Cocoa', color: '#764a38' },
+      { name: 'Warm Sand', color: '#d39b72', undertone: 'Warm', finish: 'Natural' },
+      { name: 'Golden Beige', color: '#bd8056', undertone: 'Warm', finish: 'Soft matte' },
+      { name: 'Honey', color: '#a96e48', undertone: 'Neutral', finish: 'Natural' },
+      { name: 'Deep Cocoa', color: '#764a38', undertone: 'Cool', finish: 'Soft matte' },
     ],
   },
 };
@@ -60,6 +60,10 @@ const VirtualMakeupTryOn = () => {
   const [landmarks, setLandmarks] = useState(null);
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+  const [zoom, setZoom] = useState(1);
+  const [comparison, setComparison] = useState(50);
+  const [photoConsent, setPhotoConsent] = useState(false);
+  const [undertone, setUndertone] = useState('Neutral');
   const imageInputRef = useRef(null);
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -178,6 +182,8 @@ const VirtualMakeupTryOn = () => {
     setMediaSource('');
     setLandmarks(null);
     setStatus('idle');
+    setZoom(1);
+    setComparison(50);
   };
 
   const startCamera = async () => {
@@ -270,7 +276,22 @@ const VirtualMakeupTryOn = () => {
 
   const handleMakeupTypeChange = (nextType) => {
     setMakeupType(nextType);
-    setSelectedShade(makeupTypes[nextType].shades[0]);
+    setSelectedShade(nextType === 'foundation'
+      ? makeupTypes[nextType].shades.find((shade) => shade.undertone === undertone) || makeupTypes[nextType].shades[0]
+      : makeupTypes[nextType].shades[0]);
+  };
+
+  const clearPhoto = () => {
+    stopCamera();
+    setPhotoConsent(false);
+    setError('');
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const handleUndertoneChange = (nextUndertone) => {
+    setUndertone(nextUndertone);
+    const matchingShade = makeupTypes.foundation.shades.find((shade) => shade.undertone === nextUndertone);
+    if (makeupType === 'foundation' && matchingShade) setSelectedShade(matchingShade);
   };
 
   const lipPath = landmarks ? createLandmarkPath(landmarks, lipLandmarkIndices) : '';
@@ -281,25 +302,25 @@ const VirtualMakeupTryOn = () => {
       : 0.3;
 
   return (
-    <section className="border-t border-gray-200 bg-[#f6f6f6] py-20">
-      <div className="mx-auto max-w-[1540px] px-6">
-        <div className="mb-10 max-w-3xl border-b border-gray-200 pb-6">
+    <section className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <div className="mb-8 max-w-3xl border-b border-[#e9ded9] pb-5">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">
             BeautyBliss Virtual Studio
           </p>
-          <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-gray-950">
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">
             Try makeup virtually
           </h2>
           <p className="mt-4 text-sm leading-7 text-gray-600">
             Upload a photo or turn on your camera to preview lipstick, blush, and foundation shades.
-            Face analysis runs in your browser; your image is not uploaded.
+            The preview helps compare colors; it does not guarantee an exact shade or analyze skin health. Images are processed in your browser and are not uploaded.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_0.85fr]">
-          <div className="border border-gray-200 bg-white p-5 sm:p-7">
+        <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr] lg:gap-8">
+          <div className="rounded-sm border border-[#eee5e1] bg-white p-4 sm:p-6">
             <div
-              className="relative mx-auto w-full max-w-[440px] overflow-hidden bg-[#f3f0ee]"
+              className="relative mx-auto w-full max-w-[520px] overflow-hidden bg-[#f3f0ee]"
               style={{ aspectRatio: mediaAspectRatio }}
             >
               {mediaType === 'photo' && mediaSource ? (
@@ -308,7 +329,8 @@ const VirtualMakeupTryOn = () => {
                   src={mediaSource}
                   alt="Your virtual makeup preview"
                   onLoad={handleImageLoad}
-                  className="absolute inset-0 h-full w-full object-fill"
+                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-200"
+                  style={{ transform: `scale(${zoom})` }}
                 />
               ) : mediaType === 'camera' ? (
                 <video
@@ -316,7 +338,8 @@ const VirtualMakeupTryOn = () => {
                   autoPlay
                   muted
                   playsInline
-                  className="absolute inset-0 h-full w-full object-fill"
+                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-200"
+                  style={{ transform: `scale(${zoom})` }}
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center px-8 text-center text-gray-500">
@@ -340,10 +363,10 @@ const VirtualMakeupTryOn = () => {
                       <feGaussianBlur stdDeviation="0.008" />
                     </filter>
                     <clipPath id="makeup-after-half">
-                      <rect x="0.5" y="0" width="0.5" height="1" />
+                      <rect x={comparison / 100} y="0" width={1 - comparison / 100} height="1" />
                     </clipPath>
                   </defs>
-                  <g clipPath="url(#makeup-after-half)">
+                  <g>
                     {makeupType === 'foundation' && facePath && (
                       <path d={facePath} fill={selectedShade.color} opacity="0.2" />
                     )}
@@ -378,7 +401,8 @@ const VirtualMakeupTryOn = () => {
               {(mediaType === 'photo' || mediaType === 'camera') && (
                 <>
                   <div
-                    className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-px bg-white shadow-[0_0_3px_rgba(0,0,0,0.8)]"
+                    className="pointer-events-none absolute inset-y-0 z-10 w-px bg-white shadow-[0_0_3px_rgba(0,0,0,0.8)]"
+                    style={{ left: `${comparison}%` }}
                     aria-hidden="true"
                   />
                   <span className="pointer-events-none absolute left-3 top-3 z-10 bg-black/65 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -387,6 +411,9 @@ const VirtualMakeupTryOn = () => {
                   <span className="pointer-events-none absolute right-3 top-3 z-10 bg-black/65 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                     With shade
                   </span>
+                  <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] overflow-hidden" style={{ width: `${comparison}%` }}>
+                    <img src={mediaType === 'photo' ? mediaSource : undefined} alt="" className="h-full w-[var(--preview-width)] max-w-none object-contain" style={{ width: 'calc(100cqw)' }} />
+                  </div>
                 </>
               )}
             </div>
@@ -401,10 +428,37 @@ const VirtualMakeupTryOn = () => {
                 className="hidden"
                 aria-label="Choose a photo for virtual makeup"
               />
+              {mediaType !== 'none' && (
+                <div className="absolute inset-x-3 bottom-3 z-20 flex items-center gap-2 rounded bg-white/95 px-3 py-2 shadow-sm sm:inset-x-4">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">Before</span>
+                  <input aria-label="Adjust before and after comparison" type="range" min="10" max="90" value={comparison} onChange={(event) => setComparison(Number(event.target.value))} className="min-w-0 flex-1 accent-[#a94f61]" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-600">After</span>
+                </div>
+              )}
+            </div>
+
+            <p className="mx-auto mt-3 max-w-[520px] text-xs leading-5 text-gray-500">For a clearer preview, use a front-facing photo in even natural light, without filters or heavy makeup. Keep your face centered and fully visible.</p>
+
+            <div className="mx-auto mt-4 flex max-w-[520px] flex-wrap items-center gap-2">
+              <button type="button" onClick={() => setZoom((value) => Math.min(1.6, Number((value + 0.15).toFixed(2))))} disabled={zoom >= 1.6} className="min-h-10 rounded border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-40" aria-label="Zoom in">Zoom +</button>
+              <button type="button" onClick={() => setZoom((value) => Math.max(1, Number((value - 0.15).toFixed(2))))} disabled={zoom <= 1} className="min-h-10 rounded border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400 disabled:opacity-40" aria-label="Zoom out">Zoom −</button>
+              <button type="button" onClick={() => { setZoom(1); setComparison(50); }} className="inline-flex min-h-10 items-center gap-2 rounded border border-gray-200 px-3 text-sm font-medium text-gray-700 hover:border-gray-400"><RotateCcw size={14} /> Reset view</button>
+              {mediaType !== 'none' && <button type="button" onClick={clearPhoto} className="ml-auto inline-flex min-h-10 items-center gap-2 rounded border border-rose-200 px-3 text-sm font-medium text-rose-700 hover:bg-rose-50"><Trash2 size={14} /> Remove photo</button>}
+            </div>
+
+            <div className="mx-auto mt-4 max-w-[520px] rounded border border-[#eee5e1] bg-[#fbf8f5] p-3">
+              <label className="flex cursor-pointer items-start gap-3 text-xs leading-5 text-gray-600">
+                <input type="checkbox" checked={photoConsent} onChange={(event) => setPhotoConsent(event.target.checked)} className="mt-1 accent-[#a94f61]" />
+                <span>I understand this photo is used locally for a visual makeup preview only. It is not uploaded or used for clinical analysis.</span>
+              </label>
+            </div>
+
+            <div className="mx-auto mt-4 flex max-w-[520px] flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => imageInputRef.current?.click()}
-                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 bg-gray-950 px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-pink-600"
+                onClick={() => photoConsent && imageInputRef.current?.click()}
+                disabled={!photoConsent}
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 bg-gray-950 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-45"
               >
                 <Upload size={17} />
                 Upload photo
@@ -413,7 +467,7 @@ const VirtualMakeupTryOn = () => {
                 <button
                   type="button"
                   onClick={stopCamera}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 border border-gray-300 bg-white px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gray-900 transition hover:border-gray-950"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 border border-gray-300 bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-900 transition hover:border-gray-950"
                 >
                   <X size={17} />
                   Stop camera
@@ -422,7 +476,8 @@ const VirtualMakeupTryOn = () => {
                 <button
                   type="button"
                   onClick={startCamera}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 border border-gray-300 bg-white px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-gray-900 transition hover:border-gray-950"
+                  disabled={!photoConsent}
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 border border-gray-300 bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-gray-900 transition hover:border-gray-950 disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   <Camera size={17} />
                   Use camera
@@ -452,10 +507,10 @@ const VirtualMakeupTryOn = () => {
             )}
           </div>
 
-          <div className="h-fit border border-gray-200 bg-white p-6 sm:p-8">
+          <div className="h-fit rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-7">
             <div className="flex items-center gap-3">
               <Sparkles className="h-5 w-5 text-pink-600" />
-              <h3 className="text-xl font-extrabold uppercase tracking-tight text-gray-950">
+              <h3 className="text-lg font-semibold tracking-tight text-gray-950">
                 Choose your look
               </h3>
             </div>
@@ -478,7 +533,19 @@ const VirtualMakeupTryOn = () => {
               ))}
             </div>
 
-            <p className="mt-7 text-sm font-bold text-gray-800">Select a shade</p>
+            {makeupType === 'foundation' && (
+              <div className="mt-5 rounded border border-[#eee5e1] bg-[#fbf8f5] p-4">
+                <p className="text-xs font-semibold text-gray-800">Choose an undertone</p>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {['Warm', 'Cool', 'Neutral'].map((value) => (
+                    <button key={value} type="button" aria-pressed={undertone === value} onClick={() => handleUndertoneChange(value)} className={`rounded border px-2 py-2 text-xs font-medium transition ${undertone === value ? 'border-[#a94f61] bg-[#f8e8e9] text-[#884252]' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'}`}>{value}</button>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] leading-5 text-gray-500">Undertone is a self-selected guide; it does not determine a guaranteed match.</p>
+              </div>
+            )}
+
+            <p className="mt-6 text-sm font-semibold text-gray-800">Select a shade</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               {makeupTypes[makeupType].shades.map((shade) => (
                 <button
@@ -497,12 +564,12 @@ const VirtualMakeupTryOn = () => {
                     style={{ backgroundColor: shade.color }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm font-semibold text-gray-800">{shade.name}</span>
+                    <span className="min-w-0"><span className="block text-sm font-semibold text-gray-800">{shade.name}</span><span className="mt-0.5 block text-[11px] text-gray-500">{shade.undertone} undertone · {shade.finish} finish</span></span>
                 </button>
               ))}
             </div>
 
-            <div className="mt-7 border-t border-gray-200 pt-5 text-sm leading-6 text-gray-500">
+            <div className="mt-6 border-t border-[#eee5e1] pt-5 text-sm leading-6 text-gray-500">
               This is a shade preview to help compare colors, not a guarantee of exact color or
               clinical skin analysis. Your photo stays on this device.
             </div>

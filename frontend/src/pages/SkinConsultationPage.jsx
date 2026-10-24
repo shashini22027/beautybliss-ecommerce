@@ -18,25 +18,33 @@ const concerns = [
     id: 'acne',
     title: 'Acne & Breakouts',
     description: 'Support for clogged pores, recurring pimples, and post-blemish marks.',
-    routine: ['Gentle cleanser', 'Niacinamide serum', 'Oil-free moisturiser', 'Daily sunscreen'],
+    morning: ['Gentle cleanser', 'Niacinamide serum', 'Oil-free moisturiser', 'Daily sunscreen'],
+    evening: ['Gentle cleanser', 'Niacinamide serum', 'Oil-free moisturiser'],
+    ingredients: ['Niacinamide', 'Salicylic acid', 'Ceramides'],
   },
   {
     id: 'dryness',
     title: 'Dryness & Barrier Care',
     description: 'Comfort-focused care for tight, flaky, or easily irritated skin.',
-    routine: ['Cream cleanser', 'Hyaluronic acid', 'Ceramide moisturiser', 'Nourishing night cream'],
+    morning: ['Cream cleanser', 'Hyaluronic acid', 'Ceramide moisturiser', 'Daily sunscreen'],
+    evening: ['Cream cleanser', 'Hyaluronic acid', 'Ceramide moisturiser', 'Nourishing night cream'],
+    ingredients: ['Hyaluronic acid', 'Ceramides', 'Glycerin'],
   },
   {
     id: 'dark-spots',
     title: 'Dark Spots & Uneven Tone',
     description: 'Brightening routines for pigmentation, dullness, and uneven texture.',
-    routine: ['Vitamin C serum', 'Exfoliating toner', 'Spot corrector', 'Broad-spectrum sunscreen'],
+    morning: ['Gentle cleanser', 'Vitamin C serum', 'Moisturiser', 'Broad-spectrum sunscreen'],
+    evening: ['Gentle cleanser', 'Exfoliating toner (as directed)', 'Spot corrector', 'Moisturiser'],
+    ingredients: ['Vitamin C', 'Azelaic acid', 'Broad-spectrum SPF'],
   },
   {
     id: 'sensitive',
     title: 'Sensitive Skin',
     description: 'Simple, low-fragrance routines for redness, stinging, or reactive skin.',
-    routine: ['Mild cleanser', 'Soothing toner', 'Barrier repair cream', 'Mineral sunscreen'],
+    morning: ['Mild cleanser', 'Soothing toner', 'Barrier repair cream', 'Mineral sunscreen'],
+    evening: ['Mild cleanser', 'Soothing toner', 'Barrier repair cream'],
+    ingredients: ['Colloidal oat', 'Panthenol', 'Ceramides'],
   },
 ];
 
@@ -53,6 +61,7 @@ const consultant = {
 };
 
 const SkinConsultationPage = () => {
+  const [step, setStep] = useState(1);
   const [selectedConcern, setSelectedConcern] = useState(concerns[0].id);
   const [skinType, setSkinType] = useState(skinTypes[0]);
   const [formData, setFormData] = useState({
@@ -177,26 +186,33 @@ const SkinConsultationPage = () => {
 
       <section id="concerns" className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:py-16">
         <div className="mb-8 border-b border-[#eee5e1] pb-5">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Step 1</p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">Select your main skin concern</h2>
+          <div className="flex items-center justify-between gap-4">
+            <div><p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a94f61]">Skin profile · Step {step} of 2</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">{step === 1 ? 'Tell us about your skin' : 'Your routine guide'}</h2></div>
+            <span className="text-sm font-medium text-gray-500">{step * 50}%</span>
+          </div>
+          <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#f1e8e4]"><div className="h-full rounded-full bg-[#b85f70] transition-all" style={{ width: `${step * 50}%` }} /></div>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-gray-600">
-            This guide helps customers move from browsing products to choosing a routine with a clear goal.
+            This is a general cosmetic routine guide, not a medical assessment. Introduce new products gradually and patch test when appropriate.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {step === 1 && <>
+        <p className="mb-3 text-sm font-semibold text-gray-800">1. What would you like help with?</p>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {concerns.map((concern) => (
             <button
               key={concern.id}
               type="button"
               onClick={() => setSelectedConcern(concern.id)}
-              className={`min-h-[190px] border p-6 text-left transition ${
+              aria-pressed={selectedConcern === concern.id}
+              className={`min-h-[160px] rounded-sm border p-5 text-left transition ${
                 selectedConcern === concern.id
                   ? 'border-gray-950 bg-gray-950 text-white'
                   : 'border-gray-200 bg-white text-gray-950 hover:border-gray-950'
               }`}
             >
-              <h3 className="text-xl font-extrabold leading-tight">{concern.title}</h3>
+              <h3 className="text-lg font-semibold leading-tight">{concern.title}</h3>
               <p className={`mt-3 text-sm leading-6 ${selectedConcern === concern.id ? 'text-gray-200' : 'text-gray-600'}`}>
                 {concern.description}
               </p>
@@ -204,16 +220,16 @@ const SkinConsultationPage = () => {
           ))}
         </div>
 
-        <div className="mt-9 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <div className="h-fit rounded-sm border border-[#eee5e1] bg-white px-5 py-6 sm:px-6">
-            <label className="block border-b border-[#eee5e1] pb-4 text-base font-semibold text-gray-950" htmlFor="skinType">
-              Skin type
+            <label className="block pb-1 text-sm font-semibold text-gray-950" htmlFor="skinType">
+              2. How would you describe your skin?
             </label>
             <select
               id="skinType"
               value={skinType}
               onChange={(event) => setSkinType(event.target.value)}
-              className="mt-5 h-11 w-full border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 focus:border-gray-950 focus:outline-none"
+              className="mt-3 h-11 w-full border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 focus:border-gray-950 focus:outline-none"
             >
               {skinTypes.map((type) => (
                 <option key={type} value={type}>
@@ -226,31 +242,23 @@ const SkinConsultationPage = () => {
             </p>
           </div>
 
-          <div className="rounded-sm border border-[#eee5e1] bg-[#fdfaf8] p-5 sm:p-7">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-pink-600">Recommended starter routine</p>
-                <h3 className="mt-3 text-2xl font-semibold text-gray-950">{activeConcern.title}</h3>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description}</p>
-              </div>
-              <Link
-                to={`/products?skinConcern=${activeConcern.id}`}
-                className="shrink-0 bg-gray-950 px-6 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-pink-600"
-              >
-                Shop Matches
-              </Link>
-            </div>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {activeConcern.routine.map((step, index) => (
-                <div key={step} className="border border-gray-200 bg-white p-5">
-                  <span className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-gray-400">Step {index + 1}</span>
-                  <p className="mt-3 font-bold leading-snug text-gray-950">{step}</p>
-                </div>
-              ))}
-            </div>
+          <div className="rounded-sm border border-[#eee5e1] bg-white p-5 sm:p-6">
+            <p className="text-sm font-semibold text-gray-950">3. Optional: choose your focus</p>
+            <p className="mt-1 text-xs leading-5 text-gray-500">Your answers shape a general routine suggestion and stay in this session.</p>
+            <div className="mt-4 flex flex-wrap gap-2">{activeConcern.ingredients.map((ingredient) => <span key={ingredient} className="rounded-full bg-[#fbf3f1] px-3 py-1.5 text-xs font-medium text-[#884252]">{ingredient}</span>)}</div>
           </div>
         </div>
+        <button type="button" onClick={() => setStep(2)} className="mt-6 min-h-12 rounded-sm bg-[#292526] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#a94f61]">See my routine</button>
+        </>}
+
+        {step === 2 && <div className="rounded-sm border border-[#eee5e1] bg-[#fdfaf8] p-5 sm:p-7">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a94f61]">Suggested for {skinType.toLowerCase()} skin</p><h3 className="mt-2 text-xl font-semibold text-gray-950">{activeConcern.title}</h3><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{activeConcern.description} These are general suggestions; check each product label and patch test if you have sensitivities.</p></div><Link to={`/products?skinConcern=${activeConcern.id}`} className="inline-flex min-h-11 items-center justify-center rounded-sm bg-[#292526] px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-[#a94f61]">Browse matching products</Link></div>
+          <div className="mt-6 grid gap-5 lg:grid-cols-2">
+            {[['Morning routine', activeConcern.morning], ['Evening routine', activeConcern.evening]].map(([title, routine]) => <div key={title} className="rounded-sm border border-[#eee5e1] bg-white p-5"><h4 className="font-semibold text-gray-900">{title}</h4><ol className="mt-4 space-y-3">{routine.map((item, index) => <li key={`${title}-${item}`} className="flex gap-3 text-sm text-gray-700"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f8e8e9] text-xs font-semibold text-[#884252]">{index + 1}</span><span className="pt-0.5">{item}</span></li>)}</ol></div>)}
+          </div>
+          <div className="mt-5 rounded-sm border border-[#eee5e1] bg-white p-5"><h4 className="text-sm font-semibold text-gray-900">Ingredients to explore</h4><div className="mt-3 flex flex-wrap gap-2">{activeConcern.ingredients.map((ingredient) => <span key={ingredient} className="rounded-full bg-[#fbf3f1] px-3 py-1.5 text-xs font-medium text-[#884252]">{ingredient}</span>)}</div><p className="mt-3 text-xs leading-5 text-gray-500">Recommendations are educational and cosmetic, not a diagnosis. Product availability and ingredient lists vary by item.</p></div>
+          <button type="button" onClick={() => setStep(1)} className="mt-5 min-h-10 rounded border border-gray-300 bg-white px-4 text-sm font-medium text-gray-700 hover:border-gray-500">Back to skin profile</button>
+        </div>}
       </section>
 
       <section id="appointment" className="border-t border-[#eee5e1] bg-[#fbf8f5] py-12 sm:py-16">
