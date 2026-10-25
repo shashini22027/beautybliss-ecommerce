@@ -367,7 +367,7 @@ const VirtualMakeupTryOn = () => {
                       <rect x={comparison / 100} y="0" width={1 - comparison / 100} height="1" />
                     </clipPath>
                   </defs>
-                  <g>
+                  <g clipPath="url(#makeup-after-half)">
                     {makeupType === 'foundation' && facePath && (
                       <path d={facePath} fill={selectedShade.color} opacity="0.2" />
                     )}
@@ -412,9 +412,6 @@ const VirtualMakeupTryOn = () => {
                   <span className="pointer-events-none absolute right-3 top-3 z-10 bg-black/65 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                     With shade
                   </span>
-                  <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] overflow-hidden" style={{ width: `${comparison}%` }}>
-                    <img src={mediaType === 'photo' ? mediaSource : undefined} alt="" className="h-full w-[var(--preview-width)] max-w-none object-contain" style={{ width: 'calc(100cqw)' }} />
-                  </div>
                 </>
               )}
             </div>
