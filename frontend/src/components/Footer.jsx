@@ -8,10 +8,16 @@ const Footer = () => {
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState("idle");
     const [message, setMessage] = useState("");
-    const address = "123 Beauty Lane, Colombo 03, Sri Lanka";
-    const phone = "+94 70 198 4663";
-    const contactEmail = "hello@beautybliss.com";
+    const address = import.meta.env.VITE_BUSINESS_ADDRESS?.trim() || "";
+    const phone = import.meta.env.VITE_BUSINESS_PHONE?.trim() || "";
+    const contactEmail = import.meta.env.VITE_BUSINESS_EMAIL?.trim() || "";
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const socialLinks = [
+        { label: "Facebook", href: import.meta.env.VITE_FACEBOOK_URL, Icon: FaFacebook },
+        { label: "Instagram", href: import.meta.env.VITE_INSTAGRAM_URL, Icon: FaInstagram },
+        { label: "X", href: import.meta.env.VITE_X_URL, Icon: FaTwitter },
+        { label: "YouTube", href: import.meta.env.VITE_YOUTUBE_URL, Icon: FaYoutube },
+    ].filter(({ href }) => typeof href === "string" && /^https:\/\//i.test(href));
 
     useEffect(() => {
         if (status !== "success") return;
@@ -56,9 +62,9 @@ const Footer = () => {
 
     return (
         <footer
-            className="border-t border-gray-200 bg-[#f6f6f6] pb-8 pt-16 text-gray-600"
+            className="border-t border-gray-200 bg-[#f6f6f6] pb-24 pt-16 text-gray-600 sm:pb-8"
         >
-            <div className="mx-auto grid max-w-[1540px] grid-cols-1 gap-12 px-6 md:grid-cols-4">
+            <div className="mx-auto grid max-w-[1540px] grid-cols-1 gap-12 px-6 md:grid-cols-2 xl:grid-cols-4">
                 {/* Brand & About */}
                 <div className="space-y-6">
                     <h3 className="text-3xl font-extrabold tracking-[0.12em] text-gray-950">
@@ -67,19 +73,22 @@ const Footer = () => {
                     <p className="max-w-sm text-sm leading-relaxed text-gray-600">
                         Elevate your beauty with our curated collection of premium cosmetics and skincare. Experience the perfect blend of luxury and elegance.
                     </p>
-                    <div className="flex space-x-4">
-                        <a href="https://www.facebook.com/" className="flex h-10 w-10 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:border-gray-950 hover:text-pink-600"><FaFacebook size={18} /></a>
-                        <a href="https://www.instagram.com/" className="flex h-10 w-10 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:border-gray-950 hover:text-pink-600"><FaInstagram size={18} /></a>
-                        <a href="https://www.twitter.com/" className="flex h-10 w-10 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:border-gray-950 hover:text-pink-600"><FaTwitter size={18} /></a>
-                        <a href="https://www.youtube.com/" className="flex h-10 w-10 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:border-gray-950 hover:text-pink-600"><FaYoutube size={18} /></a>
-                    </div>
+                    {socialLinks.length > 0 && (
+                        <div className="flex space-x-4">
+                            {socialLinks.map(({ label, href, Icon }) => (
+                                <a key={label} href={href} target="_blank" rel="noreferrer" aria-label={label} className="flex h-10 w-10 items-center justify-center border border-gray-200 bg-white text-gray-700 transition hover:border-gray-950 hover:text-pink-600">
+                                    <Icon size={18} />
+                                </a>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Contact Info */}
                 <div>
                     <h4 className="mb-6 text-[11px] font-extrabold uppercase tracking-[0.3em] text-gray-950">Contact Us</h4>
                     <ul className="space-y-5 text-sm text-gray-600">
-                        <li>
+                        {address && <li>
                             <a
                                 href={mapsUrl}
                                 target="_blank"
@@ -89,8 +98,8 @@ const Footer = () => {
                                 <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
                                 <span>{address}</span>
                             </a>
-                        </li>
-                        <li>
+                        </li>}
+                        {phone && <li>
                             <a
                                 href={`tel:${phone.replace(/\s+/g, "")}`}
                                 className="group flex items-center gap-3 transition-colors hover:text-pink-600"
@@ -98,8 +107,8 @@ const Footer = () => {
                                 <Phone className="h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
                                 <span>{phone}</span>
                             </a>
-                        </li>
-                        <li>
+                        </li>}
+                        {contactEmail && <li>
                             <a
                                 href={`mailto:${contactEmail}`}
                                 className="group flex items-center gap-3 transition-colors hover:text-pink-600"
@@ -107,7 +116,8 @@ const Footer = () => {
                                 <Mail className="h-5 w-5 shrink-0 text-gray-950 transition-colors group-hover:text-pink-600" />
                                 <span>{contactEmail}</span>
                             </a>
-                        </li>
+                        </li>}
+                        {!address && !phone && !contactEmail && <li><Link to="/contact" className="transition-colors hover:text-pink-600">Visit our contact page</Link></li>}
                     </ul>
                 </div>
 

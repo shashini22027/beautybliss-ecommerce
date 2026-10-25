@@ -92,19 +92,20 @@ const Navbar = () => {
   return (
     <div className="sticky top-0 z-50 bg-white shadow-[0_1px_0_rgba(0,0,0,0.06)]">
       <div className="border-b border-white/10 bg-[#292526] px-4 py-2 text-center text-[10px] font-medium tracking-[0.08em] text-white/90 sm:text-[11px]">
-        Islandwide delivery | Cash on delivery available | 100% genuine products
+        <span className="sm:hidden">Islandwide delivery | Cash on delivery</span>
+        <span className="hidden sm:inline">Islandwide delivery | Cash on delivery available | 100% genuine products</span>
       </div>
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-[1540px] px-4 sm:px-6 lg:px-8">
-          <div className="grid min-h-[78px] grid-cols-[auto_1fr_auto] items-center gap-3 py-3 sm:gap-5 sm:py-4">
+          <div className="flex min-h-[78px] items-center justify-between gap-3 py-3 sm:gap-5 sm:py-4">
             <Link
               to="/"
-              className="text-2xl font-black tracking-[0.16em] text-gray-950 sm:text-3xl md:text-4xl"
+              className="text-xl font-black tracking-[0.08em] text-gray-950 sm:text-3xl sm:tracking-[0.16em] md:text-4xl"
             >
               BEAUTYBLISS
             </Link>
 
-            <nav className="hidden items-center justify-center gap-8 lg:flex">
+            <nav className="hidden items-center justify-center gap-8 xl:flex">
               {navLinks.map((item) => (
                 <NavLink
                   key={item.to}
@@ -117,14 +118,14 @@ const Navbar = () => {
               ))}
             </nav>
 
-            <div className="flex items-center justify-end gap-2 sm:gap-3">
+            <div className="flex items-center justify-end gap-1 sm:gap-3">
               <button
                 type="button"
                 onClick={() => {
                   setMobileOpen((prev) => !prev);
                   setShowSearch(false);
                 }}
-                  className="bb-storefront-icon-button lg:hidden"
+                  className="bb-storefront-icon-button xl:hidden"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -145,7 +146,7 @@ const Navbar = () => {
                 {showSearch && (
                   <form
                     onSubmit={handleSearchSubmit}
-                    className="absolute right-0 top-full mt-4 hidden w-80 md:block"
+                    className="absolute right-0 top-full z-50 mt-4 w-[min(20rem,calc(100vw-2rem))]"
                   >
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -186,7 +187,7 @@ const Navbar = () => {
                     setShowProfileMenu((prev) => !prev);
                     setShowSearch(false);
                   }}
-                  className="bb-storefront-icon-button"
+                  className="bb-storefront-icon-button hidden sm:flex"
                   aria-expanded={showProfileMenu}
                   aria-label="Profile"
                 >
@@ -255,7 +256,7 @@ const Navbar = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="bb-storefront-icon-button relative"
+              className="bb-storefront-icon-button relative hidden sm:flex"
                 aria-label={`Cart${cartCount ? `, ${cartCount} items` : ''}`}
               >
                 <ShoppingCart size={24} strokeWidth={1.6} />
@@ -272,7 +273,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="border-b border-gray-200 bg-white lg:hidden">
+        <div className="border-b border-gray-200 bg-white xl:hidden">
           <div className="mx-auto max-w-[1540px] space-y-3 px-4 py-4">
             {/* Search Form */}
             <form onSubmit={handleSearchSubmit} className="relative">
@@ -304,7 +305,28 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Auth Links */}
-            {!user && (
+            {user ? (
+              <div className="space-y-2 border-t border-gray-200 pt-3">
+                <Link
+                  to={isAdmin ? "/admin-dashboard" : "/profile"}
+                  onClick={() => setMobileOpen(false)}
+                  className={mobileNavLinkClass}
+                >
+                  {isAdmin ? "Admin Dashboard" : "My Account"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(logoutUserThunk());
+                    setMobileOpen(false);
+                    navigate("/login");
+                  }}
+                  className={`${mobileNavLinkClass} w-full text-left`}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
               <div className="space-y-2 border-t border-gray-200 pt-3">
                 <Link
                   to="/login"

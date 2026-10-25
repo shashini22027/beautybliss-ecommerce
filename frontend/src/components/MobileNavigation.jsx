@@ -12,13 +12,14 @@ const MobileNavigation = () => {
 
   const safeWishlistItems = Array.isArray(wishlistItems) ? wishlistItems : [];
   const wishlistCount = safeWishlistItems.length;
+  const isAdmin = Boolean(user?.isAdmin || user?.role === 'admin');
 
   const navItems = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/products', label: 'Shop', icon: ShoppingBag },
     { to: '/wishlist', label: 'Wishlist', icon: Heart, count: wishlistCount },
     { to: '/cart', label: 'Cart', icon: ShoppingCart, count: cartCount },
-    { to: user ? '/profile' : '/login', label: user ? 'Profile' : 'Login', icon: User },
+    { to: isAdmin ? '/admin-dashboard' : user ? '/profile' : '/login', label: isAdmin ? 'Admin' : user ? 'Profile' : 'Login', icon: User },
   ];
 
   return (
