@@ -64,7 +64,15 @@
 
 @layer components {
   .bb-storefront-button {
-    @apply inline-flex items-center justify-center rounded-sm bg-[#292526] px-7 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center rounded-sm bg-[#292526] px-6 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-[#a94f61] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a94f61] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .bb-storefront-button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center rounded-sm border border-[#292526] bg-white px-6 py-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-[#292526] transition-colors duration-200 hover:bg-[#fbf3f1] hover:text-[#a94f61] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a94f61] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .bb-storefront-icon-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-sm text-gray-700 transition-colors duration-200 hover:bg-[#fbf3f1] hover:text-[#a94f61] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a94f61] focus-visible:ring-offset-2;
   }
 
   .bb-storefront-panel {

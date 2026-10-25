@@ -30,13 +30,13 @@ const MobileNavigation = () => {
           end={to === '/'}
           className={({ isActive }) =>
             `relative flex min-w-[3.75rem] flex-col items-center px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition ${
-              isActive ? 'bg-[#f2f2f2] text-gray-950' : 'text-gray-500 hover:text-pink-600'
+              isActive ? 'bg-[#fbf3f1] text-[#a94f61]' : 'text-gray-500 hover:bg-[#fbf3f1] hover:text-[#a94f61]'
             }`
           }
         >
           <Icon size={20} />
           {count > 0 && (
-            <span className="absolute right-2 top-1 inline-flex h-4 min-w-[1rem] items-center justify-center bg-pink-600 px-1 text-[10px] font-bold leading-none text-white">
+            <span className="absolute right-2 top-1 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#a94f61] px-1 text-[10px] font-bold leading-none text-white">
               {count}
             </span>
           )}

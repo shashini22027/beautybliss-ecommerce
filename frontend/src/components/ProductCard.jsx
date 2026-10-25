@@ -142,7 +142,7 @@ const ProductCard = ({ product }) => {
           <button
             type="button"
             onClick={() => dispatch(addToCart({ product, qty: 1 }))}
-            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm bg-[#292526] px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50"
+            className="bb-storefront-button w-full gap-2 px-3 py-2 tracking-[0.08em]"
             aria-label="Add to cart"
             title="Add to cart"
           >

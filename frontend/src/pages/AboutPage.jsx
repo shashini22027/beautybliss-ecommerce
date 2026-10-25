@@ -45,7 +45,7 @@ const AboutPage = () => {
             </p>
             <Link
               to="/products"
-              className="inline-flex items-center justify-center gap-2 bg-[#2b2b2b] hover:bg-pink-600 px-8 py-3 text-white font-bold uppercase tracking-[0.14em] transition"
+              className="bb-storefront-button gap-2"
             >
               Shop Now →
             </Link>

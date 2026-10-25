@@ -734,7 +734,7 @@ const CheckoutPage = () => {
                             type="button"
                             onClick={handlePlaceOrder}
                             disabled={submitting || cartItems.length === 0}
-                            className="mt-6 min-h-12 w-full rounded-sm bg-[#292526] px-4 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="bb-storefront-button mt-6 min-h-12 w-full text-sm"
                         >
                             {submitting ? 'Preparing checkout...' : `Continue to ${paymentMethod === 'card' ? 'payment' : 'place order'}`}
                         </button>

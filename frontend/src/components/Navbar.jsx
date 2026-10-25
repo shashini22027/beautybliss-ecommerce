@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Heart, User, Search, Menu, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectWishlistItems } from '../redux/slices/wishlistSlice';
 import { selectUser, logoutUserThunk } from '../redux/slices/authSlice';
@@ -16,6 +16,7 @@ const Navbar = () => {
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const cartCount = useCartBadgeCount();
   const wishlistItems = useSelector(selectWishlistItems);
@@ -47,6 +48,12 @@ const Navbar = () => {
     }
   }, [showSearch]);
 
+  useEffect(() => {
+    setMobileOpen(false);
+    setShowSearch(false);
+    setShowProfileMenu(false);
+  }, [location.pathname]);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
 
@@ -68,7 +75,7 @@ const Navbar = () => {
   };
 
   const navLinkClass =
-    'text-[13px] font-medium tracking-[0.02em] text-gray-700 transition hover:text-[#a94f61]';
+    'relative py-2 text-[13px] font-medium tracking-[0.02em] transition hover:text-[#a94f61]';
   const mobileNavLinkClass =
     'block rounded px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-[#fbf3f1] hover:text-[#a94f61]';
 
@@ -79,7 +86,7 @@ const Navbar = () => {
     { label: 'Blog', to: '/blog' },
     { label: 'About Us', to: '/about' },
     { label: 'Contact Us', to: '/contact' },
-   
+    { label: 'Offers', to: '/offers' },
   ];
 
   return (
@@ -99,9 +106,14 @@ const Navbar = () => {
 
             <nav className="hidden items-center justify-center gap-8 lg:flex">
               {navLinks.map((item) => (
-                <Link key={item.to} to={item.to} className={navLinkClass}>
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) => `${navLinkClass} ${isActive ? 'font-semibold text-[#a94f61] after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-[#a94f61]' : 'text-gray-700'}`}
+                >
                   {item.label}
-                </Link>
+                </NavLink>
               ))}
             </nav>
 
@@ -112,7 +124,7 @@ const Navbar = () => {
                   setMobileOpen((prev) => !prev);
                   setShowSearch(false);
                 }}
-                  className="p-2 text-gray-700 hover:text-pink-600 lg:hidden"
+                  className="bb-storefront-icon-button lg:hidden"
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -123,7 +135,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={handleSearchButtonClick}
-                  className="flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
+                  className="bb-storefront-icon-button"
                   aria-label="Search"
                   aria-expanded={showSearch}
                 >
@@ -155,7 +167,7 @@ const Navbar = () => {
               {/* Wishlist */}
               <Link
                 to="/wishlist"
-                className="relative hidden h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600 sm:flex"
+                className="bb-storefront-icon-button relative hidden sm:flex"
                 aria-label={`Wishlist${wishlistCount ? `, ${wishlistCount} items` : ''}`}
               >
                 <Heart size={24} strokeWidth={1.6} />
@@ -174,7 +186,8 @@ const Navbar = () => {
                     setShowProfileMenu((prev) => !prev);
                     setShowSearch(false);
                   }}
-                  className="flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
+                  className="bb-storefront-icon-button"
+                  aria-expanded={showProfileMenu}
                   aria-label="Profile"
                 >
                   <User size={24} strokeWidth={1.6} />
@@ -242,7 +255,7 @@ const Navbar = () => {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative flex h-10 w-10 items-center justify-center text-gray-950 transition hover:text-pink-600"
+                className="bb-storefront-icon-button relative"
                 aria-label={`Cart${cartCount ? `, ${cartCount} items` : ''}`}
               >
                 <ShoppingCart size={24} strokeWidth={1.6} />
@@ -277,15 +290,16 @@ const Navbar = () => {
 
             {/* Mobile Nav Links */}
             <div className="space-y-2 border-t border-gray-200 pt-3">
-              {[...navLinks, { label: 'Offers', to: '/offers' }].map((item) => (
-                <Link
+              {navLinks.map((item) => (
+                <NavLink
                   key={item.to}
                   to={item.to}
                   onClick={() => setMobileOpen(false)}
-                  className={mobileNavLinkClass}
+                  end={item.to === '/'}
+                  className={({ isActive }) => `${mobileNavLinkClass} ${isActive ? 'bg-[#fbf3f1] font-semibold text-[#a94f61]' : ''}`}
                 >
                   {item.label}
-                </Link>
+                </NavLink>
               ))}
             </div>
 

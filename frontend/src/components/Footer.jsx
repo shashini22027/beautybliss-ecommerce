@@ -139,7 +139,7 @@ const Footer = () => {
                         <button
                             type="submit"
                             disabled={status === "sending"}
-                            className="bg-[#2b2b2b] py-3 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="bb-storefront-button w-full"
                         >
                             {status === "sending" ? "Sending..." : "Subscribe"}
                         </button>
