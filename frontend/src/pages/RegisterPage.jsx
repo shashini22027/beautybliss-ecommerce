@@ -109,24 +109,15 @@ const RegisterPage = () => {
 
     return (
         <main className="min-h-screen bg-white text-gray-950">
-            <section className="relative min-h-[260px] overflow-hidden sm:min-h-[320px]">
+            <section className="bb-page-title-banner flex items-center justify-center">
                 <img
                     src="/images/banner.jpg"
                     alt="Skincare products"
                     className="absolute inset-0 h-full w-full object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-black/35" />
-                <div className="relative z-10 mx-auto flex min-h-[260px] max-w-[1460px] flex-col items-center justify-center px-6 text-center text-white sm:min-h-[320px]">
-                    <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
-                        MY ACCOUNT
-                    </h1>
-                    <div className="mt-6 flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em]">
-                        <Link to="/" className="text-white/85 transition hover:text-white">
-                            HOME
-                        </Link>
-                        <span>/</span>
-                        <span>MY ACCOUNT</span>
-                    </div>
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="relative z-10 flex w-full items-center justify-center px-4 text-center text-white">
+                    <h1>My Account</h1>
                 </div>
             </section>
 
