@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import MobileNavigation from '../components/MobileNavigation';
+import ChatAssistant from '../components/ChatAssistant';
 
 const MainLayout = ({ children }) => {
   return (
@@ -12,6 +13,7 @@ const MainLayout = ({ children }) => {
       </main>
       <Footer />
       <MobileNavigation />
+      <ChatAssistant />
     </div>
   );
 };

@@ -45,6 +45,9 @@ const adminDashboardSlice = createSlice({
   },
 });
 
-export const selectAdminDashboardStats = (state) => state.adminDashboard.data || {};
+const emptyDashboardStats = Object.freeze({});
+
+export const selectAdminDashboardStats = (state) =>
+  state.adminDashboard.data ?? emptyDashboardStats;
 
 export default adminDashboardSlice.reducer;

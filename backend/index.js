@@ -29,6 +29,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 import { sendAppointmentReminders } from './controllers/appointmentController.js';
 
 dotenv.config();
@@ -122,6 +123,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Serve uploads static directory
 const __dirname = path.resolve();
@@ -138,7 +140,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use. Stop the other backend process or set a different PORT in backend/.env (for example, PORT=5001).`);
-    process.exitCode = 1;
+  process.exitCode = 1;
     return;
   }
 

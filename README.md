@@ -14,3 +14,6 @@ BeautyBliss is a modern MERN stack beauty and cosmetics e-commerce platform insp
 2. Install dependencies for backend and frontend
 3. Set environment variables
 4. Run `npm run dev`
+
+## AI Shopping Assistant
+The site-wide chat assistant uses the Gemini API through the backend. Create a Gemini API key in Google AI Studio and add `GEMINI_API_KEY` to `backend/.env` and your backend hosting provider's environment settings. `GEMINI_MODEL` is optional and defaults to `gemini-3.5-flash-lite`. Keep the API key on the backend; never add it to frontend environment variables. The chat route is limited to 15 messages per IP every 15 minutes.
