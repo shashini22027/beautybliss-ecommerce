@@ -398,7 +398,7 @@ const ProductsPage = () => {
 
     return (
         <main className="bb-products-page min-h-screen bg-white text-gray-950">
-            <section className="relative min-h-[320px] overflow-hidden sm:min-h-[380px]">
+            <section className="relative min-h-[140px] overflow-hidden sm:min-h-[150px]">
                 <img
                     src="/images/banner.jpg"
                     alt="Beauty products"
@@ -406,38 +406,33 @@ const ProductsPage = () => {
                 />
                 <div className="absolute inset-0 bg-black/35" />
 
-                <div className="relative z-10 mx-auto flex min-h-[320px] max-w-[1540px] flex-col items-center justify-center px-5 py-12 text-white sm:min-h-[380px] sm:px-6 sm:py-16">
-                    <h1 className="mb-8 text-5xl font-semibold tracking-tight sm:mb-10 sm:text-6xl md:text-7xl">
+                <div className="relative z-10 mx-auto flex min-h-[140px] max-w-[1540px] flex-col items-center justify-center px-5 py-4 text-white sm:min-h-[150px] sm:px-6">
+                    <h1 className="text-6xl font-semibold leading-none tracking-tight sm:text-7xl">
                         Shop
                     </h1>
-
-                    <div className="flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-5 sm:gap-x-10 sm:gap-y-8">
-                        {categoryHeroItems.map((category) => (
-                            <button
-                                key={category.name}
-                                type="button"
-                                onClick={() => {
-                                    setActiveCategory(category.value);
-                                    navigate(`/products?category=${encodeURIComponent(category.value)}`);
-                                }}
-                                className={`group flex items-center gap-4 text-left transition ${
-                                    activeCategory === category.value
-                                        ? "opacity-100"
-                                        : "opacity-90 hover:opacity-100"
-                                }`}
-                            >
-                                <Icon
-                                    name={category.icon}
-                                    className="h-9 w-9 shrink-0 text-white"
-                                />
-                                <span className="block text-sm font-semibold uppercase leading-5 text-white sm:text-lg md:text-xl">
-                                    {category.name}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
                 </div>
             </section>
+
+            <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 border-b border-gray-100 px-5 py-4 sm:gap-x-10" aria-label="Shop categories">
+                {categoryHeroItems.map((category) => (
+                    <button
+                        key={category.name}
+                        type="button"
+                        onClick={() => {
+                            setActiveCategory(category.value);
+                            navigate(`/products?category=${encodeURIComponent(category.value)}`);
+                        }}
+                        className={`group flex items-center gap-2 text-left transition ${
+                            activeCategory === category.value
+                                ? "text-rose-700"
+                                : "text-gray-700 hover:text-rose-700"
+                        }`}
+                    >
+                        <Icon name={category.icon} className="h-5 w-5 shrink-0" />
+                        <span className="text-xs font-semibold uppercase leading-5 sm:text-sm">{category.name}</span>
+                    </button>
+                ))}
+            </nav>
 
             <section className="mx-auto grid max-w-[1540px] gap-6 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[300px_1fr] lg:gap-10 lg:py-16">
                 <aside className="h-fit border border-gray-200 bg-[#fbf8f5] px-4 py-5 sm:px-6 sm:py-7 lg:sticky lg:top-24">

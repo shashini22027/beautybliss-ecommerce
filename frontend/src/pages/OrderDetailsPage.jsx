@@ -192,21 +192,15 @@ const OrderDetailsPage = () => {
 
   return (
     <main className="min-h-screen bg-white text-gray-950">
-      <section className="relative min-h-[420px] overflow-hidden">
+      <section className="bb-page-title-banner flex items-center justify-center">
         <img
           src="/images/banner.jpg"
           alt="Order Details"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] items-center justify-center px-6 text-white">
-          <div className="flex flex-wrap items-center justify-center gap-4 text-3xl font-extrabold uppercase">
-            <Link to="/orders" className="text-white/80 transition hover:text-white">
-              My Orders
-            </Link>
-            <span className="text-white/80">→</span>
-            <span className="border-b-4 border-black pb-2">Order Details</span>
-          </div>
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative z-10 flex w-full items-center justify-center text-white">
+          <h1>Order Details</h1>
         </div>
       </section>
 

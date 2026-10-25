@@ -39,6 +39,29 @@
   background: linear-gradient(135deg, var(--bb-ivory), var(--bb-blush));
 }
 
+.bb-page-title-banner {
+  @apply relative h-[140px] overflow-hidden sm:h-[150px];
+}
+
+.bb-page-title-banner::before {
+  content: "";
+  @apply absolute inset-0 bg-cover bg-center;
+  background-image: url("/images/banner.jpg");
+}
+
+.bb-page-title-banner::after {
+  content: "";
+  @apply absolute inset-0 bg-black/30;
+}
+
+.bb-page-title-banner h1 {
+  @apply relative z-10 px-4 text-center text-6xl font-semibold leading-none tracking-tight text-white sm:text-7xl;
+}
+
+.bb-page-title-banner h1.bb-page-title-long {
+  @apply text-4xl sm:text-5xl;
+}
+
 @layer components {
   .bb-storefront-button {
     @apply inline-flex items-center justify-center rounded-sm bg-[#292526] px-7 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-[#a94f61] disabled:cursor-not-allowed disabled:opacity-50;

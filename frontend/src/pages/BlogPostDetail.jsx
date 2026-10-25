@@ -223,9 +223,7 @@ const BlogPostDetail = () => {
   return (
     <main className="min-h-screen bg-white text-gray-900">
       {/* Hero Section */}
-      <section
-        className="relative h-[400px] bg-cover bg-center"
-      >
+      <section className="bb-page-title-banner flex items-center justify-center">
         <img 
           src={post.image || fallbackImage} 
           alt={post.title}
@@ -233,16 +231,9 @@ const BlogPostDetail = () => {
           className="absolute inset-0 h-full w-full object-cover"
           fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white px-4">
-          <h1 className="text-4xl font-extrabold md:text-5xl max-w-4xl">{post.title}</h1>
-          <nav className="mt-4 flex items-center gap-2 text-sm font-medium">
-            <Link to="/" className="hover:text-pink-300 transition-colors">Home</Link>
-            <span>/</span>
-            <Link to="/blog" className="hover:text-pink-300 transition-colors">Blog</Link>
-            <span>/</span>
-            <span className="text-pink-200">{post.title}</span>
-          </nav>
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative z-10 flex w-full items-center justify-center px-2 text-center text-white">
+          <h1 className="bb-page-title-long">{post.title}</h1>
         </div>
       </section>
 

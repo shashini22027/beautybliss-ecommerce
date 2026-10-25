@@ -56,15 +56,9 @@ const Blog = () => {
 
   return (
     <main className="min-h-screen bg-white">
-      <section className="relative min-h-[420px] overflow-hidden">
-        <img
-          src="/images/banner.jpg"
-          alt="Beauty Blog"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
-          <h1 className="text-6xl font-bold uppercase tracking-tight md:text-7xl">
+      <section className="bb-page-title-banner flex items-center justify-center">
+        <div className="relative z-10 flex w-full items-center justify-center">
+          <h1>
             Blog
           </h1>
         </div>

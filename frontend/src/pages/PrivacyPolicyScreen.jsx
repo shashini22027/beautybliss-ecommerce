@@ -127,25 +127,18 @@ const PrivacyPolicyScreen = () => {
   return (
     <div className="bg-white">
       {/* Hero Banner */}
-      <section className="relative h-64 md:h-80 overflow-hidden">
+      <section className="bb-page-title-banner flex items-center justify-center">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage: "url(/images/banner.jpg)",
           }}
         />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold drop-shadow-lg mb-4">
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative z-10 flex w-full items-center justify-center text-white">
+          <h1>
             Privacy Policy
           </h1>
-          <div className="flex items-center gap-2">
-            <Link to="/" className="hover:text-rose-200 transition">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-rose-200">Privacy Policy</span>
-          </div>
         </div>
       </section>
 

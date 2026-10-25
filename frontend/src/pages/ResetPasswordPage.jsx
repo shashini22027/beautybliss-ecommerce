@@ -48,24 +48,18 @@ const ResetPasswordPage = () => {
   return (
     <main className="min-h-screen bg-white text-gray-950">
       {/* Header Banner */}
-      <section className="relative min-h-[420px] overflow-hidden">
+      <section className="bb-page-title-banner flex items-center justify-center">
         <img
           src="/images/banner.jpg"
           alt="My account"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-0 bg-black/30" />
 
-        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-center text-white">
-          <h1 className="mb-4 text-6xl font-bold tracking-tight md:text-7xl">
+        <div className="relative z-10 flex w-full items-center justify-center px-4 text-center text-white">
+          <h1>
             My account
           </h1>
-          <p className="text-sm font-semibold tracking-wide">
-            <Link to="/" className="transition hover:text-pink-300">
-              Home
-            </Link>{" "}
-            / <span className="font-bold">My account</span>
-          </p>
         </div>
       </section>
 

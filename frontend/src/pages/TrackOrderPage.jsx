@@ -137,20 +137,11 @@ const TrackOrderPage = () => {
 
   return (
     <main className="min-h-screen bg-white text-gray-950">
-      <section className="relative min-h-[420px] overflow-hidden">
-        <img
-          src="/images/banner.jpg"
-          alt="Track your order"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/35" />
-        <div className="relative z-10 mx-auto flex min-h-[420px] max-w-[1540px] flex-col items-center justify-center px-6 py-16 text-white">
-          <h1 className="text-5xl font-bold uppercase tracking-tight sm:text-6xl md:text-7xl lg:text-[6rem]">
+      <section className="bb-page-title-banner flex items-center justify-center">
+        <div className="relative z-10 flex w-full flex-col items-center justify-center">
+          <h1>
             Track Your Order
           </h1>
-          <p className="mt-5 text-xs font-medium uppercase tracking-[0.25em] text-white/90 sm:text-sm">
-            Home / Track Your Order
-          </p>
         </div>
       </section>
 

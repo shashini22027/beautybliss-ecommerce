@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 
 const shippingContent = [
   {
@@ -60,23 +59,11 @@ const shippingContent = [
 const ShippingDeliveryScreen = () => {
   return (
     <div className="bg-white">
-      <section className="relative h-64 overflow-hidden md:h-80">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/images/banner.jpg)" }}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative z-10 flex h-full flex-col items-center justify-center text-center text-white">
-          <h1 className="mb-4 text-5xl font-bold uppercase tracking-tight md:text-6xl">
+      <section className="bb-page-title-banner flex items-center justify-center">
+        <div className="relative z-10 flex w-full items-center justify-center">
+          <h1 className="bb-page-title-long">
             Shipping and Delivery
           </h1>
-          <div className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-white/90">
-            <Link to="/" className="transition hover:text-rose-200">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-rose-200">Shipping and Delivery</span>
-          </div>
         </div>
       </section>
 
