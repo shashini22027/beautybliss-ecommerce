@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getImageUrl } from '../utils/image';
 import { ArrowRight, BadgePercent, Gift, Sparkles, Truck } from 'lucide-react';
 import API from '../services/api';
-import { formatPrice } from '../utils/currency';
+import ProductCard from '../components/ProductCard';
 
 const fallbackOffers = [
   {
@@ -33,17 +32,12 @@ const getProductsFromResponse = (data) => {
   return [];
 };
 
-const getProductImage = (product) => {
-  let src;
-  if (product.image) src = product.image;
-  else if (product.imageUrl) src = product.imageUrl;
-  else if (Array.isArray(product.images)) {
-    const [firstImage] = product.images;
-    src = typeof firstImage === 'string' ? firstImage : firstImage?.url;
-  } else {
-    src = '';
-  }
-  return getImageUrl(src);
+const isSpecialOffer = (product) => {
+  const category = typeof product.category === 'object'
+    ? product.category?.name || product.category?.title || ''
+    : product.category || '';
+
+  return Boolean(product.isSpecialOffer) || String(category).trim().toLowerCase() === 'special offers';
 };
 
 const OffersPage = () => {
@@ -55,7 +49,7 @@ const OffersPage = () => {
       try {
         const { data } = await API.get('/products');
         const products = getProductsFromResponse(data);
-        setFeaturedProducts(products.slice(0, 4));
+        setFeaturedProducts(products.filter(isSpecialOffer));
       } catch (error) {
         console.error('Failed to load offer products:', error);
       } finally {
@@ -83,7 +77,7 @@ const OffersPage = () => {
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/products"
+                to="/products?category=special%20offers"
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-pink-700 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-800"
               >
                 Shop all deals
@@ -134,11 +128,11 @@ const OffersPage = () => {
 
         <div className="mt-10 flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-pink-700">Featured deals</p>
-            <h2 className="mt-2 text-2xl font-bold text-stone-950">Popular products to start with</h2>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-pink-700">Special Offers</p>
+            <h2 className="mt-2 text-2xl font-bold text-stone-950">Products on offer</h2>
           </div>
-          <Link to="/products" className="hidden text-sm font-bold text-pink-700 hover:text-pink-800 sm:inline-flex">
-            View products
+          <Link to="/products?category=special%20offers" className="hidden text-sm font-bold text-pink-700 hover:text-pink-800 sm:inline-flex">
+            View all offers
           </Link>
         </div>
 
@@ -149,35 +143,14 @@ const OffersPage = () => {
             ))
           ) : featuredProducts.length > 0 ? (
             featuredProducts.map((product) => (
-              <Link
-                key={product._id || product.id}
-                to={`/product/${product._id || product.id}`}
-                className="group overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-              >
-                <div className="aspect-square bg-stone-100">
-                  {getProductImage(product) ? (
-                    <img
-                      src={getProductImage(product)}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm font-semibold text-stone-400">
-                      BeautyBliss
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="line-clamp-2 min-h-[2.75rem] font-bold text-stone-950">{product.name}</h3>
-                  <p className="mt-2 text-sm font-bold text-pink-700">
-                    {product.price ? formatPrice(product.price) : 'View offer'}
-                  </p>
-                </div>
-              </Link>
+              <ProductCard key={product._id || product.id || product.name} product={product} />
             ))
           ) : (
             <div className="rounded-lg border border-stone-200 bg-white p-6 text-sm text-stone-600 sm:col-span-2 lg:col-span-4">
-              Offers are being refreshed. Browse the full catalog while we update this section.
+              There are no products marked as Special Offers right now. Check back soon or browse the shop.
+              <Link to="/products?category=special%20offers" className="ml-1 font-semibold text-pink-700 underline underline-offset-2">
+                View Special Offers in the shop
+              </Link>
             </div>
           )}
         </div>
