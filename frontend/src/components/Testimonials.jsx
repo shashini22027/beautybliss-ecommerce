@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Star } from 'lucide-react';
-import api from '../services/api';
 import { getImageUrl } from '../utils/image';
 
 const fallbackTestimonials = [
@@ -28,59 +27,16 @@ const reviewsPerPage = 3;
 const pageCount = 2;
 
 const Testimonials = () => {
-  const [customerReviews, setCustomerReviews] = useState([]);
   const [activePage, setActivePage] = useState(0);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadCustomerReviews = async () => {
-      try {
-        const { data } = await api.get('/products');
-        const products = Array.isArray(data) ? data : [];
-        const reviews = products
-          .flatMap((product) =>
-            (product.reviews || []).map((review) => ({
-              name: review.name || 'BeautyBliss Customer',
-              handle: product.name ? `Reviewed ${product.name}` : '@beautybliss_customer',
-              rating: Number(review.rating || 5),
-              text: review.comment || '',
-              media: (review.media || []).filter((item) => item.type === 'image' && item.url),
-              createdAt: review.createdAt,
-            }))
-          )
-          .filter((review) => review.text)
-          .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-        if (isMounted) {
-          setCustomerReviews(reviews);
-        }
-      } catch (error) {
-        console.error('Failed to load testimonials', error);
-      }
-    };
-
-    loadCustomerReviews();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const testimonialPages = useMemo(() => {
-    const testimonials = [...customerReviews, ...fallbackTestimonials].slice(
-      0,
-      reviewsPerPage * pageCount
-    );
-
     return Array.from({ length: pageCount }, (_, pageIndex) => {
-      const start = pageIndex * reviewsPerPage;
-      const page = testimonials.slice(start, start + reviewsPerPage);
-      return page.length === reviewsPerPage
-        ? page
-        : [...page, ...fallbackTestimonials].slice(0, reviewsPerPage);
+      const start = (pageIndex * reviewsPerPage) % fallbackTestimonials.length;
+      return Array.from({ length: reviewsPerPage }, (_, index) =>
+        fallbackTestimonials[(start + index) % fallbackTestimonials.length]
+      );
     });
-  }, [customerReviews]);
+  }, []);
 
   const visibleTestimonials = testimonialPages[activePage] || testimonialPages[0];
 

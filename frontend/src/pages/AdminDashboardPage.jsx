@@ -62,7 +62,7 @@ const AdminDashboardPage = () => {
     }
 
     dispatch(fetchAdminDashboardData(dateRange));
-  }, [dispatch, navigate, user, dateRange]);
+  }, [dispatch, navigate, user?.isAdmin, dateRange]);
 
   const logoutHandler = () => {
     dispatch(logoutUserThunk());
